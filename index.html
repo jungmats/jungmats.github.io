@@ -8,7 +8,8 @@
     :root {
       --cyan: #00BEE2;
       --petrol: #005B66;
-      --grey: #D0D5DD;
+      --grey: #f9f9f9;
+      --grey2: #b9b9b9;
     }
 
     body {
@@ -17,6 +18,10 @@
       background-color: white;
       color: var(--petrol);
       line-height: 1.6;
+    }
+
+    body a {
+      color: var(--petrol);
     }
 
     header {
@@ -31,6 +36,11 @@
       font-size: 2rem;
     }
 
+    header p {
+      margin: 0;
+      color: var(--grey2);
+    }
+
     section {
       max-width: 700px;
       margin: 2rem auto;
@@ -40,23 +50,23 @@
     h2 {
       color: var(--cyan);
       border-bottom: 1px solid var(--grey);
-      padding-bottom: 0.5rem;
+      padding-bottom: 0.0rem;
     }
 
     p {
       color: #333;
     }
 
-    .contact, .download {
+    .section {
       background-color: var(--grey);
-      padding: 1rem;
+      padding: 0.2rem 1rem 0.5rem 1rem;
       border-radius: 8px;
     }
 
     a.button {
       display: inline-block;
-      padding: 0.75rem 1.5rem;
-      margin-top: 1rem;
+      padding: 0.75rem 1rem;
+      margin-top: 0.5rem;
       background-color: var(--cyan);
       color: white;
       border-radius: 6px;
@@ -68,11 +78,17 @@
       background-color: #00a0c5;
     }
 
+    img {
+      width: 50px;
+      height: 50px;
+      border-radius: 20%; /* Makes the image circular */
+    }
+
     footer {
       text-align: center;
       padding: 2rem 1rem;
       font-size: 0.9rem;
-      color: var(--grey);
+      color: var(--grey2);
     }
   </style>
 </head>
@@ -80,26 +96,28 @@
 
   <header>
     <h1>ElevIQ Solutions</h1>
-    <p>Empowering businesses to unlock AI’s full potential</p>
+    <p><b>Empowering businesses to unlock AI’s full potential</b></p>
   </header>
 
-  <section>
+  <section class="section">
     <h2>About</h2>
     <p>
       ElevIQ provides applications, consulting, and development services that help companies simplify and scale their use of artificial intelligence.
     </p>
   </section>
 
-  <section class="contact">
+  <section class="section">
     <h2>Contact</h2>
-    <p>Company: ElevIQ</p>
-    <p>Email: <a href="mailto:hello@eleviq.solutions">hello@eleviq.solutions</a></p>
+    <p>If you have any questions or would like to learn more about our services, please reach out to us via email @ <a href="mailto:hello@eleviq.solutions">hello@eleviq.solutions</a> or follow us on social media.</p>
   </section>
 
-  <section class="download">
-    <h2>App Download</h2>
-    <p>Our app will be available on TestFlight soon — check back here for access!</p>
-    <a class="button" href="#">Join the TestFlight (Coming Soon)</a>
+  <section class="section">
+    <h2>
+      <img src="icon.png" alt="App Icon" style="width: 24px; height: 24px; vertical-align: middle; margin-right: 8px;">
+      App Download
+    </h2>
+    <p>Our app will be available on iOS soon. Feel free to contact us if you are interested in participating in the beta testing phase!</p>
+    <a class="button" href="#">Download (Coming Soon)</a>
   </section>
 
   <footer>
