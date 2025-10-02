@@ -60,7 +60,7 @@ header p {
 
 section {
   max-width: 700px;
-  margin: 2rem auto;
+  margin: 1rem auto;
   padding: 0 1rem;
 }
 
@@ -68,6 +68,8 @@ h2 {
   color: var(--blue);
   border-bottom: 1px solid var(--yellow);
   padding-bottom: 0.0rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
 }
 
 p {
@@ -76,19 +78,20 @@ p {
 
 .section {
   /* background-color: var(--yellow);*/
-  padding: 0.2rem 1rem 0.5rem 1rem;
+  padding: 0.2rem 1rem 0.2rem 1rem;
   /* border-radius: 8px; */
 }
 
 a.button {
   display: inline-block;
-  padding: 0.75rem 1rem;
+  padding: 0.5rem 0.65rem;
   margin-top: 0.5rem;
   background-color: var(--cyan);
   color: white;
   border-radius: 6px;
   text-decoration: none;
   font-weight: bold;
+  font-size: 0.85rem;
 }
 
 a.button:hover {
@@ -120,14 +123,12 @@ footer {
   display: flex;
   flex: 1;
   gap: 40px;
-  min-height: 100%;
 }
 
 .sidebar {
   width: 250px;
   flex-shrink: 0;
   background-color: var(--yellow);
-  height: 100%;
 }
 
 .sidebar ul {
