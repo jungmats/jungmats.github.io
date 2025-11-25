@@ -27,7 +27,7 @@
     <main class="content">
       <section class="section">
         <h1>voilo Privacy Policy</h1>
-        <p><strong>Last updated:</strong> January 19, 2025</p>
+        <p><strong>Last updated:</strong> November 25, 2025</p>
 
         <p>
           This Privacy Policy describes how voilo - your voice sheets ("the App") collects, uses, and protects your information.
@@ -53,22 +53,41 @@
           No audio data is sent to external servers or third parties.
         </p>
 
-        <h3>Google Services Integration</h3>
+        <h3>Google Services Integration and User Data</h3>
         <p>
-          voilo requires Google authentication to function. When you sign in with Google, the App requests OAuth access with the following scopes:
+          voilo requires Google authentication to function. When you sign in with Google, the App accesses the following Google user data:
         </p>
         <ul>
-          <li><strong>Google Sheets API:</strong> To read formatting from and write data to spreadsheets that the App creates</li>
-          <li><strong>Google Drive (drive.file scope):</strong> To create and manage spreadsheets that the App generates</li>
+          <li><strong>Google Account Email Address:</strong> Used to authenticate your identity and associate your device with your Google account</li>
+          <li><strong>Google Profile Information:</strong> Your name is used to display which Google account is currently connected in the app</li>
+          <li><strong>Google Sheets Files:</strong> The App accesses metadata (file names, IDs, modification dates) and content of spreadsheets that the App creates in your Google Drive</li>
+          <li><strong>Google Drive Permissions:</strong> The App requests limited Drive access (drive.file scope) to create and manage only the spreadsheets it generates</li>
         </ul>
+
+        <p><strong>How voilo Uses Your Google User Data:</strong></p>
+        <ul>
+          <li>Your email address is used solely for authentication purposes</li>
+          <li>Your profile name is displayed in the app interface to confirm which Google account is active</li>
+          <li>Google Sheets are created in your Drive to store your tracker data; the App reads formatting information from these sheets and writes new entries based on your voice transcriptions</li>
+          <li>The App only accesses spreadsheets that it creates. It does not access other files in your Google Drive</li>
+        </ul>
+
+        <p><strong>Sharing and Disclosure of Google User Data:</strong></p>
+        <ul>
+          <li>voilo does NOT share your Google user data with any third parties</li>
+          <li>When you submit a transcription, only your tracker's data structure and the transcribed text are sent to OpenAI's API for processing. No Google account information (email, name, or credentials) is shared with OpenAI or any other third party</li>
+          <li>All spreadsheets are created in your own Google Drive account, and you retain full ownership and control over them</li>
+          <li>Your Google account credentials are handled exclusively by Google's OAuth system and are never stored or accessed by the App</li>
+        </ul>
+
         <p>
-          The App only accesses spreadsheets that it creates. It does not access other files in your Google Drive.
-          All spreadsheets are created in your own Google Drive account, and you retain full ownership and control over them.
-        </p>
-        <p>
-          Your Google account information and credentials are handled by Google's OAuth system and are not stored by the App.
           Google's use of your information is governed by <a href="https://policies.google.com/privacy" target="_blank">Google's Privacy Policy</a>.
+          For details on the OAuth scopes requested, the App uses:
         </p>
+        <ul>
+          <li><strong>Google Sheets API:</strong> To read formatting from and write data to spreadsheets</li>
+          <li><strong>Google Drive API (drive.file scope):</strong> To create and manage spreadsheets that the App generates</li>
+        </ul>
 
         <h3>OpenAI API Usage</h3>
         <p>
