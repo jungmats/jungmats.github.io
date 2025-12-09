@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>voilo Q&A</title>
+  <link rel="stylesheet" href="voilo-styles.css">
+</head>
+<body>
+
+  <header>
+    <div class="logo">
+      <img src="../voilo-100.png" alt="voilo Icon">
+      <h1>voilo</h1>
+    </div>
+    <p class="tagline">Questions &amp; Answers</p>
+  </header>
+
+  <div class="container">
+    <main>
+      <section>
+        <h1>Questions &amp; Answers</h1>
+
+        <h3>Is my data private?</h3>
+        <p>
+          Your data stays in your Google Sheets. For voice recognition and parsing, we rely on OpenAI's security and data-privacy standards.
+          We do not store your voice recordings or parsed data on our servers. If relying on OpenAI is not enough for your requirements, please
+          talk to us. We can help you set up a comparable AI model of your choice inside your own premises or a secured cloud environment.
+        </p>
+
+        <h3>Can Voilo access all my files on Google Drive?</h3>
+        <p>
+          No. Voilo cannot browse or read your Google Drive. It only has access to the spreadsheets it creates itself for your trackers.
+          It does not have the ability to look at, list, or open any other files in your Drive.
+        </p>
+
+        <h3>Will Voilo make mistakes?</h3>
+        <p>
+          Yes, mistakes can happen. Speech recognition and AI parsing are not perfect. Voilo reduces errors through real-time transcription,
+          AI parsing, and validation (e.g., checking dates, numbers, or categories). If something looks wrong, you'll see it on the confirmation
+          screen before anything is written to your Google Sheet, and you can correct it. If you run into repeated issues, please let us know —
+          it helps improve the system.
+        </p>
+
+        <h3>Does Voilo work offline?</h3>
+        <p>
+          Partially. You can record and store entries while offline. When you're back online, the stored items remain in your list. You can then
+          manually select which ones you want to process and submit to Google Sheets. This ensures you don't lose any data, while keeping you in
+          full control of what gets uploaded.
+        </p>
+
+        <h3>I don't have a Google account. Can I use Voilo?</h3>
+        <p>
+          Not yet. Voilo currently stores all tracker data in Google Sheets, so a Google account is required. We are exploring alternatives for
+          the future. If you prefer a different storage solution, please let us know — your input directly influences what we support next.
+        </p>
+
+        <h3>I already have a to-do app and track my steps. Why should I use Voilo?</h3>
+        <p>
+          Voilo isn't meant to replace specialized apps you already use. Its purpose is different: it gives you one simple way to record any kind
+          of data, not just predefined categories. Your information stays in your Google Sheets, where you can analyze, visualize, or export it
+          however you want. It's also helpful for tracking things traditional apps don't support — without needing a new app for each use case.
+        </p>
+
+        <h3>Can Voilo process input from other apps?</h3>
+        <p>
+          Yes. Voilo can handle more than live voice recordings. You can send audio from other apps — such as Voice Memos, WhatsApp, or similar —
+          directly to Voilo using the share sheet. Voilo will then transcribe and parse it just like a normal recording. You can also import images
+          from your photo library; Voilo extracts the text automatically using OCR. And if you prefer, you can share plain text from apps like Notes.
+          All of these sources go through the same parsing workflow, so you can record or capture data however it fits your moment.
+        </p>
+
+        <h3>Do I lose my data when I change a tracker's structure later?</h3>
+        <p>
+          No. Voilo doesn't delete or overwrite your data. When you change a tracker — for example by adding, removing, or renaming columns —
+          Voilo creates a new version of the tracker. Your existing entries keep their original structure and stay exactly as they were. New entries
+          follow the updated structure. This way your history remains intact, nothing breaks, and you can adjust your tracker over time without
+          risking any loss of data.
+        </p>
+
+        <h3>What happens to my voice recordings after processing?</h3>
+        <p>
+          Voilo does not keep your recordings after they have been processed. Your audio is sent securely to Apple's Speech API for transcription
+          and then discarded. We do not build a long-term archive of what you say. If you ever need a setup where audio must not leave your own
+          infrastructure, talk to us — we can help you configure an alternative model or deployment that fits your requirements.
+        </p>
+
+        <h3>Can Voilo get confused if I have similar trackers?</h3>
+        <p>
+          No. Voilo only records into the tracker you have actively selected. It does not try to guess which tracker you meant, so entries cannot
+          end up in the wrong place. If you switch trackers frequently, you can always check the active tracker before recording.
+        </p>
+
+        <h3>Do I need to speak in a specific format?</h3>
+        <p>
+          No. You can speak naturally. Voilo is designed to understand everyday sentences like "I worked on the app for two hours today." You do
+          not need to use fixed commands or special syntax. If something is unclear, you can correct it during the confirmation step before submitting.
+        </p>
+
+        <h3>What if I make a mistake while speaking?</h3>
+        <p>
+          You can always review and correct everything before it goes into your Google Sheet. If the transcription or parsing looks wrong, you can
+          adjust the fields manually on the confirmation screen, or discard the recording and try again.
+        </p>
+
+        <h3>How does Voilo handle accents, dialects, or background noise?</h3>
+        <p>
+          Speech recognition is generally robust, but not perfect. Clear speech in a reasonably quiet environment gives the best results, and strong
+          accents or loud background noise may reduce accuracy. If you run into recurring issues, please let us know — it helps us improve the system.
+        </p>
+
+        <h3>Does using Voilo count against my Google Sheets quota?</h3>
+        <p>
+          Yes, in the same way any manual entry would. Voilo writes new rows into your spreadsheet through the standard Google Sheets API. Extremely
+          large trackers may eventually reach Google's row limits, but this is uncommon for everyday use.
+        </p>
+
+        <h3>Can I export or back up my Voilo data?</h3>
+        <p>
+          Yes. All your data is stored in Google Sheets, so you can export it at any time to formats like Excel or CSV. Voilo does not create a
+          separate data store, so you remain fully in control of where your information lives.
+        </p>
+
+        <h3>What if Voilo stops working or I cancel my subscription?</h3>
+        <p>
+          Your existing data remains in your Google Sheets because Voilo never stores your tracker data itself. If you cancel your subscription,
+          you may lose access to certain features, but your historical data remains available to you at all times.
+        </p>
+
+        <h3>Does Voilo use my data to train AI models?</h3>
+        <p>
+          No. Your data is not used to train any AI model. Voilo uses Apple's Speech API for transcription and OpenAI for parsing, and neither uses
+          API data for training. Voilo does not use your data for training, either. If you require stricter privacy guarantees, talk to us — we can
+          help set up an isolated model.
+        </p>
+
+        <h3>Will Voilo drain my battery when listening?</h3>
+        <p>
+          Voilo only uses the microphone while you are actively recording. It does not run continuous background listening. Real-time speech
+          recognition does use some processing power, but comparable to other apps that record audio.
+        </p>
+
+        <h3>Can Voilo remind me to record data regularly?</h3>
+        <p>
+          Yes. All trackers support reminders, and you can configure them manually to match your routine. Some blueprints include predefined
+          reminder settings, so trackers created from those blueprints come with a suggested reminder already set up. These reminders are simple
+          notifications to help you stay consistent with tracking.
+        </p>
+
+      </section>
+    </main>
+  </div>
+
+  <footer>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms-of-service.html">Terms of Service</a>
+    </nav>
+    <p>&copy; 2025 voilo by ElevIQ Solutions</p>
+  </footer>
+
+</body>
+</html>
