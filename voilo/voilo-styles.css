@@ -59,6 +59,34 @@ header .tagline {
   margin-top: 0.5rem;
 }
 
+nav.tabs {
+  background-color: var(--accent);
+  border-bottom: 2px solid #e0e0e0;
+  display: flex;
+  justify-content: center;
+  gap: 0;
+}
+
+nav.tabs a {
+  padding: 1rem 2rem;
+  color: var(--text-light);
+  text-decoration: none;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+nav.tabs a:hover {
+  color: var(--voilo-green);
+  background-color: rgba(32, 167, 119, 0.05);
+}
+
+nav.tabs a.active {
+  color: var(--voilo-green);
+  border-bottom-color: var(--voilo-green);
+  font-weight: 600;
+}
+
 section {
   margin: 2rem 0;
 }
