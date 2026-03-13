@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Décret Tertiaire — Auto-diagnostic</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -23,6 +24,8 @@
   .form-group { margin-bottom: 1.25rem; }
   .form-label { display: block; font-size: 12px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
   .form-label span { font-weight: 300; text-transform: none; letter-spacing: 0; color: var(--muted); opacity: 0.7; }
+  .email-hint { font-size: 12px; color: var(--muted); margin-top: 6px; display: flex; align-items: center; gap: 5px; }
+  .email-hint svg { flex-shrink: 0; }
   select, input[type="email"] { width: 100%; padding: 11px 14px; font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); appearance: none; outline: none; transition: border-color 0.15s; }
   select:focus, input[type="email"]:focus { border-color: var(--text); }
   .select-wrap { position: relative; }
@@ -68,7 +71,15 @@
   .todo-detail { font-size: 13px; color: var(--muted); margin-top: 3px; line-height: 1.5; }
   .result-footer { margin-top: 2.5rem; padding: 1.25rem 1.5rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); font-size: 13px; color: var(--muted); line-height: 1.6; }
   .result-footer strong { color: var(--text); font-weight: 500; }
-  .btn-restart { display: inline-flex; align-items: center; gap: 8px; padding: 11px 22px; background: none; color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 13px; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; margin-top: 1.5rem; transition: border-color 0.15s, color 0.15s; }
+  .pdf-section { margin-top: 2rem; padding: 1.5rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+  .pdf-section-title { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+  .pdf-section-sub { font-size: 13px; color: var(--muted); margin-bottom: 1rem; }
+  .pdf-email-row { display: flex; gap: 8px; }
+  .pdf-email-row input { flex: 1; }
+  .btn-pdf { display: inline-flex; align-items: center; gap: 8px; padding: 11px 22px; background: var(--text); color: #fff; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; border: none; border-radius: var(--radius-sm); cursor: pointer; transition: opacity 0.15s; white-space: nowrap; }
+  .btn-pdf:hover { opacity: 0.85; }
+  .btn-pdf svg { width: 14px; height: 14px; flex-shrink: 0; }
+  .btn-restart { display: inline-flex; align-items: center; gap: 8px; padding: 11px 22px; background: none; color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 13px; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; margin-top: 1rem; transition: border-color 0.15s, color 0.15s; }
   .btn-restart:hover { border-color: var(--text); color: var(--text); }
   .scope-out { padding: 2rem; background: var(--green-bg); border-radius: var(--radius); border: 1px solid #B7DCC8; margin-top: 1rem; }
   .scope-out-title { font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--green); margin-bottom: 0.5rem; }
@@ -99,12 +110,16 @@
       </div>
     </div>
     <div class="form-group">
-      <label class="form-label">Email <span>(facultatif — pour recevoir vos résultats)</span></label>
+      <label class="form-label">Email <span>(facultatif)</span></label>
       <input type="email" id="user-email" placeholder="vous@entreprise.com">
+      <p class="email-hint">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1.5a4.5 4.5 0 100 9 4.5 4.5 0 000-9zM6 5v3M6 4h.005" stroke="#6B6B62" stroke-width="1.2" stroke-linecap="round"/></svg>
+        Renseignez votre email pour télécharger votre diagnostic en PDF à la fin du questionnaire.
+      </p>
     </div>
     <button class="btn-primary" onclick="startQuestionnaire()">
       Démarrer le diagnostic
-      <svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 7h10M8 3l4 4-4 4" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <svg viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
   </div>
 
@@ -252,111 +267,61 @@ const QUESTIONS = [
 ];
 
 const RATINGS = [
-  {
-    min: 0, max: 15,
-    label: 'Vous pouvez dormir — pour l\'instant',
-    dot: '#2D6A4F', bg: '#EAF3EE', color: '#2D6A4F',
-    summary: 'Votre portefeuille semble bien positionné face au Décret Tertiaire. Les bases essentielles sont en place : enregistrement OPERAT, consommation de référence et plan d\'action. Continuez à suivre votre trajectoire vers l\'objectif 2030.'
-  },
-  {
-    min: 16, max: 35,
-    label: 'Restez vigilant',
-    dot: '#7A5C00', bg: '#FFF8E6', color: '#7A5C00',
-    summary: 'Certains éléments de conformité sont en place, mais des lacunes doivent être comblées avant qu\'elles ne deviennent urgentes. L\'échéance 2030 est plus proche qu\'elle n\'y paraît — c\'est le bon moment pour agir méthodiquement.'
-  },
-  {
-    min: 36, max: 60,
-    label: 'Agissez rapidement',
-    dot: '#8A3A00', bg: '#FFF0E6', color: '#8A3A00',
-    summary: 'Des lacunes importantes en matière de conformité, de monitoring ou de planification des travaux exposent votre portefeuille à un risque réel. Un plan d\'action structuré dans les 6 à 12 prochains mois est nécessaire pour éviter sanctions administratives et dévalorisation des actifs.'
-  },
-  {
-    min: 61, max: 999,
-    label: 'Urgence — agissez maintenant',
-    dot: '#7A1A1A', bg: '#FFF0F0', color: '#7A1A1A',
-    summary: 'Votre portefeuille présente une exposition critique au Décret Tertiaire. Plusieurs étapes fondamentales sont manquantes — de l\'enregistrement OPERAT à la planification des travaux. Une action immédiate est indispensable pour éviter sanctions, complications locatives et perte de valeur des actifs.'
-  }
+  { min: 0, max: 15, label: 'Vous pouvez dormir — pour l\'instant', dot: '#2D6A4F', bg: '#EAF3EE', color: '#2D6A4F',
+    summary: 'Votre portefeuille semble bien positionné face au Décret Tertiaire. Les bases essentielles sont en place : enregistrement OPERAT, consommation de référence et plan d\'action. Continuez à suivre votre trajectoire vers l\'objectif 2030.' },
+  { min: 16, max: 35, label: 'Restez vigilant', dot: '#7A5C00', bg: '#FFF8E6', color: '#7A5C00',
+    summary: 'Certains éléments de conformité sont en place, mais des lacunes doivent être comblées avant qu\'elles ne deviennent urgentes. L\'échéance 2030 est plus proche qu\'elle n\'y paraît — c\'est le bon moment pour agir méthodiquement.' },
+  { min: 36, max: 60, label: 'Agissez rapidement', dot: '#8A3A00', bg: '#FFF0E6', color: '#8A3A00',
+    summary: 'Des lacunes importantes en matière de conformité, de monitoring ou de planification des travaux exposent votre portefeuille à un risque réel. Un plan d\'action structuré dans les 6 à 12 prochains mois est nécessaire pour éviter sanctions administratives et dévalorisation des actifs.' },
+  { min: 61, max: 999, label: 'Urgence — agissez maintenant', dot: '#7A1A1A', bg: '#FFF0F0', color: '#7A1A1A',
+    summary: 'Votre portefeuille présente une exposition critique au Décret Tertiaire. Plusieurs étapes fondamentales sont manquantes — de l\'enregistrement OPERAT à la planification des travaux. Une action immédiate est indispensable pour éviter sanctions, complications locatives et perte de valeur des actifs.' }
 ];
 
 const TODOS = [
-  {
-    trigger: a => a.operat === 2 || a.operat === 3,
-    priority: 'now',
+  { trigger: a => a.operat === 2 || a.operat === 3, priority: 'now',
     text: 'S\'enregistrer sur OPERAT immédiatement',
-    detail: 'Créez un compte sur la plateforme ADEME OPERAT et déclarez les consommations énergétiques de tous les bâtiments concernés. C\'est une obligation légale — les déclarations manquantes ou tardives exposent à des sanctions administratives.'
-  },
-  {
-    trigger: a => a.operat === 1,
-    priority: 'now',
+    detail: 'Créez un compte sur la plateforme ADEME OPERAT et déclarez les consommations énergétiques de tous les bâtiments concernés. C\'est une obligation légale — les déclarations manquantes ou tardives exposent à des sanctions administratives.' },
+  { trigger: a => a.operat === 1, priority: 'now',
     text: 'Compléter l\'enregistrement OPERAT pour tous les bâtiments',
-    detail: 'Certains de vos bâtiments ne sont pas encore enregistrés. Priorisez les actifs les plus grands et les plus consommateurs pour réduire votre exposition juridique.'
-  },
-  {
-    trigger: a => a.surface === 1,
-    priority: 'now',
+    detail: 'Certains de vos bâtiments ne sont pas encore enregistrés. Priorisez les actifs les plus grands et les plus consommateurs pour réduire votre exposition juridique.' },
+  { trigger: a => a.surface === 1, priority: 'now',
     text: 'Auditer les surfaces du portefeuille pour confirmer le périmètre',
-    detail: 'Vous n\'êtes pas certain des bâtiments qui atteignent le seuil de 1 000 m². Rappel : les surfaces sont cumulatives entre locataires sur un même site. Établissez une liste définitive des bâtiments assujettis avant toute autre action.'
-  },
-  {
-    trigger: a => a.cref === 2 || a.cref === 3,
-    priority: 'now',
+    detail: 'Vous n\'êtes pas certain des bâtiments qui atteignent le seuil de 1 000 m². Rappel : les surfaces sont cumulatives entre locataires sur un même site. Établissez une liste définitive des bâtiments assujettis avant toute autre action.' },
+  { trigger: a => a.cref === 2 || a.cref === 3, priority: 'now',
     text: 'Définir la consommation de référence (Cref)',
-    detail: 'Sans Cref, vous ne pouvez pas calculer votre écart à l\'objectif ni planifier les travaux. Choisissez une année entre 2010 et 2019 avec des données de consommation fiables et enregistrez-la sur OPERAT.'
-  },
-  {
-    trigger: a => a.leases === 1 || a.leases === 2 || a.leases === 3,
-    priority: 'now',
+    detail: 'Sans Cref, vous ne pouvez pas calculer votre écart à l\'objectif ni planifier les travaux. Choisissez une année entre 2010 et 2019 avec des données de consommation fiables et enregistrez-la sur OPERAT.' },
+  { trigger: a => a.leases === 1 || a.leases === 2 || a.leases === 3, priority: 'now',
     text: 'Intégrer des clauses vertes dans vos baux',
-    detail: 'Vos baux doivent préciser qui déclare sur OPERAT, qui finance les travaux d\'efficacité énergétique et comment les coûts sont répartis. Cela concerne les baux existants (avenant) et tous les nouveaux baux à venir.'
-  },
-  {
-    trigger: a => a.gap === 2,
-    priority: 'soon',
+    detail: 'Vos baux doivent préciser qui déclare sur OPERAT, qui finance les travaux d\'efficacité énergétique et comment les coûts sont répartis. Cela concerne les baux existants (avenant) et tous les nouveaux baux à venir.' },
+  { trigger: a => a.gap === 2, priority: 'soon',
     text: 'Commander une analyse des écarts par bâtiment',
-    detail: 'Comparez la consommation actuelle à la Cref pour quantifier précisément l\'effort restant avant l\'objectif −40 %. C\'est le point de départ indispensable pour votre plan de CAPEX rénovation.'
-  },
-  {
-    trigger: a => a.audit === 1 || a.audit === 2,
-    priority: 'soon',
+    detail: 'Comparez la consommation actuelle à la Cref pour quantifier précisément l\'effort restant avant l\'objectif −40 %. C\'est le point de départ indispensable pour votre plan de CAPEX rénovation.' },
+  { trigger: a => a.audit === 1 || a.audit === 2, priority: 'soon',
     text: 'Réaliser des audits énergétiques sur les bâtiments non audités',
-    detail: 'Les audits identifient les leviers d\'économies (isolation, CVC, éclairage, usages) et sont généralement requis pour accéder aux aides à la rénovation. Commencez par les actifs les plus consommateurs ou classés F/G.'
-  },
-  {
-    trigger: a => a.audit === 3,
-    priority: 'soon',
+    detail: 'Les audits identifient les leviers d\'économies (isolation, CVC, éclairage, usages) et sont généralement requis pour accéder aux aides à la rénovation. Commencez par les actifs les plus consommateurs ou classés F/G.' },
+  { trigger: a => a.audit === 3, priority: 'soon',
     text: 'Mettre à jour les audits énergétiques obsolètes',
-    detail: 'Les audits antérieurs à 2019 ne s\'inscrivent pas dans le cadre du Décret Tertiaire. Mettez-les à jour pour les aligner sur les objectifs actuels et en faire la base de votre feuille de route de rénovation.'
-  },
-  {
-    trigger: a => a.bacs === 1 || a.bacs === 2 || a.bacs === 3,
-    priority: 'soon',
+    detail: 'Les audits antérieurs à 2019 ne s\'inscrivent pas dans le cadre du Décret Tertiaire. Mettez-les à jour pour les aligner sur les objectifs actuels et en faire la base de votre feuille de route de rénovation.' },
+  { trigger: a => a.bacs === 1 || a.bacs === 2 || a.bacs === 3, priority: 'soon',
     text: 'Installer un sous-comptage et un système GTB / BACS',
-    detail: 'Le Décret BACS (2025) impose des systèmes d\'automatisation dans la plupart des bâtiments tertiaires. Le sous-comptage permet également des déclarations OPERAT précises et un suivi continu des performances.'
-  },
-  {
-    trigger: a => a.roadmap === 1 || a.roadmap === 2 || a.roadmap === 3,
-    priority: 'plan',
+    detail: 'Le Décret BACS (2025) impose des systèmes d\'automatisation dans la plupart des bâtiments tertiaires. Le sous-comptage permet également des déclarations OPERAT précises et un suivi continu des performances.' },
+  { trigger: a => a.roadmap === 1 || a.roadmap === 2 || a.roadmap === 3, priority: 'plan',
     text: 'Élaborer une feuille de route pluriannuelle de rénovation',
-    detail: 'Traduisez vos analyses d\'écarts et résultats d\'audits en programme de travaux priorisé, avec coûts, calendrier et répartition des responsabilités (bailleur/preneur). Budgétisez la fenêtre 2025–2030, puis modélisez 2031–2040.'
-  },
-  {
-    trigger: a => a.dpe === 3 || a.dpe === 4,
-    priority: 'plan',
+    detail: 'Traduisez vos analyses d\'écarts et résultats d\'audits en programme de travaux priorisé, avec coûts, calendrier et répartition des responsabilités (bailleur/preneur). Budgétisez la fenêtre 2025–2030, puis modélisez 2031–2040.' },
+  { trigger: a => a.dpe === 3 || a.dpe === 4, priority: 'plan',
     text: 'Prioriser les actifs F/G dans votre plan de rénovation',
-    detail: 'Vos actifs les moins performants concentrent le risque réglementaire le plus élevé et les coûts de rénovation les plus importants. Modélisez leurs trajectoires individuelles — certains nécessitent une rénovation lourde (isolation, remplacement CVC complet) qui demande des délais longs.'
-  },
-  {
-    trigger: a => a.roadmap === 2,
-    priority: 'plan',
+    detail: 'Vos actifs les moins performants concentrent le risque réglementaire le plus élevé et les coûts de rénovation les plus importants. Modélisez leurs trajectoires individuelles — certains nécessitent une rénovation lourde (isolation, remplacement CVC complet) qui demande des délais longs.' },
+  { trigger: a => a.roadmap === 2, priority: 'plan',
     text: 'Finaliser le budget de la feuille de route de rénovation',
-    detail: 'Vous avez un plan en cours d\'élaboration — il faut maintenant un engagement financier. Modélisez les scénarios (conformité minimale vs rénovation à valeur ajoutée) et soumettez-les aux décideurs pour validation avant la fin de l\'année.'
-  }
+    detail: 'Vous avez un plan en cours d\'élaboration — il faut maintenant un engagement financier. Modélisez les scénarios (conformité minimale vs rénovation à valeur ajoutée) et soumettez-les aux décideurs pour validation avant la fin de l\'année.' }
 ];
 
 let currentQ = 0;
 let answers = {};
 let userRole = '';
 let userEmail = '';
+let lastRating = null;
+let lastTodos = [];
 
 function startQuestionnaire() {
   userRole = document.getElementById('user-role').value || 'Non renseigné';
@@ -381,7 +346,6 @@ function renderQuestion(idx) {
   document.getElementById('q-number').textContent = `Question ${idx + 1}`;
   document.getElementById('q-text').textContent = q.text;
   document.getElementById('q-hint').textContent = q.hint || '';
-
   const list = document.getElementById('options-list');
   list.innerHTML = '';
   q.options.forEach((opt, i) => {
@@ -391,7 +355,6 @@ function renderQuestion(idx) {
     btn.onclick = () => selectOption(i);
     list.appendChild(btn);
   });
-
   const nextBtn = document.getElementById('btn-next');
   const isLast = idx === QUESTIONS.length - 1;
   if (answers[q.id] !== undefined) {
@@ -448,10 +411,15 @@ function priorityLabel(p) {
   return '<span class="todo-priority priority-plan">À planifier</span>';
 }
 
+function priorityText(p) {
+  if (p === 'now') return 'MAINTENANT';
+  if (p === 'soon') return 'RAPIDEMENT';
+  return 'A PLANIFIER';
+}
+
 function showResults(outOfScope) {
   showScreen('screen-results');
   const container = document.getElementById('results-content');
-
   if (outOfScope) {
     container.innerHTML = `
       <div class="scope-out">
@@ -466,10 +434,34 @@ function showResults(outOfScope) {
   const score = computeScore();
   const rating = getRating(score);
   const todos = getTodos();
+  lastRating = rating;
+  lastTodos = todos;
 
   const todosHTML = todos.length === 0
     ? '<p style="font-size:14px;color:var(--muted);padding:1rem 0;">Aucune action spécifique identifiée — votre posture de conformité semble solide. Maintenez un suivi annuel de vos consommations.</p>'
     : todos.map(t => `<div class="todo-item">${priorityLabel(t.priority)}<div class="todo-content"><p class="todo-text">${t.text}</p><p class="todo-detail">${t.detail}</p></div></div>`).join('');
+
+  const pdfBlock = userEmail
+    ? `<div class="pdf-section">
+        <p class="pdf-section-title">Télécharger votre diagnostic en PDF</p>
+        <p class="pdf-section-sub">Un récapitulatif complet de votre résultat et de votre plan d'action, prêt à partager.</p>
+        <button class="btn-pdf" onclick="generatePDF()">
+          <svg viewBox="0 0 14 14" fill="none"><path d="M7 1v8M4 6l3 3 3-3M2 10v1a1 1 0 001 1h8a1 1 0 001-1v-1" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Télécharger le PDF
+        </button>
+      </div>`
+    : `<div class="pdf-section">
+        <p class="pdf-section-title">Télécharger votre diagnostic en PDF</p>
+        <p class="pdf-section-sub">Renseignez votre email pour générer un récapitulatif complet, prêt à partager avec vos équipes.</p>
+        <div class="pdf-email-row">
+          <input type="email" id="pdf-email-input" placeholder="vous@entreprise.com">
+          <button class="btn-pdf" onclick="collectEmailAndPDF()">
+            <svg viewBox="0 0 14 14" fill="none"><path d="M7 1v8M4 6l3 3 3-3M2 10v1a1 1 0 001 1h8a1 1 0 001-1v-1" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Télécharger
+          </button>
+        </div>
+        <p id="pdf-email-error" style="font-size:12px;color:#7A1A1A;margin-top:6px;display:none;">Veuillez saisir une adresse email valide.</p>
+      </div>`;
 
   container.innerHTML = `
     <div class="result-rating" style="background:${rating.bg};color:${rating.color};">
@@ -484,37 +476,190 @@ function showResults(outOfScope) {
     <div class="result-footer">
       <strong>Vous souhaitez aller plus loin ?</strong> Ce diagnostic est un point de départ. Une revue de conformité complète comprend une analyse bâtiment par bâtiment, un audit des baux et un budget pluriannuel de rénovation. Faites-vous accompagner par un spécialiste pour construire votre feuille de route Décret Tertiaire.
     </div>
+    ${pdfBlock}
     <button class="btn-restart" onclick="restart()">← Recommencer</button>`;
 
   submitToFormspree(score, rating.label, todos);
 }
 
+function collectEmailAndPDF() {
+  const input = document.getElementById('pdf-email-input');
+  const error = document.getElementById('pdf-email-error');
+  const val = input ? input.value.trim() : '';
+  if (!val || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) {
+    if (error) error.style.display = 'block';
+    return;
+  }
+  if (error) error.style.display = 'none';
+  userEmail = val;
+  submitToFormspree(computeScore(), lastRating ? lastRating.label : '', lastTodos);
+  generatePDF();
+}
+
+function generatePDF() {
+  if (!window.jspdf || !window.jspdf.jsPDF) {
+    alert("Le generateur PDF n'a pas pu se charger. Verifiez votre connexion internet et rechargez la page.");
+    return;
+  }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const W = 210;
+  const margin = 20;
+  const contentW = W - margin * 2;
+  let y = 0;
+
+  function checkPage(needed) {
+    if (y + needed > 275) { doc.addPage(); y = 20; }
+  }
+
+  function wrapText(text, x, startY, maxW, lineH, fontSize, color, bold) {
+    doc.setFontSize(fontSize);
+    doc.setTextColor(...color);
+    if (bold) doc.setFont('helvetica', 'bold'); else doc.setFont('helvetica', 'normal');
+    const lines = doc.splitTextToSize(text, maxW);
+    lines.forEach(line => { checkPage(lineH + 2); doc.text(line, x, startY); startY += lineH; y = startY; });
+    return startY;
+  }
+
+  const rating = lastRating;
+  const todos = lastTodos;
+  const date = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  // Header band
+  doc.setFillColor(26, 26, 24);
+  doc.rect(0, 0, W, 28, 'F');
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(180, 180, 170);
+  doc.text('DECRET TERTIAIRE  ·  AUTO-DIAGNOSTIC', margin, 11);
+  doc.setFontSize(8);
+  doc.text(date, margin, 18);
+  if (userRole && userRole !== 'Non renseigné') doc.text(userRole, W - margin, 18, { align: 'right' });
+
+  y = 42;
+
+  // Rating pill (simulated as rect)
+  const ratingColors = {
+    '#2D6A4F': [45, 106, 79], '#7A5C00': [122, 92, 0],
+    '#8A3A00': [138, 58, 0], '#7A1A1A': [122, 26, 26]
+  };
+  const rc = ratingColors[rating.dot] || [100, 100, 100];
+  doc.setFillColor(...rc);
+  doc.roundedRect(margin, y - 5, 8, 8, 2, 2, 'F');
+  doc.setFontSize(13);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...rc);
+  doc.text(rating.label, margin + 12, y + 0.5);
+  y += 14;
+
+  // Summary
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(80, 80, 74);
+  const summaryLines = doc.splitTextToSize(rating.summary, contentW);
+  summaryLines.forEach(line => { doc.text(line, margin, y); y += 5.5; });
+  y += 6;
+
+  // Divider
+  doc.setDrawColor(210, 208, 200);
+  doc.setLineWidth(0.3);
+  doc.line(margin, y, W - margin, y);
+  y += 8;
+
+  // Actions title
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(130, 130, 120);
+  doc.text('VOTRE PLAN D\'ACTION', margin, y);
+  y += 10;
+
+  if (todos.length === 0) {
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(100, 100, 94);
+    doc.text('Aucune action spécifique identifiée. Maintenez un suivi annuel de vos consommations.', margin, y);
+    y += 8;
+  } else {
+    const priorityColors = {
+      now: { fill: [253, 236, 234], text: [122, 26, 26], label: 'MAINTENANT' },
+      soon: { fill: [254, 243, 230], text: [138, 58, 0], label: 'RAPIDEMENT' },
+      plan: { fill: [234, 243, 238], text: [45, 106, 79], label: 'A PLANIFIER' }
+    };
+
+    todos.forEach(todo => {
+      checkPage(30);
+      const pc = priorityColors[todo.priority];
+
+      // Priority badge
+      doc.setFillColor(...pc.fill);
+      doc.roundedRect(margin, y - 4, 26, 6, 1, 1, 'F');
+      doc.setFontSize(7);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...pc.text);
+      doc.text(pc.label, margin + 13, y, { align: 'center' });
+
+      // Todo title
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(26, 26, 24);
+      const titleLines = doc.splitTextToSize(todo.text, contentW - 32);
+      titleLines.forEach(line => { doc.text(line, margin + 32, y); y += 5.5; });
+      y += 1;
+
+      // Todo detail
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(100, 100, 94);
+      const detailLines = doc.splitTextToSize(todo.detail, contentW);
+      detailLines.forEach(line => { checkPage(6); doc.text(line, margin, y); y += 5; });
+
+      // Separator
+      y += 3;
+      doc.setDrawColor(224, 221, 214);
+      doc.setLineWidth(0.2);
+      doc.line(margin, y, W - margin, y);
+      y += 7;
+    });
+  }
+
+  // Footer
+  checkPage(20);
+  y += 4;
+  doc.setDrawColor(210, 208, 200);
+  doc.setLineWidth(0.3);
+  doc.line(margin, y, W - margin, y);
+  y += 6;
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(160, 160, 150);
+  doc.text('Ce diagnostic est un outil d\'orientation. Il ne constitue pas un avis juridique ou reglementaire.', margin, y);
+  y += 5;
+  doc.text('Pour une analyse complete, faites-vous accompagner par un specialiste du Decret Tertiaire.', margin, y);
+
+  doc.save('diagnostic-decret-tertiaire.pdf');
+}
+
 function submitToFormspree(score, ratingLabel, todos) {
   const FORMSPREE_ID = 'xgonzwrp';
-  const todoTexts = todos.map(t => `[${t.priority.toUpperCase()}] ${t.text}`).join('\n');
+  if (!userEmail) return;
+  const todoTexts = todos.map(t => `[${priorityText(t.priority)}] ${t.text}`).join('\n');
   const answerSummary = QUESTIONS.map(q => {
     const sel = answers[q.id];
     if (sel === undefined) return null;
     return `${q.id}: ${q.options[sel]?.label || '—'}`;
   }).filter(Boolean).join('\n');
-
   fetch(`https://formspree.io/f/${FORMSPREE_ID}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-    body: JSON.stringify({
-      fonction: userRole,
-      email: userEmail || 'Non renseigné',
-      score: score,
-      resultat: ratingLabel,
-      actions: todoTexts,
-      reponses: answerSummary
-    })
+    body: JSON.stringify({ fonction: userRole, email: userEmail, score, resultat: ratingLabel, actions: todoTexts, reponses: answerSummary })
   }).catch(() => {});
 }
 
 function restart() {
   answers = {};
   currentQ = 0;
+  lastRating = null;
+  lastTodos = [];
   showScreen('screen-intro');
 }
 </script>
