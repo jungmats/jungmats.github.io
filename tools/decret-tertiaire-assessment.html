@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Décret Tertiaire — Auto-diagnostic</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #F5F3EE; --surface: #FFFFFF; --text: #1A1A18; --muted: #6B6B62;
+    --border: #E0DDD6; --green: #2D6A4F; --green-bg: #EAF3EE;
+    --radius: 12px; --radius-sm: 8px;
+  }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 2rem 1rem 4rem; }
+  .shell { width: 100%; max-width: 640px; }
+  .top-label { font-size: 11px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 2.5rem; padding-top: 0.5rem; }
+  .screen { display: none; }
+  .screen.active { display: block; }
+  .intro-eyebrow { font-family: 'DM Serif Display', serif; font-style: italic; font-size: 13px; color: var(--muted); margin-bottom: 0.5rem; }
+  .intro-title { font-family: 'DM Serif Display', serif; font-size: 38px; line-height: 1.15; color: var(--text); margin-bottom: 1.25rem; }
+  .intro-body { font-size: 15px; line-height: 1.7; color: var(--muted); margin-bottom: 2rem; max-width: 520px; }
+  .form-group { margin-bottom: 1.25rem; }
+  .form-label { display: block; font-size: 12px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+  .form-label span { font-weight: 300; text-transform: none; letter-spacing: 0; color: var(--muted); opacity: 0.7; }
+  select, input[type="email"] { width: 100%; padding: 11px 14px; font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); appearance: none; outline: none; transition: border-color 0.15s; }
+  select:focus, input[type="email"]:focus { border-color: var(--text); }
+  .select-wrap { position: relative; }
+  .select-wrap::after { content: ''; position: absolute; right: 14px; top: 50%; transform: translateY(-50%); width: 0; height: 0; border-left: 4px solid transparent; border-right: 4px solid transparent; border-top: 5px solid var(--muted); pointer-events: none; }
+  .btn-primary { display: inline-flex; align-items: center; gap: 8px; padding: 13px 28px; background: var(--text); color: #fff; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; border: none; border-radius: var(--radius-sm); cursor: pointer; transition: opacity 0.15s; margin-top: 0.75rem; }
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-primary svg { width: 14px; height: 14px; }
+  .progress-wrap { margin-bottom: 2.5rem; }
+  .progress-meta { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+  .progress-track { height: 2px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--text); border-radius: 2px; transition: width 0.35s ease; }
+  .q-number { font-family: 'DM Serif Display', serif; font-style: italic; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  .q-text { font-family: 'DM Serif Display', serif; font-size: 26px; line-height: 1.3; color: var(--text); margin-bottom: 0.5rem; }
+  .q-hint { font-size: 13px; color: var(--muted); margin-bottom: 1.75rem; line-height: 1.5; }
+  .options { display: flex; flex-direction: column; gap: 8px; margin-bottom: 2rem; }
+  .opt { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; transition: border-color 0.15s, background 0.15s; font-size: 14px; line-height: 1.45; color: var(--text); text-align: left; }
+  .opt:hover { border-color: #BBBAB2; }
+  .opt.selected { border-color: var(--text); background: #F8F7F3; }
+  .opt-dot { width: 16px; height: 16px; border: 1.5px solid var(--border); border-radius: 50%; flex-shrink: 0; margin-top: 1px; transition: border-color 0.15s, background 0.15s; position: relative; }
+  .opt.selected .opt-dot { border-color: var(--text); background: var(--text); }
+  .opt.selected .opt-dot::after { content: ''; position: absolute; top: 3px; left: 3px; width: 6px; height: 6px; border-radius: 50%; background: #fff; }
+  .opt-label { flex: 1; }
+  .opt-sublabel { font-size: 12px; color: var(--muted); display: block; margin-top: 2px; }
+  .nav-row { display: flex; justify-content: space-between; align-items: center; }
+  .btn-back { font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--muted); background: none; border: none; cursor: pointer; padding: 0; display: flex; align-items: center; gap: 6px; transition: color 0.15s; }
+  .btn-back:hover { color: var(--text); }
+  .btn-next { display: inline-flex; align-items: center; gap: 8px; padding: 11px 24px; background: var(--text); color: #fff; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; border: none; border-radius: var(--radius-sm); cursor: pointer; transition: opacity 0.15s; opacity: 0.3; pointer-events: none; }
+  .btn-next.enabled { opacity: 1; pointer-events: all; }
+  .btn-next:hover { opacity: 0.85; }
+  .result-rating { display: inline-flex; align-items: center; gap: 10px; padding: 8px 18px; border-radius: 100px; font-size: 14px; font-weight: 500; margin-bottom: 1.5rem; }
+  .rating-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .result-title { font-family: 'DM Serif Display', serif; font-size: 32px; line-height: 1.2; margin-bottom: 0.75rem; }
+  .result-summary { font-size: 15px; line-height: 1.7; color: var(--muted); margin-bottom: 2rem; max-width: 520px; }
+  .divider { height: 1px; background: var(--border); margin: 2rem 0; }
+  .todos-title { font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 1rem; }
+  .todo-item { display: flex; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--border); }
+  .todo-item:last-child { border-bottom: none; }
+  .todo-priority { font-size: 11px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 8px; border-radius: 4px; white-space: nowrap; height: fit-content; margin-top: 1px; }
+  .priority-now { background: #FDECEA; color: #7A1A1A; }
+  .priority-soon { background: #FEF3E6; color: #8A3A00; }
+  .priority-plan { background: #EAF3EE; color: #2D6A4F; }
+  .todo-text { font-size: 14px; line-height: 1.5; color: var(--text); font-weight: 500; }
+  .todo-detail { font-size: 13px; color: var(--muted); margin-top: 3px; line-height: 1.5; }
+  .result-footer { margin-top: 2.5rem; padding: 1.25rem 1.5rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .result-footer strong { color: var(--text); font-weight: 500; }
+  .btn-restart { display: inline-flex; align-items: center; gap: 8px; padding: 11px 22px; background: none; color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 13px; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; margin-top: 1.5rem; transition: border-color 0.15s, color 0.15s; }
+  .btn-restart:hover { border-color: var(--text); color: var(--text); }
+  .scope-out { padding: 2rem; background: var(--green-bg); border-radius: var(--radius); border: 1px solid #B7DCC8; margin-top: 1rem; }
+  .scope-out-title { font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--green); margin-bottom: 0.5rem; }
+  .scope-out-body { font-size: 14px; color: var(--green); line-height: 1.6; opacity: 0.85; }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="top-label">Décret Tertiaire · Auto-diagnostic</div>
+
+  <div class="screen active" id="screen-intro">
+    <p class="intro-eyebrow">Êtes-vous concerné ?</p>
+    <h1 class="intro-title">Faites le point<br>en 5 minutes.</h1>
+    <p class="intro-body">Répondez à 10 questions sur votre patrimoine et découvrez votre niveau d'exposition au Décret Tertiaire — ainsi que les actions prioritaires à mettre en œuvre.</p>
+    <div class="form-group">
+      <label class="form-label">Votre fonction</label>
+      <div class="select-wrap">
+        <select id="user-role">
+          <option value="">Sélectionnez votre fonction…</option>
+          <option value="Gestionnaire d'actifs">Gestionnaire d'actifs</option>
+          <option value="Gestionnaire immobilier">Gestionnaire immobilier</option>
+          <option value="Responsable technique / Facility Manager">Responsable technique / Facility Manager</option>
+          <option value="Investisseur immobilier">Investisseur immobilier</option>
+          <option value="Directeur financier / DAF">Directeur financier / DAF</option>
+          <option value="Responsable développement durable">Responsable développement durable</option>
+          <option value="Autre">Autre</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Email <span>(facultatif — pour recevoir vos résultats)</span></label>
+      <input type="email" id="user-email" placeholder="vous@entreprise.com">
+    </div>
+    <button class="btn-primary" onclick="startQuestionnaire()">
+      Démarrer le diagnostic
+      <svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 7h10M8 3l4 4-4 4" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </div>
+
+  <div class="screen" id="screen-questions">
+    <div class="progress-wrap">
+      <div class="progress-meta">
+        <span id="q-progress-label">Question 1 sur 10</span>
+        <span id="q-progress-pct">0%</span>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    </div>
+    <p class="q-number" id="q-number">Question 1</p>
+    <h2 class="q-text" id="q-text"></h2>
+    <p class="q-hint" id="q-hint"></p>
+    <div class="options" id="options-list"></div>
+    <div class="nav-row">
+      <button class="btn-back" id="btn-back" onclick="goBack()">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M10 7H2M5 3L1 7l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Retour
+      </button>
+      <button class="btn-next" id="btn-next" onclick="goNext()">
+        Continuer
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-results">
+    <div id="results-content"></div>
+  </div>
+</div>
+
+<script>
+const QUESTIONS = [
+  {
+    id: 'france',
+    text: 'Avez-vous des bâtiments situés en France ?',
+    hint: 'Le Décret Tertiaire est une réglementation française. Il ne s\'applique qu\'aux actifs situés sur le territoire français.',
+    scopeGate: true,
+    options: [
+      { label: 'Oui', sublabel: 'Au moins un actif en France', score: 0 },
+      { label: 'Non', sublabel: 'Portefeuille entièrement hors de France', score: 0, scopeOut: true }
+    ]
+  },
+  {
+    id: 'surface',
+    text: 'Certains de vos bâtiments ont-ils un usage tertiaire ≥ 1 000 m² ?',
+    hint: 'Le seuil est cumulatif : plusieurs locataires ou plusieurs bâtiments sur un même site sont comptabilisés ensemble.',
+    scopeGate: true,
+    options: [
+      { label: 'Oui, clairement', sublabel: 'Un ou plusieurs bâtiments dépassent le seuil', score: 0 },
+      { label: 'Peut-être — je ne suis pas certain', sublabel: 'Surfaces mixtes ou incertaines', score: 5 },
+      { label: 'Non', sublabel: 'Tous les bâtiments français sont sous 1 000 m²', score: 0, scopeOut: true }
+    ]
+  },
+  {
+    id: 'operat',
+    text: 'Avez-vous enregistré vos bâtiments sur OPERAT et déclaré vos consommations ?',
+    hint: 'OPERAT est la plateforme de l\'ADEME sur laquelle les données de consommation énergétique doivent être déclarées chaque année.',
+    options: [
+      { label: 'Oui, tous les bâtiments concernés sont enregistrés et à jour', score: 0 },
+      { label: 'Partiellement — certains bâtiments enregistrés, d\'autres non', score: 8 },
+      { label: 'Non — pas encore enregistré', score: 15 },
+      { label: 'Je ne connais pas la plateforme OPERAT', score: 20 }
+    ]
+  },
+  {
+    id: 'cref',
+    text: 'Avez-vous défini votre consommation de référence (Cref) ?',
+    hint: 'La Cref est votre consommation de base — une année entre 2010 et 2019 — à partir de laquelle vos objectifs de réduction sont calculés.',
+    options: [
+      { label: 'Oui, définie et documentée pour tous les bâtiments', score: 0 },
+      { label: 'Pour certains bâtiments seulement', score: 6 },
+      { label: 'Pas encore', score: 12 },
+      { label: 'Je ne sais pas ce que c\'est', score: 15 }
+    ]
+  },
+  {
+    id: 'gap',
+    text: 'Connaissez-vous votre écart par rapport à l\'objectif −40 % d\'ici 2030 ?',
+    hint: 'Il s\'agit de comparer la consommation actuelle à la Cref et de quantifier la réduction encore nécessaire.',
+    options: [
+      { label: 'Oui — nous le suivons et avons une vision claire', score: 0 },
+      { label: 'Approximativement — nous avons une estimation', score: 5 },
+      { label: 'Non — nous ne l\'avons pas évalué', score: 12 },
+      { label: 'Nous sommes déjà proches ou en dessous de l\'objectif', score: 0 }
+    ]
+  },
+  {
+    id: 'leases',
+    text: 'Vos baux incluent-ils des clauses vertes ou clauses énergie ?',
+    hint: 'Ces clauses définissent qui (bailleur ou preneur) est responsable des déclarations OPERAT et du financement des travaux.',
+    options: [
+      { label: 'Oui, tous les baux ont des clauses vertes à jour', score: 0 },
+      { label: 'Certains baux en ont, d\'autres non', score: 7 },
+      { label: 'Non — baux standards sans dispositions énergétiques', score: 12 },
+      { label: 'Je ne suis pas sûr', score: 10 }
+    ]
+  },
+  {
+    id: 'bacs',
+    text: 'Vos bâtiments sont-ils équipés de sous-comptage ou d\'un système GTB / BACS ?',
+    hint: 'Le Décret BACS (2025) impose désormais des systèmes d\'automatisation pour la plupart des bâtiments tertiaires.',
+    options: [
+      { label: 'Oui — GTB complète et sous-comptage en place', score: 0 },
+      { label: 'Partiel — certains bâtiments équipés', score: 6 },
+      { label: 'Non — aucun système de monitoring', score: 12 },
+      { label: 'Je ne sais pas ce que cela couvre', score: 10 }
+    ]
+  },
+  {
+    id: 'audit',
+    text: 'Avez-vous réalisé des audits énergétiques sur vos bâtiments concernés ?',
+    hint: 'Un audit identifie les postes de consommation, les gisements d\'économies et les travaux recommandés.',
+    options: [
+      { label: 'Oui, audits récents sur tous les bâtiments', score: 0 },
+      { label: 'Certains bâtiments audités, d\'autres non', score: 6 },
+      { label: 'Aucun audit réalisé', score: 10 },
+      { label: 'Audits anciens (antérieurs à 2019)', score: 7 }
+    ]
+  },
+  {
+    id: 'roadmap',
+    text: 'Disposez-vous d\'une feuille de route pluriannuelle de rénovation avec budget CAPEX ?',
+    hint: 'Une feuille de route traduit l\'analyse des écarts en travaux priorisés, avec coûts et calendrier.',
+    options: [
+      { label: 'Oui — feuille de route détaillée avec budget validé', score: 0 },
+      { label: 'Plan en cours d\'élaboration, non encore budgété', score: 6 },
+      { label: 'Pas de feuille de route à ce stade', score: 12 },
+      { label: 'Non — et nos locataires maîtrisent la plupart des travaux', score: 10 }
+    ]
+  },
+  {
+    id: 'dpe',
+    text: 'Quelle part de votre portefeuille concerné est classée F ou G au DPE ?',
+    hint: 'Les actifs classés F/G ont les moins bonnes performances énergétiques et nécessitent les investissements les plus importants.',
+    options: [
+      { label: 'Aucun actif F ou G', score: 0 },
+      { label: 'Moins de 20 %', score: 4 },
+      { label: 'Entre 20 % et 50 %', score: 10 },
+      { label: 'Plus de 50 %', score: 18 },
+      { label: 'Je ne connais pas les étiquettes DPE de mon parc', score: 12 }
+    ]
+  }
+];
+
+const RATINGS = [
+  {
+    min: 0, max: 15,
+    label: 'Vous pouvez dormir — pour l\'instant',
+    dot: '#2D6A4F', bg: '#EAF3EE', color: '#2D6A4F',
+    summary: 'Votre portefeuille semble bien positionné face au Décret Tertiaire. Les bases essentielles sont en place : enregistrement OPERAT, consommation de référence et plan d\'action. Continuez à suivre votre trajectoire vers l\'objectif 2030.'
+  },
+  {
+    min: 16, max: 35,
+    label: 'Restez vigilant',
+    dot: '#7A5C00', bg: '#FFF8E6', color: '#7A5C00',
+    summary: 'Certains éléments de conformité sont en place, mais des lacunes doivent être comblées avant qu\'elles ne deviennent urgentes. L\'échéance 2030 est plus proche qu\'elle n\'y paraît — c\'est le bon moment pour agir méthodiquement.'
+  },
+  {
+    min: 36, max: 60,
+    label: 'Agissez rapidement',
+    dot: '#8A3A00', bg: '#FFF0E6', color: '#8A3A00',
+    summary: 'Des lacunes importantes en matière de conformité, de monitoring ou de planification des travaux exposent votre portefeuille à un risque réel. Un plan d\'action structuré dans les 6 à 12 prochains mois est nécessaire pour éviter sanctions administratives et dévalorisation des actifs.'
+  },
+  {
+    min: 61, max: 999,
+    label: 'Urgence — agissez maintenant',
+    dot: '#7A1A1A', bg: '#FFF0F0', color: '#7A1A1A',
+    summary: 'Votre portefeuille présente une exposition critique au Décret Tertiaire. Plusieurs étapes fondamentales sont manquantes — de l\'enregistrement OPERAT à la planification des travaux. Une action immédiate est indispensable pour éviter sanctions, complications locatives et perte de valeur des actifs.'
+  }
+];
+
+const TODOS = [
+  {
+    trigger: a => a.operat === 2 || a.operat === 3,
+    priority: 'now',
+    text: 'S\'enregistrer sur OPERAT immédiatement',
+    detail: 'Créez un compte sur la plateforme ADEME OPERAT et déclarez les consommations énergétiques de tous les bâtiments concernés. C\'est une obligation légale — les déclarations manquantes ou tardives exposent à des sanctions administratives.'
+  },
+  {
+    trigger: a => a.operat === 1,
+    priority: 'now',
+    text: 'Compléter l\'enregistrement OPERAT pour tous les bâtiments',
+    detail: 'Certains de vos bâtiments ne sont pas encore enregistrés. Priorisez les actifs les plus grands et les plus consommateurs pour réduire votre exposition juridique.'
+  },
+  {
+    trigger: a => a.surface === 1,
+    priority: 'now',
+    text: 'Auditer les surfaces du portefeuille pour confirmer le périmètre',
+    detail: 'Vous n\'êtes pas certain des bâtiments qui atteignent le seuil de 1 000 m². Rappel : les surfaces sont cumulatives entre locataires sur un même site. Établissez une liste définitive des bâtiments assujettis avant toute autre action.'
+  },
+  {
+    trigger: a => a.cref === 2 || a.cref === 3,
+    priority: 'now',
+    text: 'Définir la consommation de référence (Cref)',
+    detail: 'Sans Cref, vous ne pouvez pas calculer votre écart à l\'objectif ni planifier les travaux. Choisissez une année entre 2010 et 2019 avec des données de consommation fiables et enregistrez-la sur OPERAT.'
+  },
+  {
+    trigger: a => a.leases === 1 || a.leases === 2 || a.leases === 3,
+    priority: 'now',
+    text: 'Intégrer des clauses vertes dans vos baux',
+    detail: 'Vos baux doivent préciser qui déclare sur OPERAT, qui finance les travaux d\'efficacité énergétique et comment les coûts sont répartis. Cela concerne les baux existants (avenant) et tous les nouveaux baux à venir.'
+  },
+  {
+    trigger: a => a.gap === 2,
+    priority: 'soon',
+    text: 'Commander une analyse des écarts par bâtiment',
+    detail: 'Comparez la consommation actuelle à la Cref pour quantifier précisément l\'effort restant avant l\'objectif −40 %. C\'est le point de départ indispensable pour votre plan de CAPEX rénovation.'
+  },
+  {
+    trigger: a => a.audit === 1 || a.audit === 2,
+    priority: 'soon',
+    text: 'Réaliser des audits énergétiques sur les bâtiments non audités',
+    detail: 'Les audits identifient les leviers d\'économies (isolation, CVC, éclairage, usages) et sont généralement requis pour accéder aux aides à la rénovation. Commencez par les actifs les plus consommateurs ou classés F/G.'
+  },
+  {
+    trigger: a => a.audit === 3,
+    priority: 'soon',
+    text: 'Mettre à jour les audits énergétiques obsolètes',
+    detail: 'Les audits antérieurs à 2019 ne s\'inscrivent pas dans le cadre du Décret Tertiaire. Mettez-les à jour pour les aligner sur les objectifs actuels et en faire la base de votre feuille de route de rénovation.'
+  },
+  {
+    trigger: a => a.bacs === 1 || a.bacs === 2 || a.bacs === 3,
+    priority: 'soon',
+    text: 'Installer un sous-comptage et un système GTB / BACS',
+    detail: 'Le Décret BACS (2025) impose des systèmes d\'automatisation dans la plupart des bâtiments tertiaires. Le sous-comptage permet également des déclarations OPERAT précises et un suivi continu des performances.'
+  },
+  {
+    trigger: a => a.roadmap === 1 || a.roadmap === 2 || a.roadmap === 3,
+    priority: 'plan',
+    text: 'Élaborer une feuille de route pluriannuelle de rénovation',
+    detail: 'Traduisez vos analyses d\'écarts et résultats d\'audits en programme de travaux priorisé, avec coûts, calendrier et répartition des responsabilités (bailleur/preneur). Budgétisez la fenêtre 2025–2030, puis modélisez 2031–2040.'
+  },
+  {
+    trigger: a => a.dpe === 3 || a.dpe === 4,
+    priority: 'plan',
+    text: 'Prioriser les actifs F/G dans votre plan de rénovation',
+    detail: 'Vos actifs les moins performants concentrent le risque réglementaire le plus élevé et les coûts de rénovation les plus importants. Modélisez leurs trajectoires individuelles — certains nécessitent une rénovation lourde (isolation, remplacement CVC complet) qui demande des délais longs.'
+  },
+  {
+    trigger: a => a.roadmap === 2,
+    priority: 'plan',
+    text: 'Finaliser le budget de la feuille de route de rénovation',
+    detail: 'Vous avez un plan en cours d\'élaboration — il faut maintenant un engagement financier. Modélisez les scénarios (conformité minimale vs rénovation à valeur ajoutée) et soumettez-les aux décideurs pour validation avant la fin de l\'année.'
+  }
+];
+
+let currentQ = 0;
+let answers = {};
+let userRole = '';
+let userEmail = '';
+
+function startQuestionnaire() {
+  userRole = document.getElementById('user-role').value || 'Non renseigné';
+  userEmail = document.getElementById('user-email').value || '';
+  showScreen('screen-questions');
+  renderQuestion(0);
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function renderQuestion(idx) {
+  const q = QUESTIONS[idx];
+  currentQ = idx;
+  const total = QUESTIONS.length;
+  const pct = Math.round((idx / total) * 100);
+  document.getElementById('q-progress-label').textContent = `Question ${idx + 1} sur ${total}`;
+  document.getElementById('q-progress-pct').textContent = `${pct}\u00a0%`;
+  document.getElementById('progress-fill').style.width = `${pct}%`;
+  document.getElementById('q-number').textContent = `Question ${idx + 1}`;
+  document.getElementById('q-text').textContent = q.text;
+  document.getElementById('q-hint').textContent = q.hint || '';
+
+  const list = document.getElementById('options-list');
+  list.innerHTML = '';
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt' + (answers[q.id] === i ? ' selected' : '');
+    btn.innerHTML = `<span class="opt-dot"></span><span class="opt-label">${opt.label}${opt.sublabel ? `<span class="opt-sublabel">${opt.sublabel}</span>` : ''}</span>`;
+    btn.onclick = () => selectOption(i);
+    list.appendChild(btn);
+  });
+
+  const nextBtn = document.getElementById('btn-next');
+  const isLast = idx === QUESTIONS.length - 1;
+  if (answers[q.id] !== undefined) {
+    nextBtn.classList.add('enabled');
+    nextBtn.innerHTML = (isLast ? 'Voir mes résultats' : 'Continuer') + ' <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  } else {
+    nextBtn.classList.remove('enabled');
+    nextBtn.innerHTML = 'Continuer <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  }
+  document.getElementById('btn-back').style.visibility = idx === 0 ? 'hidden' : 'visible';
+}
+
+function selectOption(i) {
+  const q = QUESTIONS[currentQ];
+  answers[q.id] = i;
+  document.querySelectorAll('.opt').forEach((b, idx) => b.classList.toggle('selected', idx === i));
+  const nextBtn = document.getElementById('btn-next');
+  nextBtn.classList.add('enabled');
+  const isLast = currentQ === QUESTIONS.length - 1;
+  nextBtn.innerHTML = (isLast ? 'Voir mes résultats' : 'Continuer') + ' <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+}
+
+function goNext() {
+  const q = QUESTIONS[currentQ];
+  const sel = answers[q.id];
+  if (sel === undefined) return;
+  if (q.scopeGate && q.options[sel].scopeOut) { showResults(true); return; }
+  if (currentQ < QUESTIONS.length - 1) { renderQuestion(currentQ + 1); } else { showResults(false); }
+}
+
+function goBack() {
+  if (currentQ > 0) renderQuestion(currentQ - 1);
+}
+
+function computeScore() {
+  let score = 0;
+  QUESTIONS.forEach(q => { const sel = answers[q.id]; if (sel !== undefined && q.options[sel]) score += q.options[sel].score || 0; });
+  return score;
+}
+
+function getRating(score) {
+  return RATINGS.find(r => score >= r.min && score <= r.max) || RATINGS[RATINGS.length - 1];
+}
+
+function getTodos() {
+  const m = {};
+  QUESTIONS.forEach(q => { if (answers[q.id] !== undefined) m[q.id] = answers[q.id]; });
+  return TODOS.filter(t => t.trigger(m));
+}
+
+function priorityLabel(p) {
+  if (p === 'now') return '<span class="todo-priority priority-now">Maintenant</span>';
+  if (p === 'soon') return '<span class="todo-priority priority-soon">Rapidement</span>';
+  return '<span class="todo-priority priority-plan">À planifier</span>';
+}
+
+function showResults(outOfScope) {
+  showScreen('screen-results');
+  const container = document.getElementById('results-content');
+
+  if (outOfScope) {
+    container.innerHTML = `
+      <div class="scope-out">
+        <h2 class="scope-out-title">Bonne nouvelle — vous n'êtes pas concerné.</h2>
+        <p class="scope-out-body">D'après vos réponses, le Décret Tertiaire ne s'applique pas à votre portefeuille. Soit vos bâtiments sont situés hors de France, soit aucun de vos actifs français n'atteint le seuil tertiaire de 1 000 m².<br><br>Si votre portefeuille évolue — nouvelles acquisitions en France, changement d'usage ou extension de surfaces — pensez à refaire ce diagnostic.</p>
+      </div>
+      <button class="btn-restart" onclick="restart()">← Recommencer</button>`;
+    submitToFormspree(0, 'Hors périmètre', []);
+    return;
+  }
+
+  const score = computeScore();
+  const rating = getRating(score);
+  const todos = getTodos();
+
+  const todosHTML = todos.length === 0
+    ? '<p style="font-size:14px;color:var(--muted);padding:1rem 0;">Aucune action spécifique identifiée — votre posture de conformité semble solide. Maintenez un suivi annuel de vos consommations.</p>'
+    : todos.map(t => `<div class="todo-item">${priorityLabel(t.priority)}<div class="todo-content"><p class="todo-text">${t.text}</p><p class="todo-detail">${t.detail}</p></div></div>`).join('');
+
+  container.innerHTML = `
+    <div class="result-rating" style="background:${rating.bg};color:${rating.color};">
+      <span class="rating-dot" style="background:${rating.dot};"></span>
+      ${rating.label}
+    </div>
+    <h2 class="result-title">Ce que votre score<br>signifie concrètement.</h2>
+    <p class="result-summary">${rating.summary}</p>
+    <div class="divider"></div>
+    <p class="todos-title">Votre plan d'action</p>
+    ${todosHTML}
+    <div class="result-footer">
+      <strong>Vous souhaitez aller plus loin ?</strong> Ce diagnostic est un point de départ. Une revue de conformité complète comprend une analyse bâtiment par bâtiment, un audit des baux et un budget pluriannuel de rénovation. Faites-vous accompagner par un spécialiste pour construire votre feuille de route Décret Tertiaire.
+    </div>
+    <button class="btn-restart" onclick="restart()">← Recommencer</button>`;
+
+  submitToFormspree(score, rating.label, todos);
+}
+
+function submitToFormspree(score, ratingLabel, todos) {
+  const FORMSPREE_ID = 'xgonzwrp';
+  const todoTexts = todos.map(t => `[${t.priority.toUpperCase()}] ${t.text}`).join('\n');
+  const answerSummary = QUESTIONS.map(q => {
+    const sel = answers[q.id];
+    if (sel === undefined) return null;
+    return `${q.id}: ${q.options[sel]?.label || '—'}`;
+  }).filter(Boolean).join('\n');
+
+  fetch(`https://formspree.io/f/${FORMSPREE_ID}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+    body: JSON.stringify({
+      fonction: userRole,
+      email: userEmail || 'Non renseigné',
+      score: score,
+      resultat: ratingLabel,
+      actions: todoTexts,
+      reponses: answerSummary
+    })
+  }).catch(() => {});
+}
+
+function restart() {
+  answers = {};
+  currentQ = 0;
+  showScreen('screen-intro');
+}
+</script>
+</body>
+</html>
