@@ -641,7 +641,6 @@ function generatePDF() {
 
 function submitToFormspree(score, ratingLabel, todos) {
   const FORMSPREE_ID = 'xgonzwrp';
-  if (!userEmail) return;
   const todoTexts = todos.map(t => `[${priorityText(t.priority)}] ${t.text}`).join('\n');
   const answerSummary = QUESTIONS.map(q => {
     const sel = answers[q.id];
