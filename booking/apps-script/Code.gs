@@ -13,12 +13,16 @@
 const NOTIFY_EMAIL = 'matthias.jung@eleviq.solutions';
 const SENDER_NAME = 'Matthias — ElevIQ';
 
+// Bump this string with each code change. Lets anyone confirm which version
+// is actually live via a plain GET, without touching the Sheet or sending mail.
+const CODE_VERSION = '2026-08-04-hp-check-rename';
+
 const DAY_NAMES = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
 const MONTH_NAMES = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
 
 function doGet(e) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  return jsonResponse({ slots: getSlots(ss) });
+  return jsonResponse({ version: CODE_VERSION, slots: getSlots(ss) });
 }
 
 function doPost(e) {
