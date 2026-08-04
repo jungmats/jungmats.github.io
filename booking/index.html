@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Réservez votre créneau gratuit | ElevIQ Solutions</title>
+  <meta name="description" content="Réservez un créneau gratuit de 30 minutes avec Matthias, fondateur d'ElevIQ, pour identifier une première piste d'automatisation dans votre activité.">
+  <link rel="stylesheet" href="../styles.css">
+  <style>
+    .slots {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 0.75rem;
+      margin: 1rem 0 1.5rem;
+    }
+    .slot-card {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: 0.85rem 1rem;
+      border: 2px solid var(--grey2);
+      border-radius: 8px;
+      background: white;
+      color: var(--blue);
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 0.95rem;
+    }
+    .slot-card:hover:not(:disabled) {
+      border-color: var(--cyan);
+    }
+    .slot-card.selected {
+      border-color: var(--petrol);
+      background: var(--yellow);
+    }
+    .slot-card:disabled {
+      cursor: not-allowed;
+      color: var(--grey2);
+      background: var(--grey);
+      border-color: var(--grey2);
+      text-decoration: line-through;
+    }
+    .booking-form {
+      max-width: 480px;
+      margin-top: 1rem;
+    }
+    .hidden {
+      display: none;
+    }
+    .booking-form label {
+      display: block;
+      font-weight: bold;
+      margin: 0.75rem 0 0.25rem;
+      color: var(--blue);
+    }
+    .booking-form input, .booking-form textarea {
+      width: 100%;
+      padding: 0.5rem 0.65rem;
+      border: 1px solid var(--grey2);
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      box-sizing: border-box;
+    }
+    .booking-form textarea {
+      resize: vertical;
+      min-height: 70px;
+    }
+    .selected-slot-note {
+      margin-top: 1rem;
+      padding: 0.6rem 0.85rem;
+      background: var(--grey);
+      border-radius: 6px;
+      font-size: 0.9rem;
+    }
+    button.submit-btn {
+      margin-top: 1rem;
+      padding: 0.6rem 1.2rem;
+      background: var(--cyan);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+    button.submit-btn:hover {
+      background: #00a0c5;
+    }
+    button.submit-btn:disabled {
+      background: var(--grey2);
+      cursor: not-allowed;
+    }
+    .form-message {
+      margin-top: 0.75rem;
+      font-size: 0.9rem;
+    }
+    .form-message.error {
+      color: #b83232;
+    }
+    #confirmation, #fully-booked {
+      padding: 1rem;
+      background: var(--grey);
+      border-left: 4px solid var(--petrol);
+      border-radius: 6px;
+    }
+    .honeypot {
+      position: absolute;
+      left: -9999px;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+    }
+    blockquote.reflect {
+      margin: 1rem 0;
+      padding: 0.75rem 1rem;
+      border-left: 4px solid var(--yellow);
+      font-style: italic;
+      color: var(--blue);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <img src="../eleviq_logo_v1.5.png" alt="ElevIQ Logo">
+    <h1>ElevIQ Solutions</h1>
+    <p><b>Éliminez ce qui vous ralentit</b></p>
+  </header>
+
+  <div class="container">
+    <nav class="sidebar">
+      <ul>
+        <li><a href="../index.html">Home</a></li>
+        <li><a href="../voilo/">voilo</a></li>
+        <li><a href="./">Book a call</a></li>
+      </ul>
+    </nav>
+
+    <main class="content">
+      <section class="section">
+        <h2>Bonjour, je suis Matthias</h2>
+        <p>
+          J'ai passé plusieurs années chez Amazon comme manager. Là-bas, j'ai appris à repérer et à éliminer le gaspillage.
+          Alors j'ai créé ElevIQ pour aider les professionnels et les petites entreprises à automatiser ce qui leur fait perdre du temps au quotidien.
+        </p>
+      </section>
+
+      <section class="section">
+        <h2>Une question pour vous</h2>
+        <blockquote class="reflect">Quelle est votre plus grande frustration dans votre travail ?<br>Et si vous aviez une baguette magique, qu'est-ce que vous feriez pour la faire disparaître ?</blockquote>
+        <p>
+          Si une réponse vous est venue en tête, j'ai une offre pour vous : des créneaux gratuits de 30 minutes pour examiner votre situation
+          et repartir avec une première piste d'amélioration.
+        </p>
+      </section>
+
+      <section class="section">
+        <h2>Réservez votre créneau gratuit</h2>
+
+        <div id="loading">
+          <p>Chargement des créneaux disponibles…</p>
+        </div>
+
+        <div id="booking-unavailable" class="hidden">
+          <p>La réservation en ligne n'est pas encore active. Écrivez-moi directement à <a href="mailto:hello@eleviq.solutions">hello@eleviq.solutions</a> et je vous proposerai un créneau.</p>
+        </div>
+
+        <div id="slots" class="slots hidden"></div>
+
+        <form id="booking-form" class="booking-form hidden">
+          <div id="selected-slot-note" class="selected-slot-note hidden"></div>
+          <input type="text" name="company" class="honeypot" tabindex="-1" autocomplete="off">
+          <label for="name">Nom</label>
+          <input type="text" id="name" name="name" required>
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" required>
+          <label for="topic">Votre frustration / sujet à aborder (optionnel)</label>
+          <textarea id="topic" name="topic"></textarea>
+          <button type="submit" class="submit-btn" disabled>Choisissez d'abord un créneau</button>
+          <div id="booking-message" class="form-message"></div>
+        </form>
+
+        <div id="confirmation" class="hidden">
+          <p><strong>C'est confirmé !</strong></p>
+          <p id="confirmation-text"></p>
+          <p>Un email de confirmation vient de vous être envoyé.</p>
+        </div>
+
+        <div id="fully-booked" class="hidden">
+          <p><strong>Tous les créneaux sont complets pour le moment.</strong></p>
+          <p>Laissez vos coordonnées ci-dessous, je vous recontacte dès qu'un nouveau créneau se libère.</p>
+        </div>
+
+        <form id="waitlist-form" class="booking-form hidden">
+          <input type="text" name="company" class="honeypot" tabindex="-1" autocomplete="off">
+          <label for="wl-name">Nom</label>
+          <input type="text" id="wl-name" name="name" required>
+          <label for="wl-email">Email</label>
+          <input type="email" id="wl-email" name="email" required>
+          <label for="wl-topic">Votre frustration / sujet à aborder (optionnel)</label>
+          <textarea id="wl-topic" name="topic"></textarea>
+          <button type="submit" class="submit-btn">Rejoindre la liste d'attente</button>
+          <div id="waitlist-message" class="form-message"></div>
+        </form>
+      </section>
+    </main>
+  </div>
+
+  <footer>
+    &copy; 2025 ElevIQ. All rights reserved. Numéro Siren: 940258254.
+  </footer>
+
+  <script>
+    const API_URL = 'https://script.google.com/macros/s/AKfycbyH4RMe-lfQrzbEmCRzDufaOzpUaYpmTTr1Ghn2AfpbCuijNYLUS1_2KJJIPwc2ycFMvQ/exec';
+
+    const loadingEl = document.getElementById('loading');
+    const unavailableEl = document.getElementById('booking-unavailable');
+    const slotsEl = document.getElementById('slots');
+    const formEl = document.getElementById('booking-form');
+    const selectedNoteEl = document.getElementById('selected-slot-note');
+    const submitBtn = formEl.querySelector('.submit-btn');
+    const bookingMessageEl = document.getElementById('booking-message');
+    const confirmationEl = document.getElementById('confirmation');
+    const confirmationTextEl = document.getElementById('confirmation-text');
+    const fullyBookedEl = document.getElementById('fully-booked');
+    const waitlistFormEl = document.getElementById('waitlist-form');
+    const waitlistMessageEl = document.getElementById('waitlist-message');
+
+    let selectedSlotId = null;
+
+    function show(el) { el.classList.remove('hidden'); }
+    function hide(el) { el.classList.add('hidden'); }
+
+    async function init() {
+      if (!API_URL || API_URL.indexOf('REPLACE_WITH') === 0) {
+        hide(loadingEl);
+        show(unavailableEl);
+        return;
+      }
+      try {
+        const res = await fetch(API_URL);
+        const data = await res.json();
+        hide(loadingEl);
+        renderSlots(data.slots || []);
+      } catch (err) {
+        hide(loadingEl);
+        show(unavailableEl);
+      }
+    }
+
+    function renderSlots(slots) {
+      const available = slots.filter(function (s) { return !s.taken; });
+      if (slots.length === 0 || available.length === 0) {
+        show(fullyBookedEl);
+        show(waitlistFormEl);
+        return;
+      }
+
+      slotsEl.innerHTML = '';
+      slots.forEach(function (slot) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'slot-card';
+        btn.textContent = slot.label + (slot.taken ? ' — réservé' : '');
+        btn.disabled = slot.taken;
+        btn.dataset.slotId = slot.id;
+        btn.addEventListener('click', function () { selectSlot(slot, btn); });
+        slotsEl.appendChild(btn);
+      });
+      show(slotsEl);
+      show(formEl);
+    }
+
+    function selectSlot(slot, btn) {
+      selectedSlotId = slot.id;
+      slotsEl.querySelectorAll('.slot-card').forEach(function (b) { b.classList.remove('selected'); });
+      btn.classList.add('selected');
+      selectedNoteEl.innerHTML = 'Créneau choisi : <strong>' + slot.label + '</strong>';
+      show(selectedNoteEl);
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Réserver ce créneau';
+    }
+
+    formEl.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      if (!selectedSlotId) return;
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Réservation en cours…';
+      bookingMessageEl.textContent = '';
+      bookingMessageEl.classList.remove('error');
+
+      const payload = {
+        action: 'book',
+        slotId: selectedSlotId,
+        name: formEl.name.value.trim(),
+        email: formEl.email.value.trim(),
+        topic: formEl.topic.value.trim(),
+        company: formEl.company.value
+      };
+
+      try {
+        const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+        const data = await res.json();
+        if (data.success) {
+          hide(formEl);
+          hide(slotsEl);
+          confirmationTextEl.textContent = data.label || '';
+          show(confirmationEl);
+        } else if (data.reason === 'taken') {
+          bookingMessageEl.textContent = 'Ce créneau vient d\'être réservé par quelqu\'un d\'autre, merci d\'en choisir un autre ci-dessus.';
+          bookingMessageEl.classList.add('error');
+          selectedSlotId = null;
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'Choisissez d\'abord un créneau';
+          if (data.slots) renderSlots(data.slots);
+        } else {
+          bookingMessageEl.textContent = 'Une erreur est survenue, merci de réessayer ou de m\'écrire à hello@eleviq.solutions.';
+          bookingMessageEl.classList.add('error');
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Réserver ce créneau';
+        }
+      } catch (err) {
+        bookingMessageEl.textContent = 'Une erreur est survenue, merci de réessayer ou de m\'écrire à hello@eleviq.solutions.';
+        bookingMessageEl.classList.add('error');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Réserver ce créneau';
+      }
+    });
+
+    waitlistFormEl.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const btn = waitlistFormEl.querySelector('.submit-btn');
+      btn.disabled = true;
+      btn.textContent = 'Envoi…';
+      waitlistMessageEl.textContent = '';
+      waitlistMessageEl.classList.remove('error');
+
+      const payload = {
+        action: 'waitlist',
+        name: waitlistFormEl.name.value.trim(),
+        email: waitlistFormEl.email.value.trim(),
+        topic: waitlistFormEl.topic.value.trim(),
+        company: waitlistFormEl.company.value
+      };
+
+      try {
+        const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+        const data = await res.json();
+        if (data.success) {
+          hide(waitlistFormEl);
+          waitlistMessageEl.classList.remove('error');
+          waitlistMessageEl.textContent = 'Merci, vous êtes sur la liste d\'attente !';
+        } else {
+          waitlistMessageEl.textContent = 'Une erreur est survenue, merci de réessayer.';
+          waitlistMessageEl.classList.add('error');
+          btn.disabled = false;
+          btn.textContent = 'Rejoindre la liste d\'attente';
+        }
+      } catch (err) {
+        waitlistMessageEl.textContent = 'Une erreur est survenue, merci de réessayer.';
+        waitlistMessageEl.classList.add('error');
+        btn.disabled = false;
+        btn.textContent = 'Rejoindre la liste d\'attente';
+      }
+    });
+
+    init();
+  </script>
+
+</body>
+</html>

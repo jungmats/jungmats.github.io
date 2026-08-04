@@ -6,7 +6,8 @@
       "Bash(git add:*)",
       "mcp__trello__get_user_boards",
       "mcp__trello__get_board_lists",
-      "mcp__trello__get_board_cards"
+      "mcp__trello__get_board_cards",
+      "Bash(curl *)"
     ]
   }
 }
