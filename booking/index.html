@@ -369,8 +369,9 @@
         const data = await res.json();
         if (data.success) {
           hide(waitlistFormEl);
+          hide(fullyBookedEl);
           waitlistMessageEl.classList.remove('error');
-          waitlistMessageEl.textContent = 'Merci, vous êtes sur la liste d\'attente !';
+          waitlistMessageEl.textContent = 'C\'est noté ! Vous êtes sur la liste d\'attente, je vous recontacte dès qu\'un nouveau créneau se libère.';
         } else {
           waitlistMessageEl.textContent = 'Une erreur est survenue, merci de réessayer.';
           waitlistMessageEl.classList.add('error');
