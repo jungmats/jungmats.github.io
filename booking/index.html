@@ -111,12 +111,24 @@
       height: 1px;
       overflow: hidden;
     }
-    blockquote.reflect {
+    .pain-quotes {
+      list-style: none;
+      padding: 0;
       margin: 1rem 0;
-      padding: 0.75rem 1rem;
-      border-left: 4px solid var(--yellow);
+    }
+    .pain-quotes li {
+      padding: 0.5rem 0 0.5rem 1rem;
+      border-left: 3px solid var(--yellow);
       font-style: italic;
       color: var(--blue);
+      margin-bottom: 0.5rem;
+    }
+    .bio {
+      margin-top: 1.5rem;
+    }
+    .byline {
+      margin-top: 0.25rem;
+      color: var(--petrol);
     }
   </style>
 </head>
@@ -138,24 +150,27 @@
 
     <main class="content">
       <section class="section">
-        <h2>Bonjour, je suis Matthias</h2>
+        <h2>Ça vous parle ?</h2>
+        <ul class="pain-quotes">
+          <li>« Des prospects passent entre les mailles du filet. »</li>
+          <li>« Chaque nouveau client me fait réinventer la roue. »</li>
+          <li>« L'administratif déborde sur mes soirées. »</li>
+          <li>« Je réponds toujours aux mêmes questions. »</li>
+          <li>« Je travaille beaucoup sans savoir ce qui est rentable. »</li>
+        </ul>
         <p>
-          J'ai passé plusieurs années chez Amazon comme manager. Là-bas, j'ai appris à repérer et à éliminer le gaspillage.
-          Alors j'ai créé ElevIQ pour aider les professionnels et les petites entreprises à automatiser ce qui leur fait perdre du temps au quotidien.
+          Parfois, la réponse est un outil. Parfois, une automatisation. Parfois, simplement une meilleure façon de travailler.
         </p>
-      </section>
-
-      <section class="section">
-        <h2>Une question pour vous</h2>
-        <blockquote class="reflect">Quelle est votre plus grande frustration dans votre travail ?<br>Et si vous aviez une baguette magique, qu'est-ce que vous feriez pour la faire disparaître ?</blockquote>
-        <p>
-          Si une réponse vous est venue en tête, j'ai une offre pour vous : des créneaux gratuits de 30 minutes pour examiner votre situation
-          et repartir avec une première piste d'amélioration.
+        <p class="bio">
+          Après plusieurs années chez Amazon à repérer et éliminer le gaspillage, j'ai fondé ElevIQ pour aider les indépendants
+          et petites entreprises à automatiser ce qui leur fait perdre du temps.
         </p>
+        <p class="byline"><strong>— Matthias Jung, fondateur d'ElevIQ</strong></p>
       </section>
 
       <section class="section">
         <h2>Réservez votre créneau gratuit</h2>
+        <p>30 minutes pour examiner votre situation et repartir avec une première piste d'amélioration.</p>
 
         <div id="loading">
           <p>Chargement des créneaux disponibles…</p>
