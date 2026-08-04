@@ -93,10 +93,17 @@ function bookSlot(ss, body) {
     if (slot.taken) return { success: false, reason: 'taken', slots: slots };
 
     ss.getSheetByName('Bookings').appendRow([new Date(), slotId, name, email, topic]);
+    SpreadsheetApp.flush();
+
+    const confirmedSlots = getSlots(ss);
+    const confirmedSlot = confirmedSlots.filter(function (s) { return s.id === slotId; })[0];
+    if (!confirmedSlot || !confirmedSlot.taken) {
+      return { success: false, reason: 'write_not_confirmed', slots: confirmedSlots };
+    }
 
     sendBookingEmails(slot, name, email, topic);
 
-    return { success: true, label: slot.label };
+    return { success: true, label: slot.label, slots: confirmedSlots };
   } finally {
     lock.releaseLock();
   }

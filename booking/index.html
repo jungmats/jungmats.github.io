@@ -314,6 +314,12 @@
           submitBtn.disabled = true;
           submitBtn.textContent = 'Choisissez d\'abord un créneau';
           if (data.slots) renderSlots(data.slots);
+        } else if (data.reason === 'write_not_confirmed') {
+          bookingMessageEl.textContent = 'Votre réservation n\'a pas pu être confirmée automatiquement. Merci de réessayer, ou écrivez-moi directement à hello@eleviq.solutions pour que je confirme votre créneau.';
+          bookingMessageEl.classList.add('error');
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Réserver ce créneau';
+          if (data.slots) renderSlots(data.slots);
         } else {
           bookingMessageEl.textContent = 'Une erreur est survenue, merci de réessayer ou de m\'écrire à hello@eleviq.solutions.';
           bookingMessageEl.classList.add('error');
