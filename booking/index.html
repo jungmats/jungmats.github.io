@@ -184,7 +184,7 @@
 
         <form id="booking-form" class="booking-form hidden">
           <div id="selected-slot-note" class="selected-slot-note hidden"></div>
-          <input type="text" name="company" class="honeypot" tabindex="-1" autocomplete="off">
+          <input type="text" name="hp_check" class="honeypot" tabindex="-1" autocomplete="off">
           <label for="name">Nom</label>
           <input type="text" id="name" name="name" required>
           <label for="email">Email</label>
@@ -207,7 +207,7 @@
         </div>
 
         <form id="waitlist-form" class="booking-form hidden">
-          <input type="text" name="company" class="honeypot" tabindex="-1" autocomplete="off">
+          <input type="text" name="hp_check" class="honeypot" tabindex="-1" autocomplete="off">
           <label for="wl-name">Nom</label>
           <input type="text" id="wl-name" name="name" required>
           <label for="wl-email">Email</label>
@@ -310,7 +310,7 @@
         name: formEl.name.value.trim(),
         email: formEl.email.value.trim(),
         topic: formEl.topic.value.trim(),
-        company: formEl.company.value
+        hp_check: formEl.hp_check.value
       };
 
       try {
@@ -361,7 +361,7 @@
         name: waitlistFormEl.name.value.trim(),
         email: waitlistFormEl.email.value.trim(),
         topic: waitlistFormEl.topic.value.trim(),
-        company: waitlistFormEl.company.value
+        hp_check: waitlistFormEl.hp_check.value
       };
 
       try {

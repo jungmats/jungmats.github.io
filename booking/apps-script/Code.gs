@@ -31,7 +31,7 @@ function doPost(e) {
   }
 
   // Honeypot: bots fill every field, real users never see or fill this one.
-  if (body.company) {
+  if (body.hp_check) {
     return jsonResponse({ success: true });
   }
 
