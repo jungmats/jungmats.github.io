@@ -65,6 +65,7 @@ body a {
 }
 
 header {
+  position: relative;
   padding: 2.75rem 1.5rem;
   text-align: center;
   background: linear-gradient(135deg, var(--petrol), var(--blue));
@@ -183,14 +184,11 @@ a.button:hover {
   transform: translateY(-1px);
 }
 
-.hero-cta {
-  margin-top: 1.25rem;
-  padding: 0.7rem 1.5rem;
-  font-size: 0.9rem;
-}
-
 .lang-switch {
-  margin: 0.9rem 0 0;
+  position: absolute;
+  top: 1rem;
+  right: 1.25rem;
+  margin: 0;
   font-size: 0.8rem;
 }
 
@@ -201,6 +199,16 @@ a.button:hover {
 
 .lang-switch a:hover {
   color: #ffffff;
+}
+
+.offerings-cta {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+}
+
+.offerings-cta p {
+  margin: 0 0 0.75rem;
 }
 
 .offering-card .learn-more {
@@ -246,6 +254,12 @@ footer {
 
   header h1 {
     font-size: 1.5rem;
+  }
+
+  .lang-switch {
+    top: 0.75rem;
+    right: 0.75rem;
+    font-size: 0.7rem;
   }
 
   .container {
