@@ -189,6 +189,33 @@ a.button:hover {
   font-size: 0.9rem;
 }
 
+.lang-switch {
+  margin: 0.9rem 0 0;
+  font-size: 0.8rem;
+}
+
+.lang-switch a {
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: underline;
+}
+
+.lang-switch a:hover {
+  color: #ffffff;
+}
+
+.offering-card .learn-more {
+  display: inline-block;
+  margin-top: 0.6rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--heading-color);
+  text-decoration: none;
+}
+
+.offering-card .learn-more:hover {
+  text-decoration: underline;
+}
+
 img {
   width: 50px;
   height: 50px;

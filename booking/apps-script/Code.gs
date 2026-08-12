@@ -8,6 +8,10 @@
  * Waitlist tab columns (appended by this script): Timestamp | Name | Email | Topic
  *
  * A slot's ID is Date_Time, e.g. "2025-09-23_14:00". One booking per slot.
+ *
+ * Bilingual: every request (GET query string or POST body) may carry
+ * lang=en|fr. Defaults to 'fr' when absent, to match the original
+ * French-only behavior of this script.
  */
 
 const NOTIFY_EMAIL = 'matthias.jung@eleviq.solutions';
@@ -15,14 +19,25 @@ const SENDER_NAME = 'Matthias — ElevIQ';
 
 // Bump this string with each code change. Lets anyone confirm which version
 // is actually live via a plain GET, without touching the Sheet or sending mail.
-const CODE_VERSION = '2026-08-04-hp-check-rename';
+const CODE_VERSION = '2026-08-12-bilingual';
 
-const DAY_NAMES = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
-const MONTH_NAMES = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+const DAY_NAMES = {
+  fr: ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'],
+  en: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+};
+const MONTH_NAMES = {
+  fr: ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'],
+  en: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+};
+
+function normalizeLang(value) {
+  return value === 'en' ? 'en' : 'fr';
+}
 
 function doGet(e) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  return jsonResponse({ version: CODE_VERSION, slots: getSlots(ss) });
+  const lang = normalizeLang(e.parameter && e.parameter.lang);
+  return jsonResponse({ version: CODE_VERSION, slots: getSlots(ss, lang) });
 }
 
 function doPost(e) {
@@ -34,21 +49,23 @@ function doPost(e) {
     return jsonResponse({ success: false, reason: 'bad_request' });
   }
 
+  const lang = normalizeLang(body.lang);
+
   // Honeypot: bots fill every field, real users never see or fill this one.
   if (body.hp_check) {
     return jsonResponse({ success: true });
   }
 
   if (body.action === 'book') {
-    return jsonResponse(bookSlot(ss, body));
+    return jsonResponse(bookSlot(ss, body, lang));
   }
   if (body.action === 'waitlist') {
-    return jsonResponse(addToWaitlist(ss, body));
+    return jsonResponse(addToWaitlist(ss, body, lang));
   }
   return jsonResponse({ success: false, reason: 'unknown_action' });
 }
 
-function getSlots(ss) {
+function getSlots(ss, lang) {
   const slotsSheet = ss.getSheetByName('Slots');
   const bookingsSheet = ss.getSheetByName('Bookings');
 
@@ -71,14 +88,14 @@ function getSlots(ss) {
       id: id,
       date: dateStr,
       time: timeStr,
-      label: formatLabel(dateStr, timeStr),
+      label: formatLabel(dateStr, timeStr, lang),
       taken: !!takenIds[id]
     });
   }
   return slots;
 }
 
-function bookSlot(ss, body) {
+function bookSlot(ss, body, lang) {
   const name = (body.name || '').trim();
   const email = (body.email || '').trim();
   const topic = (body.topic || '').trim();
@@ -91,7 +108,7 @@ function bookSlot(ss, body) {
   const lock = LockService.getScriptLock();
   lock.waitLock(10000);
   try {
-    const slots = getSlots(ss);
+    const slots = getSlots(ss, lang);
     const slot = slots.filter(function (s) { return s.id === slotId; })[0];
     if (!slot) return { success: false, reason: 'unknown_slot', slots: slots };
     if (slot.taken) return { success: false, reason: 'taken', slots: slots };
@@ -99,13 +116,13 @@ function bookSlot(ss, body) {
     ss.getSheetByName('Bookings').appendRow([new Date(), slotId, name, email, topic]);
     SpreadsheetApp.flush();
 
-    const confirmedSlots = getSlots(ss);
+    const confirmedSlots = getSlots(ss, lang);
     const confirmedSlot = confirmedSlots.filter(function (s) { return s.id === slotId; })[0];
     if (!confirmedSlot || !confirmedSlot.taken) {
       return { success: false, reason: 'write_not_confirmed', slots: confirmedSlots };
     }
 
-    sendBookingEmails(slot, name, email, topic);
+    sendBookingEmails(slot, name, email, topic, lang);
 
     return { success: true, label: slot.label, slots: confirmedSlots };
   } finally {
@@ -113,7 +130,7 @@ function bookSlot(ss, body) {
   }
 }
 
-function addToWaitlist(ss, body) {
+function addToWaitlist(ss, body, lang) {
   const name = (body.name || '').trim();
   const email = (body.email || '').trim();
   const topic = (body.topic || '').trim();
@@ -124,46 +141,87 @@ function addToWaitlist(ss, body) {
 
   ss.getSheetByName('Waitlist').appendRow([new Date(), name, email, topic]);
 
-  MailApp.sendEmail({
-    to: NOTIFY_EMAIL,
-    name: SENDER_NAME,
-    subject: 'Liste d\'attente ElevIQ : ' + name,
-    body: 'Nouvelle inscription en liste d\'attente.\n\nNom : ' + name + '\nEmail : ' + email + '\nSujet : ' + (topic || '—')
-  });
+  if (lang === 'en') {
+    MailApp.sendEmail({
+      to: NOTIFY_EMAIL,
+      name: SENDER_NAME,
+      subject: 'ElevIQ waitlist signup: ' + name,
+      body: 'New waitlist signup.\n\nName: ' + name + '\nEmail: ' + email + '\nTopic: ' + (topic || '—')
+    });
 
-  MailApp.sendEmail({
-    to: email,
-    name: SENDER_NAME,
-    subject: 'ElevIQ — vous êtes sur la liste d\'attente',
-    body: 'Bonjour ' + name + ',\n\n' +
-      'Merci pour votre intérêt ! Tous les créneaux gratuits sont complets pour le moment, ' +
-      'mais je vous ai ajouté(e) à la liste d\'attente et je vous recontacterai dès qu\'un nouveau créneau se libère.\n\n' +
-      'À très bientôt,\nMatthias'
-  });
+    MailApp.sendEmail({
+      to: email,
+      name: SENDER_NAME,
+      subject: 'ElevIQ — you\'re on the waitlist',
+      body: 'Hi ' + name + ',\n\n' +
+        'Thanks for your interest! All free slots are full right now, ' +
+        'but I\'ve added you to the waitlist and will reach out as soon as a new slot opens up.\n\n' +
+        'Talk soon,\nMatthias'
+    });
+  } else {
+    MailApp.sendEmail({
+      to: NOTIFY_EMAIL,
+      name: SENDER_NAME,
+      subject: 'Liste d\'attente ElevIQ : ' + name,
+      body: 'Nouvelle inscription en liste d\'attente.\n\nNom : ' + name + '\nEmail : ' + email + '\nSujet : ' + (topic || '—')
+    });
+
+    MailApp.sendEmail({
+      to: email,
+      name: SENDER_NAME,
+      subject: 'ElevIQ — vous êtes sur la liste d\'attente',
+      body: 'Bonjour ' + name + ',\n\n' +
+        'Merci pour votre intérêt ! Tous les créneaux gratuits sont complets pour le moment, ' +
+        'mais je vous ai ajouté(e) à la liste d\'attente et je vous recontacterai dès qu\'un nouveau créneau se libère.\n\n' +
+        'À très bientôt,\nMatthias'
+    });
+  }
 
   return { success: true };
 }
 
-function sendBookingEmails(slot, name, email, topic) {
-  MailApp.sendEmail({
-    to: NOTIFY_EMAIL,
-    name: SENDER_NAME,
-    subject: 'Nouvelle réservation : ' + slot.label,
-    body: 'Nom : ' + name + '\nEmail : ' + email + '\nSujet : ' + (topic || '—') + '\nCréneau : ' + slot.label
-  });
+function sendBookingEmails(slot, name, email, topic, lang) {
+  if (lang === 'en') {
+    MailApp.sendEmail({
+      to: NOTIFY_EMAIL,
+      name: SENDER_NAME,
+      subject: 'New booking: ' + slot.label,
+      body: 'Name: ' + name + '\nEmail: ' + email + '\nTopic: ' + (topic || '—') + '\nSlot: ' + slot.label
+    });
 
-  MailApp.sendEmail({
-    to: email,
-    name: SENDER_NAME,
-    subject: 'Confirmation de votre créneau ElevIQ — ' + slot.label,
-    body: 'Bonjour ' + name + ',\n\n' +
-      'Votre créneau gratuit de 30 minutes avec Matthias (ElevIQ) est confirmé :\n\n' +
-      slot.label + '\n\n' +
-      (topic ? 'Sujet indiqué : ' + topic + '\n\n' : '') +
-      'Je vous enverrai les détails de connexion avant le rendez-vous. ' +
-      'Si vous devez annuler ou déplacer ce créneau, répondez simplement à cet email.\n\n' +
-      'À bientôt,\nMatthias\nhello@eleviq.solutions'
-  });
+    MailApp.sendEmail({
+      to: email,
+      name: SENDER_NAME,
+      subject: 'Your ElevIQ slot is confirmed — ' + slot.label,
+      body: 'Hi ' + name + ',\n\n' +
+        'Your free 30-minute slot with Matthias (ElevIQ) is confirmed:\n\n' +
+        slot.label + '\n\n' +
+        (topic ? 'Topic you shared: ' + topic + '\n\n' : '') +
+        'I\'ll send connection details ahead of the call. ' +
+        'If you need to cancel or reschedule, just reply to this email.\n\n' +
+        'Talk soon,\nMatthias\nhello@eleviq.solutions'
+    });
+  } else {
+    MailApp.sendEmail({
+      to: NOTIFY_EMAIL,
+      name: SENDER_NAME,
+      subject: 'Nouvelle réservation : ' + slot.label,
+      body: 'Nom : ' + name + '\nEmail : ' + email + '\nSujet : ' + (topic || '—') + '\nCréneau : ' + slot.label
+    });
+
+    MailApp.sendEmail({
+      to: email,
+      name: SENDER_NAME,
+      subject: 'Confirmation de votre créneau ElevIQ — ' + slot.label,
+      body: 'Bonjour ' + name + ',\n\n' +
+        'Votre créneau gratuit de 30 minutes avec Matthias (ElevIQ) est confirmé :\n\n' +
+        slot.label + '\n\n' +
+        (topic ? 'Sujet indiqué : ' + topic + '\n\n' : '') +
+        'Je vous enverrai les détails de connexion avant le rendez-vous. ' +
+        'Si vous devez annuler ou déplacer ce créneau, répondez simplement à cet email.\n\n' +
+        'À bientôt,\nMatthias\nhello@eleviq.solutions'
+    });
+  }
 }
 
 function isValidEmail(email) {
@@ -184,11 +242,15 @@ function formatTime(value) {
   return String(value).trim();
 }
 
-function formatLabel(dateStr, timeStr) {
+function formatLabel(dateStr, timeStr, lang) {
   const parts = dateStr.split('-').map(Number);
   const d = new Date(parts[0], parts[1] - 1, parts[2]);
-  const dayName = DAY_NAMES[d.getDay()];
-  const monthName = MONTH_NAMES[d.getMonth()];
+  const dayName = DAY_NAMES[lang][d.getDay()];
+  const monthName = MONTH_NAMES[lang][d.getMonth()];
+
+  if (lang === 'en') {
+    return capitalize(dayName) + ', ' + capitalize(monthName) + ' ' + d.getDate() + ' — ' + timeStr;
+  }
   const hourLabel = timeStr.replace(':', 'h');
   return capitalize(dayName) + ' ' + d.getDate() + ' ' + monthName + ' — ' + hourLabel;
 }
