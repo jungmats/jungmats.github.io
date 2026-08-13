@@ -1,13 +1,13 @@
 # SEO Config
 
 brand_name: ElevIQ Solutions
-target_audience: Mixed — business leaders / entrepreneurs seeking AI consulting (ElevIQ), and productivity-minded individuals who track personal data (voilo app); also French-speaking real-estate/facilities managers for the Décret Tertiaire tool
+target_audience: Business leaders and entrepreneurs whose websites or digital businesses need to adapt to AI agents — evaluating AI agent readiness or exploring agentic web monetization, plus general AI consulting and integration needs
 brand_voice: Conversational-professional; second person ("you"); friendly and accessible, avoids heavy jargon; modern SaaS tone
-business_purpose: Promote ElevIQ AI consulting services + drive beta signups / downloads for apps (voilo, Bite Learner, MediChecker); standalone French compliance assessment tool as a lead-gen asset
-primary_language: English (with one French-language tool page)
+business_purpose: Promote ElevIQ's AI consulting services — AI Agent Readiness Audits and Agentic Web Monetization Strategy — and convert visitors into booked calls or scope/pricing requests
+primary_language: English and French, with full page parity across the home, booking, and services pages
 primary_keywords:
   - AI consulting
-  - voice Google Sheets app
-  - voilo
-  - AI app development
-  - Décret Tertiaire
+  - AI integration
+  - AI agent readiness audit
+  - agentic web monetization
+  - agentic web
