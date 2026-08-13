@@ -1,0 +1,22 @@
+# ElevIQ Solutions
+
+> ElevIQ Solutions helps businesses get ready for the agentic web through AI agent readiness audits and agentic web monetization strategy — practical AI consulting and integration services, based in France.
+
+ElevIQ Solutions is run by Matthias Jung, founder. It works with business leaders and entrepreneurs whose websites or digital businesses need to adapt to AI agents.
+
+## Services
+
+- [AI Agent Readiness Audit & Optimization](https://eleviq.solutions/services/ai-agent-readiness.html): Test how effectively AI agents understand and act on your website, and get targeted improvements — from clearer content and structured data to agent-facing experiences.
+- [Agentic Web Monetization Strategy](https://eleviq.solutions/services/agentic-web-monetization.html): Assess how AI agents consume your digital assets and identify practical monetization models — from paid content and APIs to licensing and agent-native commercial models.
+
+## Contact
+
+- [Book a free call](https://eleviq.solutions/booking/): 30-minute call to assess your situation and identify a concrete next step.
+- Email: hello@eleviq.solutions
+
+## French
+
+- [Accueil](https://eleviq.solutions/fr/)
+- [Audit et optimisation de préparation aux agents IA](https://eleviq.solutions/fr/services/ai-agent-readiness.html)
+- [Stratégie de monétisation du web agentique](https://eleviq.solutions/fr/services/agentic-web-monetization.html)
+- [Réserver un appel](https://eleviq.solutions/fr/booking/)
