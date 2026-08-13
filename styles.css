@@ -87,7 +87,8 @@ header img {
   filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.2));
 }
 
-header h1 {
+header h1,
+header .brand-line {
   margin: 0;
   font-family: var(--heading-font);
   font-size: 2rem;
@@ -112,12 +113,12 @@ section {
   padding: 0;
 }
 
-h2, h3 {
+h2, h3, .page-title {
   font-family: var(--heading-font);
   color: var(--heading-color);
 }
 
-h2 {
+h2, .page-title {
   border-bottom: 2px solid var(--cyan);
   display: inline-block;
   padding-bottom: 0.3rem;
@@ -395,7 +396,8 @@ footer {
     padding: 2rem 1.25rem;
   }
 
-  header h1 {
+  header h1,
+  header .brand-line {
     font-size: 1.5rem;
   }
 
