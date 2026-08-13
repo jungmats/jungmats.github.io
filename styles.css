@@ -145,6 +145,24 @@ p {
   margin-bottom: 1.25rem;
 }
 
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.section-header h2 {
+  margin-bottom: 0;
+}
+
+.section-header a.button {
+  margin-top: 0;
+  flex-shrink: 0;
+}
+
 .offerings {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -334,16 +352,6 @@ button.submit-btn:disabled {
 
 .lang-switch a:hover {
   color: #ffffff;
-}
-
-.offerings-cta {
-  margin-top: 1.5rem;
-  padding-top: 1.25rem;
-  border-top: 1px solid var(--border);
-}
-
-.offerings-cta p {
-  margin: 0 0 0.75rem;
 }
 
 .offering-card .learn-more {

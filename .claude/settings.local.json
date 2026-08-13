@@ -9,7 +9,11 @@
       "mcp__trello__get_board_cards",
       "Bash(curl *)",
       "Bash(git fetch *)",
-      "Bash(npx --yes playwright --version)"
+      "Bash(npx --yes playwright --version)",
+      "Bash(node inspect.js)",
+      "Read(//Users/majung/Library/Caches/ms-playwright/chromium-1234/**)",
+      "Read(//Users/majung/Library/Caches/ms-playwright/chromium_headless_shell-1234/**)",
+      "Bash(node shot.js)"
     ]
   }
 }
