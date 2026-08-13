@@ -184,6 +184,141 @@ a.button:hover {
   transform: translateY(-1px);
 }
 
+a.button-secondary {
+  background-color: transparent;
+  color: var(--heading-color);
+  border: 2px solid var(--cyan);
+  padding: calc(0.6rem - 2px) calc(1.1rem - 2px);
+}
+
+a.button-secondary:hover {
+  background-color: var(--cyan);
+  color: white;
+  transform: translateY(-1px);
+}
+
+.cta-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  z-index: 1000;
+}
+
+.modal-overlay.hidden {
+  display: none;
+}
+
+.modal {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.75rem;
+  box-sizing: border-box;
+}
+
+.modal h3 {
+  margin-top: 0;
+}
+
+.modal-close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.9rem;
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--text-muted);
+}
+
+.modal-close:hover {
+  color: var(--text);
+}
+
+.modal-form label {
+  display: block;
+  font-weight: bold;
+  margin: 0.75rem 0 0.25rem;
+  color: var(--heading-color);
+}
+
+.modal-form input,
+.modal-form textarea {
+  width: 100%;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid var(--grey2);
+  border-radius: 6px;
+  background: var(--grey);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.95rem;
+  box-sizing: border-box;
+}
+
+.modal-form textarea {
+  resize: vertical;
+  min-height: 70px;
+}
+
+.hidden {
+  display: none;
+}
+
+button.submit-btn {
+  margin-top: 1rem;
+  padding: 0.6rem 1.2rem;
+  background: var(--cyan);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+button.submit-btn:hover {
+  background: #00a0c5;
+}
+
+button.submit-btn:disabled {
+  background: var(--grey2);
+  cursor: not-allowed;
+}
+
+.form-message {
+  margin-top: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.form-message.error {
+  color: #b83232;
+}
+
+.honeypot {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
 .lang-switch {
   position: absolute;
   top: 1rem;

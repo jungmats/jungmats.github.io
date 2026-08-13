@@ -110,7 +110,10 @@
         <h3>Let’s Test How AI Agents See Your Business</h3>
         <p>If your customers increasingly use AI to research, compare, and evaluate companies like yours, we can test how well your website supports that journey today.</p>
         <p><b>Detailed scope and pricing available on request.</b></p>
-        <a class="button" href="../booking/">Book a call</a>
+        <div class="cta-actions">
+          <a class="button" href="../booking/">Book a call</a>
+          <a class="button button-secondary" href="#" id="request-scope-link">Request scope &amp; pricing</a>
+        </div>
       </section>
     </main>
   </div>
@@ -118,6 +121,105 @@
   <footer>
     &copy; 2025-2026 ElevIQ. All rights reserved. Numéro Siren: 940258254.
   </footer>
+
+  <div id="scope-modal-overlay" class="modal-overlay hidden">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="scope-modal-title">
+      <button type="button" class="modal-close" id="scope-modal-close" aria-label="Close">&times;</button>
+      <h3 id="scope-modal-title">Request scope &amp; pricing</h3>
+      <p>Tell me a bit about your situation. I’ll take a look and follow up by email — with the detailed scope and pricing if it looks like a good fit.</p>
+      <form id="scope-form" class="modal-form">
+        <input type="text" name="hp_check" class="honeypot" tabindex="-1" autocomplete="off">
+        <label for="scope-name">Name</label>
+        <input type="text" id="scope-name" name="name" required>
+        <label for="scope-company">Company</label>
+        <input type="text" id="scope-company" name="company">
+        <label for="scope-email">Email</label>
+        <input type="email" id="scope-email" name="email" required>
+        <label for="scope-website">Website</label>
+        <input type="url" id="scope-website" name="website" placeholder="https://">
+        <label for="scope-usecase">What are you trying to solve?</label>
+        <textarea id="scope-usecase" name="useCase" required></textarea>
+        <button type="submit" class="submit-btn">Send request</button>
+        <div id="scope-message" class="form-message"></div>
+      </form>
+      <div id="scope-confirmation" class="hidden">
+        <p><strong>Thanks — got it.</strong></p>
+        <p>I’ll take a look and get back to you by email.</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const API_URL = 'https://script.google.com/macros/s/AKfycbyH4RMe-lfQrzbEmCRzDufaOzpUaYpmTTr1Ghn2AfpbCuijNYLUS1_2KJJIPwc2ycFMvQ/exec';
+      const LANG = 'en';
+      const OFFER = 'AI Agent Readiness Audit & Optimization';
+
+      const triggerEl = document.getElementById('request-scope-link');
+      const overlayEl = document.getElementById('scope-modal-overlay');
+      const closeEl = document.getElementById('scope-modal-close');
+      const formEl = document.getElementById('scope-form');
+      const messageEl = document.getElementById('scope-message');
+      const confirmationEl = document.getElementById('scope-confirmation');
+      const submitBtn = formEl.querySelector('.submit-btn');
+
+      function openModal(e) {
+        e.preventDefault();
+        overlayEl.classList.remove('hidden');
+      }
+      function closeModal() {
+        overlayEl.classList.add('hidden');
+      }
+
+      triggerEl.addEventListener('click', openModal);
+      closeEl.addEventListener('click', closeModal);
+      overlayEl.addEventListener('click', function (e) {
+        if (e.target === overlayEl) closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && !overlayEl.classList.contains('hidden')) closeModal();
+      });
+
+      formEl.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Sending…';
+        messageEl.textContent = '';
+        messageEl.classList.remove('error');
+
+        const payload = {
+          action: 'request_scope',
+          lang: LANG,
+          offer: OFFER,
+          name: formEl.name.value.trim(),
+          company: formEl.company.value.trim(),
+          email: formEl.email.value.trim(),
+          website: formEl.website.value.trim(),
+          useCase: formEl.useCase.value.trim(),
+          hp_check: formEl.hp_check.value
+        };
+
+        try {
+          const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+          const data = await res.json();
+          if (data.success) {
+            formEl.classList.add('hidden');
+            confirmationEl.classList.remove('hidden');
+          } else {
+            messageEl.textContent = 'Something went wrong — please try again or email me at hello@eleviq.solutions.';
+            messageEl.classList.add('error');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Send request';
+          }
+        } catch (err) {
+          messageEl.textContent = 'Something went wrong — please try again or email me at hello@eleviq.solutions.';
+          messageEl.classList.add('error');
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Send request';
+        }
+      });
+    })();
+  </script>
 
 </body>
 </html>

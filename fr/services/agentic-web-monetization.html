@@ -107,7 +107,10 @@
         <h3>Explorons comment votre entreprise génère des revenus dans un web piloté par les agents IA</h3>
         <p>Si les agents IA peuvent de plus en plus capter la valeur de vos actifs numériques sans générer de visite traditionnelle sur votre site, nous pouvons évaluer cet impact et identifier les nouveaux modèles de monétisation qui valent la peine d'être testés.</p>
         <p><b>Périmètre détaillé et tarif sur demande.</b></p>
-        <a class="button" href="../booking/">Réserver un appel</a>
+        <div class="cta-actions">
+          <a class="button" href="../booking/">Réserver un appel</a>
+          <a class="button button-secondary" href="#" id="request-scope-link">Demander le périmètre &amp; le tarif</a>
+        </div>
       </section>
     </main>
   </div>
@@ -115,6 +118,105 @@
   <footer>
     &copy; 2025-2026 ElevIQ. Tous droits réservés. Numéro Siren : 940258254.
   </footer>
+
+  <div id="scope-modal-overlay" class="modal-overlay hidden">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="scope-modal-title">
+      <button type="button" class="modal-close" id="scope-modal-close" aria-label="Fermer">&times;</button>
+      <h3 id="scope-modal-title">Demander le périmètre et le tarif</h3>
+      <p>Dites-m'en un peu plus sur votre situation. Je regarde ça et je reviens vers vous par email — avec le périmètre détaillé et le tarif si ça semble être un bon fit.</p>
+      <form id="scope-form" class="modal-form">
+        <input type="text" name="hp_check" class="honeypot" tabindex="-1" autocomplete="off">
+        <label for="scope-name">Nom</label>
+        <input type="text" id="scope-name" name="name" required>
+        <label for="scope-company">Entreprise</label>
+        <input type="text" id="scope-company" name="company">
+        <label for="scope-email">Email</label>
+        <input type="email" id="scope-email" name="email" required>
+        <label for="scope-website">Site web</label>
+        <input type="url" id="scope-website" name="website" placeholder="https://">
+        <label for="scope-usecase">Quel est votre besoin ?</label>
+        <textarea id="scope-usecase" name="useCase" required></textarea>
+        <button type="submit" class="submit-btn">Envoyer la demande</button>
+        <div id="scope-message" class="form-message"></div>
+      </form>
+      <div id="scope-confirmation" class="hidden">
+        <p><strong>Merci, c'est bien reçu.</strong></p>
+        <p>Je regarde ça et je reviens vers vous par email.</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const API_URL = 'https://script.google.com/macros/s/AKfycbyH4RMe-lfQrzbEmCRzDufaOzpUaYpmTTr1Ghn2AfpbCuijNYLUS1_2KJJIPwc2ycFMvQ/exec';
+      const LANG = 'fr';
+      const OFFER = 'Stratégie de monétisation du web agentique';
+
+      const triggerEl = document.getElementById('request-scope-link');
+      const overlayEl = document.getElementById('scope-modal-overlay');
+      const closeEl = document.getElementById('scope-modal-close');
+      const formEl = document.getElementById('scope-form');
+      const messageEl = document.getElementById('scope-message');
+      const confirmationEl = document.getElementById('scope-confirmation');
+      const submitBtn = formEl.querySelector('.submit-btn');
+
+      function openModal(e) {
+        e.preventDefault();
+        overlayEl.classList.remove('hidden');
+      }
+      function closeModal() {
+        overlayEl.classList.add('hidden');
+      }
+
+      triggerEl.addEventListener('click', openModal);
+      closeEl.addEventListener('click', closeModal);
+      overlayEl.addEventListener('click', function (e) {
+        if (e.target === overlayEl) closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && !overlayEl.classList.contains('hidden')) closeModal();
+      });
+
+      formEl.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Envoi…';
+        messageEl.textContent = '';
+        messageEl.classList.remove('error');
+
+        const payload = {
+          action: 'request_scope',
+          lang: LANG,
+          offer: OFFER,
+          name: formEl.name.value.trim(),
+          company: formEl.company.value.trim(),
+          email: formEl.email.value.trim(),
+          website: formEl.website.value.trim(),
+          useCase: formEl.useCase.value.trim(),
+          hp_check: formEl.hp_check.value
+        };
+
+        try {
+          const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+          const data = await res.json();
+          if (data.success) {
+            formEl.classList.add('hidden');
+            confirmationEl.classList.remove('hidden');
+          } else {
+            messageEl.textContent = 'Une erreur est survenue — merci de réessayer ou de m\'écrire à hello@eleviq.solutions.';
+            messageEl.classList.add('error');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Envoyer la demande';
+          }
+        } catch (err) {
+          messageEl.textContent = 'Une erreur est survenue — merci de réessayer ou de m\'écrire à hello@eleviq.solutions.';
+          messageEl.classList.add('error');
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Envoyer la demande';
+        }
+      });
+    })();
+  </script>
 
 </body>
 </html>

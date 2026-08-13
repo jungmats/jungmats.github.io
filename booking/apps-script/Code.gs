@@ -1,11 +1,13 @@
 /**
  * ElevIQ booking backend.
  * Deploy as a Web App (Execute as: Me, Access: Anyone) bound to a Sheet
- * with three tabs: "Slots", "Bookings", "Waitlist".
+ * with three tabs: "Slots", "Bookings", "Waitlist". A fourth tab,
+ * "ScopeRequests", is created automatically on first use if missing.
  *
  * Slots tab columns:   Date (YYYY-MM-DD) | Time (HH:MM) | Active (TRUE/FALSE)
  * Bookings tab columns (appended by this script): Timestamp | SlotID | Name | Email | Topic
  * Waitlist tab columns (appended by this script): Timestamp | Name | Email | Topic
+ * ScopeRequests tab columns (appended by this script): Timestamp | Name | Company | Email | Website | Use Case | Offer | Lang
  *
  * A slot's ID is Date_Time, e.g. "2025-09-23_14:00". One booking per slot.
  *
@@ -19,7 +21,7 @@ const SENDER_NAME = 'Matthias — ElevIQ';
 
 // Bump this string with each code change. Lets anyone confirm which version
 // is actually live via a plain GET, without touching the Sheet or sending mail.
-const CODE_VERSION = '2026-08-12-bilingual';
+const CODE_VERSION = '2026-08-13-scope-requests';
 
 const DAY_NAMES = {
   fr: ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'],
@@ -61,6 +63,9 @@ function doPost(e) {
   }
   if (body.action === 'waitlist') {
     return jsonResponse(addToWaitlist(ss, body, lang));
+  }
+  if (body.action === 'request_scope') {
+    return jsonResponse(requestScope(ss, body, lang));
   }
   return jsonResponse({ success: false, reason: 'unknown_action' });
 }
@@ -178,6 +183,73 @@ function addToWaitlist(ss, body, lang) {
   }
 
   return { success: true };
+}
+
+function requestScope(ss, body, lang) {
+  const name = (body.name || '').trim();
+  const company = (body.company || '').trim();
+  const email = (body.email || '').trim();
+  const website = (body.website || '').trim();
+  const useCase = (body.useCase || '').trim();
+  const offer = (body.offer || '').trim();
+
+  if (!name || !email || !useCase || !isValidEmail(email)) {
+    return { success: false, reason: 'invalid_input' };
+  }
+
+  getOrCreateScopeRequestsSheet(ss).appendRow(
+    [new Date(), name, company, email, website, useCase, offer, lang]
+  );
+
+  sendScopeRequestEmails(name, company, email, website, useCase, offer, lang);
+
+  return { success: true };
+}
+
+function getOrCreateScopeRequestsSheet(ss) {
+  let sheet = ss.getSheetByName('ScopeRequests');
+  if (!sheet) {
+    sheet = ss.insertSheet('ScopeRequests');
+    sheet.appendRow(['Timestamp', 'Name', 'Company', 'Email', 'Website', 'Use Case', 'Offer', 'Lang']);
+  }
+  return sheet;
+}
+
+function sendScopeRequestEmails(name, company, email, website, useCase, offer, lang) {
+  MailApp.sendEmail({
+    to: NOTIFY_EMAIL,
+    name: SENDER_NAME,
+    subject: 'Scope request: ' + name + (offer ? ' — ' + offer : ''),
+    body: 'New scope & pricing request.\n\n' +
+      'Offer: ' + (offer || '—') + '\n' +
+      'Name: ' + name + '\n' +
+      'Company: ' + (company || '—') + '\n' +
+      'Email: ' + email + '\n' +
+      'Website: ' + (website || '—') + '\n' +
+      'Use case: ' + useCase
+  });
+
+  if (lang === 'en') {
+    MailApp.sendEmail({
+      to: email,
+      name: SENDER_NAME,
+      subject: 'ElevIQ — got your request',
+      body: 'Hi ' + name + ',\n\n' +
+        'Thanks for the details. I\'ll take a look and follow up by email within a couple of days ' +
+        '— either with the detailed scope and pricing, or a couple of questions first.\n\n' +
+        'Talk soon,\nMatthias\nhello@eleviq.solutions'
+    });
+  } else {
+    MailApp.sendEmail({
+      to: email,
+      name: SENDER_NAME,
+      subject: 'ElevIQ — votre demande est bien reçue',
+      body: 'Bonjour ' + name + ',\n\n' +
+        'Merci pour ces informations. Je vais regarder ça et revenir vers vous par email sous quelques jours ' +
+        '— avec le périmètre détaillé et le tarif, ou quelques questions au préalable.\n\n' +
+        'À bientôt,\nMatthias\nhello@eleviq.solutions'
+    });
+  }
 }
 
 function sendBookingEmails(slot, name, email, topic, lang) {
