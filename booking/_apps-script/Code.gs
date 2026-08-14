@@ -19,18 +19,30 @@
 const NOTIFY_EMAIL = 'matthias.jung@eleviq.solutions';
 const SENDER_NAME = 'Matthias — ElevIQ';
 
-const SIGNATURE_EN = 'Matthias Jung, Founder & CTO\n' +
+const DEFAULT_SIGNATURE_EN = 'Matthias Jung, Founder & CTO\n' +
   'Eleviq\n' +
   'E-Mail: matthias.jung@eleviq.solutions\n' +
   'Tel: +33 6 27 58 86 14\n' +
   'Website: https://eleviq.solutions\n' +
   'LinkedIn: https://www.linkedin.com/in/jungmatthias/';
-const SIGNATURE_FR = 'Matthias Jung, Fondateur & CTO\n' +
+const DEFAULT_SIGNATURE_FR = 'Matthias Jung, Fondateur & CTO\n' +
   'Eleviq\n' +
   'E-Mail : matthias.jung@eleviq.solutions\n' +
   'Tél : +33 6 27 58 86 14\n' +
   'Site web : https://eleviq.solutions\n' +
   'LinkedIn : https://www.linkedin.com/in/jungmatthias/';
+
+// Reads SIGNATURE_EN / SIGNATURE_FR from Script Properties (Project Settings
+// → Script Properties) so the signature can be edited without a redeploy.
+// Falls back to the hardcoded defaults above when a property isn't set.
+// Script Properties values are plain text, so literal "\n" is converted to
+// a real newline.
+function getSignature(lang) {
+  var key = lang === 'en' ? 'SIGNATURE_EN' : 'SIGNATURE_FR';
+  var fallback = lang === 'en' ? DEFAULT_SIGNATURE_EN : DEFAULT_SIGNATURE_FR;
+  var value = PropertiesService.getScriptProperties().getProperty(key);
+  return value ? value.replace(/\\n/g, '\n') : fallback;
+}
 
 // Bump this string with each code change. Lets anyone confirm which version
 // is actually live via a plain GET, without touching the Sheet or sending mail.
@@ -250,7 +262,7 @@ function sendScopeRequestEmails(name, company, email, website, useCase, offer, l
       body: 'Hi ' + name + ',\n\n' +
         'Thank you for your interest in our services and for providing details. I\'ll take a look and follow up by email within 3 business days ' +
         '— either with the detailed scope and pricing, or a couple of questions first.\n\n' +
-        'Talk soon,\n' + SIGNATURE_EN
+        'Talk soon,\n' + getSignature('en')
     });
   } else {
     MailApp.sendEmail({
@@ -260,7 +272,7 @@ function sendScopeRequestEmails(name, company, email, website, useCase, offer, l
       body: 'Bonjour ' + name + ',\n\n' +
         'Merci pour votre intérêt pour nos services et pour ces informations. Je vais regarder ça et revenir vers vous par email sous 3 jours ouvrés ' +
         '— avec le périmètre détaillé et le tarif, ou quelques questions au préalable.\n\n' +
-        'À bientôt,\n' + SIGNATURE_FR
+        'À bientôt,\n' + getSignature('fr')
     });
   }
 }
