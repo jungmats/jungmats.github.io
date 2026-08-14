@@ -152,8 +152,10 @@
   <div id="scope-modal-overlay" class="modal-overlay hidden">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="scope-modal-title">
       <button type="button" class="modal-close" id="scope-modal-close" aria-label="Fermer">&times;</button>
-      <h3 id="scope-modal-title">Demander le périmètre et le tarif</h3>
-      <p>Dites-nous-en un peu plus sur votre situation. Nous regardons ça et revenons vers vous par email — avec le périmètre détaillé et le tarif si ça semble être un bon fit.</p>
+      <div id="scope-modal-intro">
+        <h3 id="scope-modal-title">Demander le périmètre et le tarif</h3>
+        <p>Dites-nous-en un peu plus sur votre situation. Nous regardons ça et revenons vers vous par email — avec le périmètre détaillé et le tarif si ça semble être un bon fit.</p>
+      </div>
       <form id="scope-form" class="modal-form">
         <input type="text" name="hp_check" class="honeypot" tabindex="-1" autocomplete="off">
         <label for="scope-name">Nom</label>
@@ -188,6 +190,7 @@
       const formEl = document.getElementById('scope-form');
       const messageEl = document.getElementById('scope-message');
       const confirmationEl = document.getElementById('scope-confirmation');
+      const introEl = document.getElementById('scope-modal-intro');
       const submitBtn = formEl.querySelector('.submit-btn');
 
       function openModal(e) {
@@ -230,6 +233,7 @@
           const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
           const data = await res.json();
           if (data.success) {
+            introEl.classList.add('hidden');
             formEl.classList.add('hidden');
             confirmationEl.classList.remove('hidden');
           } else {
