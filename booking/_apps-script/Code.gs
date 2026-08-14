@@ -19,6 +19,19 @@
 const NOTIFY_EMAIL = 'matthias.jung@eleviq.solutions';
 const SENDER_NAME = 'Matthias — ElevIQ';
 
+const SIGNATURE_EN = 'Matthias Jung, Founder & CTO\n' +
+  'Eleviq\n' +
+  'E-Mail: matthias.jung@eleviq.solutions\n' +
+  'Tel: +33 6 27 58 86 14\n' +
+  'Website: https://eleviq.solutions\n' +
+  'LinkedIn: https://www.linkedin.com/in/jungmatthias/';
+const SIGNATURE_FR = 'Matthias Jung, Fondateur & CTO\n' +
+  'Eleviq\n' +
+  'E-Mail : matthias.jung@eleviq.solutions\n' +
+  'Tél : +33 6 27 58 86 14\n' +
+  'Site web : https://eleviq.solutions\n' +
+  'LinkedIn : https://www.linkedin.com/in/jungmatthias/';
+
 // Bump this string with each code change. Lets anyone confirm which version
 // is actually live via a plain GET, without touching the Sheet or sending mail.
 const CODE_VERSION = '2026-08-13-scope-requests';
@@ -235,9 +248,9 @@ function sendScopeRequestEmails(name, company, email, website, useCase, offer, l
       name: SENDER_NAME,
       subject: 'ElevIQ — got your request',
       body: 'Hi ' + name + ',\n\n' +
-        'Thanks for the details. I\'ll take a look and follow up by email within a couple of days ' +
+        'Thank you for your interest in our services and for providing details. I\'ll take a look and follow up by email within 3 business days ' +
         '— either with the detailed scope and pricing, or a couple of questions first.\n\n' +
-        'Talk soon,\nMatthias\nhello@eleviq.solutions'
+        'Talk soon,\n' + SIGNATURE_EN
     });
   } else {
     MailApp.sendEmail({
@@ -245,9 +258,9 @@ function sendScopeRequestEmails(name, company, email, website, useCase, offer, l
       name: SENDER_NAME,
       subject: 'ElevIQ — votre demande est bien reçue',
       body: 'Bonjour ' + name + ',\n\n' +
-        'Merci pour ces informations. Je vais regarder ça et revenir vers vous par email sous quelques jours ' +
+        'Merci pour votre intérêt pour nos services et pour ces informations. Je vais regarder ça et revenir vers vous par email sous 3 jours ouvrés ' +
         '— avec le périmètre détaillé et le tarif, ou quelques questions au préalable.\n\n' +
-        'À bientôt,\nMatthias\nhello@eleviq.solutions'
+        'À bientôt,\n' + SIGNATURE_FR
     });
   }
 }
