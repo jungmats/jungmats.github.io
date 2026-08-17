@@ -2,8 +2,8 @@
 
 One Worker, two doors to the existing Apps Script booking backend:
 
-- **HTTP API** for autonomous agents: `GET /slots`, `POST /book` (documented in `/llms.txt`)
-- **MCP server** for connected assistants (Claude, etc.): `POST /mcp`, tools `list_slots` / `book_slot`
+- **HTTP API** for autonomous agents: `GET /slots`, `POST /book`, `POST /waitlist` (documented in `/llms.txt`)
+- **MCP server** for connected assistants (Claude, etc.): `POST /mcp`, tools `list_slots` / `book_slot` / `join_waitlist`
 
 Every booking that passes the gateway is stamped with attribution
 (self-declared `via` field, User-Agent, Cloudflare verified-bot signal),

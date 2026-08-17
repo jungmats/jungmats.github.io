@@ -10,7 +10,8 @@
  * The last three are attribution fields stamped by the booking gateway
  * (Cloudflare Worker) when an AI agent books; they stay empty for
  * bookings made through the human form on the website.
- * Waitlist tab columns (appended by this script): Timestamp | Name | Email | Topic
+ * Waitlist tab columns (appended by this script):
+ *   Timestamp | Name | Email | Topic | Via | Agent UA | Verified Bot
  * ScopeRequests tab columns (appended by this script): Timestamp | Name | Company | Email | Website | Use Case | Offer | Lang
  *
  * A slot's ID is Date_Time, e.g. "2025-09-23_14:00". One booking per slot.
@@ -50,7 +51,14 @@ function getSignature(lang) {
 
 // Bump this string with each code change. Lets anyone confirm which version
 // is actually live via a plain GET, without touching the Sheet or sending mail.
-const CODE_VERSION = '2026-08-17-signature-fix';
+const CODE_VERSION = '2026-08-17-waitlist-caps';
+
+// Length caps for user-supplied text (it ends up in the sheet and in
+// emails). Applied here as well as in the gateway, so direct callers
+// are capped too.
+function cap(value, max) {
+  return String(value || '').trim().slice(0, max);
+}
 
 const DAY_NAMES = {
   fr: ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'],
@@ -130,16 +138,16 @@ function getSlots(ss, lang) {
 }
 
 function bookSlot(ss, body, lang) {
-  const name = (body.name || '').trim();
-  const email = (body.email || '').trim();
-  const topic = (body.topic || '').trim();
-  const slotId = (body.slotId || '').trim();
+  const name = cap(body.name, 120);
+  const email = cap(body.email, 200);
+  const topic = cap(body.topic, 500);
+  const slotId = cap(body.slotId, 50);
 
   // Attribution fields, present only when the booking gateway forwarded
   // the request on behalf of an AI agent.
-  const via = String(body.via || '').trim();
-  const agentUa = String(body.agent_ua || '').trim();
-  const agentVerified = String(body.agent_verified || '').trim();
+  const via = cap(body.via, 120);
+  const agentUa = cap(body.agent_ua, 250);
+  const agentVerified = cap(body.agent_verified, 120);
 
   if (!name || !email || !slotId || !isValidEmail(email)) {
     return { success: false, reason: 'invalid_input' };
@@ -171,22 +179,29 @@ function bookSlot(ss, body, lang) {
 }
 
 function addToWaitlist(ss, body, lang) {
-  const name = (body.name || '').trim();
-  const email = (body.email || '').trim();
-  const topic = (body.topic || '').trim();
+  const name = cap(body.name, 120);
+  const email = cap(body.email, 200);
+  const topic = cap(body.topic, 500);
+
+  // Attribution, stamped by the booking gateway for agent signups.
+  const via = cap(body.via, 120);
+  const agentUa = cap(body.agent_ua, 250);
+  const agentVerified = cap(body.agent_verified, 120);
+  const viaLabel = attributionLabel(via, agentUa, agentVerified, lang);
 
   if (!name || !email || !isValidEmail(email)) {
     return { success: false, reason: 'invalid_input' };
   }
 
-  ss.getSheetByName('Waitlist').appendRow([new Date(), name, email, topic]);
+  ss.getSheetByName('Waitlist').appendRow([new Date(), name, email, topic, via, agentUa, agentVerified]);
 
   if (lang === 'en') {
     MailApp.sendEmail({
       to: NOTIFY_EMAIL,
       name: SENDER_NAME,
       subject: 'ElevIQ waitlist signup: ' + name,
-      body: 'New waitlist signup.\n\nName: ' + name + '\nEmail: ' + email + '\nTopic: ' + (topic || '—')
+      body: 'New waitlist signup.\n\nName: ' + name + '\nEmail: ' + email + '\nTopic: ' + (topic || '—') +
+        '\nSigned up via: ' + viaLabel
     });
 
     MailApp.sendEmail({
@@ -203,7 +218,8 @@ function addToWaitlist(ss, body, lang) {
       to: NOTIFY_EMAIL,
       name: SENDER_NAME,
       subject: 'Liste d\'attente ElevIQ : ' + name,
-      body: 'Nouvelle inscription en liste d\'attente.\n\nNom : ' + name + '\nEmail : ' + email + '\nSujet : ' + (topic || '—')
+      body: 'Nouvelle inscription en liste d\'attente.\n\nNom : ' + name + '\nEmail : ' + email + '\nSujet : ' + (topic || '—') +
+        '\nInscription via : ' + viaLabel
     });
 
     MailApp.sendEmail({
@@ -221,12 +237,12 @@ function addToWaitlist(ss, body, lang) {
 }
 
 function requestScope(ss, body, lang) {
-  const name = (body.name || '').trim();
-  const company = (body.company || '').trim();
-  const email = (body.email || '').trim();
-  const website = (body.website || '').trim();
-  const useCase = (body.useCase || '').trim();
-  const offer = (body.offer || '').trim();
+  const name = cap(body.name, 120);
+  const company = cap(body.company, 120);
+  const email = cap(body.email, 200);
+  const website = cap(body.website, 200);
+  const useCase = cap(body.useCase, 1000);
+  const offer = cap(body.offer, 120);
 
   if (!name || !email || !useCase || !isValidEmail(email)) {
     return { success: false, reason: 'invalid_input' };

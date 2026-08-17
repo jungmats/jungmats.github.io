@@ -17,7 +17,15 @@
 const APPS_SCRIPT_URL =
   'https://script.google.com/macros/s/AKfycbyH4RMe-lfQrzbEmCRzDufaOzpUaYpmTTr1Ghn2AfpbCuijNYLUS1_2KJJIPwc2ycFMvQ/exec';
 
-const GATEWAY_VERSION = '2026-08-17-v1';
+const GATEWAY_VERSION = '2026-08-17-v2';
+
+// Field length caps — user-supplied text ends up embedded in the emails the
+// backend sends, so everything is truncated before forwarding.
+const CAPS = { name: 120, email: 200, topic: 500, via: 120 };
+
+function cap(value, max) {
+  return String(value || '').trim().slice(0, max);
+}
 
 // MCP protocol versions this server can speak (newest first).
 const MCP_VERSIONS = ['2025-06-18', '2025-03-26', '2024-11-05'];
@@ -39,7 +47,8 @@ export default {
 
     // Rate limiting, keyed per client IP: stricter for booking attempts.
     const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
-    const limiter = path === '/book' && request.method === 'POST' ? env.BOOK_LIMITER : env.READ_LIMITER;
+    const isWrite = request.method === 'POST' && (path === '/book' || path === '/waitlist');
+    const limiter = isWrite ? env.BOOK_LIMITER : env.READ_LIMITER;
     const { success: allowed } = await limiter.limit({ key: ip });
     if (!allowed) {
       return json(
@@ -55,6 +64,7 @@ export default {
       if (path === '/' && request.method === 'GET') return apiIndex(url);
       if (path === '/slots' && request.method === 'GET') return handleSlots(url);
       if (path === '/book' && request.method === 'POST') return handleBook(request);
+      if (path === '/waitlist' && request.method === 'POST') return handleWaitlist(request);
       if (path === '/mcp' && request.method === 'POST') return handleMcp(request);
       if (path === '/mcp') {
         // Stateless server: no SSE stream, no sessions to delete.
@@ -63,7 +73,7 @@ export default {
         });
       }
       return json(
-        { error: 'not_found', hint: 'GET / describes this API. Endpoints: GET /slots, POST /book, POST /mcp.' },
+        { error: 'not_found', hint: 'GET / describes this API. Endpoints: GET /slots, POST /book, POST /waitlist, POST /mcp.' },
         404
       );
     } catch (err) {
@@ -127,7 +137,8 @@ function apiIndex(url) {
     endpoints: {
       list_slots: 'GET ' + base + '/slots?lang=en — bookable slots; entries with "taken": true are gone.',
       book: 'POST ' + base + '/book — JSON body: {"slotId": "<id from /slots>", "name": "...", "email": "...", "topic": "(optional)", "lang": "en|fr", "via": "<your agent or product name>"}',
-      mcp: 'POST ' + base + '/mcp — MCP server (Streamable HTTP), tools: list_slots, book_slot.',
+      waitlist: 'POST ' + base + '/waitlist — when no slot is free. JSON body: {"name": "...", "email": "...", "topic": "(optional)", "lang": "en|fr", "via": "<your agent or product name>"}',
+      mcp: 'POST ' + base + '/mcp — MCP server (Streamable HTTP), tools: list_slots, book_slot, join_waitlist.',
     },
     attribution:
       'Please set "via" to your agent or product name (e.g. "claude", "gpt-agent") so the booking is attributed correctly.',
@@ -142,7 +153,7 @@ async function handleSlots(url) {
     gateway_version: GATEWAY_VERSION,
     lang: lang,
     slots: data.slots || [],
-    hint: 'Book with POST /book using the "id" of a slot where "taken" is false.',
+    hint: 'Book with POST /book using the "id" of a slot where "taken" is false. If every slot is taken, POST /waitlist with name and email to be contacted when a new slot opens.',
   });
 }
 
@@ -159,9 +170,9 @@ async function handleBook(request) {
 
   // Forgiving parsing: accept common alternative field spellings.
   const slotId = String(body.slotId || body.slot_id || body.slot || body.id || '').trim();
-  const name = String(body.name || '').trim();
-  const email = String(body.email || '').trim();
-  const topic = String(body.topic || body.subject || '').trim();
+  const name = cap(body.name, CAPS.name);
+  const email = cap(body.email, CAPS.email);
+  const topic = cap(body.topic || body.subject, CAPS.topic);
   const lang = normalizeLang(body.lang);
 
   const missing = [];
@@ -172,7 +183,7 @@ async function handleBook(request) {
     return json({ error: 'missing_fields', missing: missing, hint: 'Add the missing fields and retry.' }, 400);
   }
 
-  const result = await bookThroughBackend(request, { slotId, name, email, topic, lang, via: body.via });
+  const result = await submitThroughBackend(request, 'book', { slotId, name, email, topic, lang, via: body.via });
 
   if (result.success) {
     return json({
@@ -197,11 +208,51 @@ async function handleBook(request) {
   return json({ error: result.reason || 'backend_error', hint: hint, slots: result.slots }, status);
 }
 
-// Shared by the HTTP door and the MCP door.
-function bookThroughBackend(request, { slotId, name, email, topic, lang, via }) {
+async function handleWaitlist(request) {
+  let body;
+  try {
+    body = await request.json();
+  } catch (err) {
+    return json(
+      { error: 'invalid_json', hint: 'Send a JSON body, e.g. {"name":"Ada","email":"ada@example.com"}.' },
+      400
+    );
+  }
+
+  const name = cap(body.name, CAPS.name);
+  const email = cap(body.email, CAPS.email);
+  const topic = cap(body.topic || body.subject, CAPS.topic);
+
+  const missing = [];
+  if (!name) missing.push('name');
+  if (!email) missing.push('email (you will be contacted there when a slot opens)');
+  if (missing.length) {
+    return json({ error: 'missing_fields', missing: missing, hint: 'Add the missing fields and retry.' }, 400);
+  }
+
+  const result = await submitThroughBackend(request, 'waitlist', {
+    name, email, topic, lang: normalizeLang(body.lang), via: body.via,
+  });
+
+  if (result.success) {
+    return json({
+      success: true,
+      message:
+        'Waitlist signup confirmed for ' + email + '. Matthias will reach out as soon as a new slot opens; a confirmation email has been sent.',
+    });
+  }
+  return json(
+    { error: result.reason || 'backend_error', hint: 'The backend rejected the signup — check that the email address is valid.' },
+    result.reason === 'invalid_input' ? 400 : 502
+  );
+}
+
+// Shared by the HTTP door and the MCP door: stamps attribution and forwards
+// to the Apps Script backend.
+function submitThroughBackend(request, action, { slotId, name, email, topic, lang, via }) {
   const attribution = attributionFrom(request, via);
   return backendPost({
-    action: 'book',
+    action: action,
     slotId: slotId,
     name: name,
     email: email,
@@ -246,6 +297,22 @@ const MCP_TOOLS = [
         lang: { type: 'string', enum: ['en', 'fr'], description: 'Language for the confirmation email (default en).' },
       },
       required: ['slotId', 'name', 'email'],
+    },
+  },
+  {
+    name: 'join_waitlist',
+    title: 'Join the waitlist',
+    description:
+      'Join the ElevIQ waitlist when no free call slots are available. Matthias will reach out by email as soon as a new slot opens. Ask the user for consent before signing them up.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        name: { type: 'string', description: 'Name of the person to put on the waitlist.' },
+        email: { type: 'string', description: 'Email address to contact when a slot opens.' },
+        topic: { type: 'string', description: 'Optional: what the call should focus on.' },
+        lang: { type: 'string', enum: ['en', 'fr'], description: 'Language for the confirmation email (default en).' },
+      },
+      required: ['name', 'email'],
     },
   },
 ];
@@ -326,25 +393,52 @@ async function mcpToolCall(request, params) {
     const free = (data.slots || []).filter((s) => !s.taken);
     const text = free.length
       ? 'Bookable slots (use the id with book_slot):\n' + free.map((s) => '- ' + s.id + ' — ' + s.label).join('\n')
-      : 'No free slots right now. The user can email hello@eleviq.solutions to be put on the waitlist.';
+      : 'No free slots right now. Use the join_waitlist tool to put the user on the waitlist — they will be contacted by email as soon as a new slot opens.';
     return { content: [{ type: 'text', text: text }] };
+  }
+
+  if (params.name === 'join_waitlist') {
+    const name = cap(args.name, CAPS.name);
+    const email = cap(args.email, CAPS.email);
+    if (!name || !email) {
+      return {
+        content: [{ type: 'text', text: 'Missing required arguments: join_waitlist needs name and email.' }],
+        isError: true,
+      };
+    }
+    const result = await submitThroughBackend(request, 'waitlist', {
+      name: name,
+      email: email,
+      topic: cap(args.topic, CAPS.topic),
+      lang: normalizeLang(args.lang),
+      via: 'mcp',
+    });
+    if (result.success) {
+      return {
+        content: [{ type: 'text', text: 'Waitlist signup confirmed for ' + email + '. Matthias will reach out as soon as a new slot opens; a confirmation email was sent.' }],
+      };
+    }
+    return {
+      content: [{ type: 'text', text: 'Waitlist signup failed: the backend rejected the input — check the email address.' }],
+      isError: true,
+    };
   }
 
   if (params.name === 'book_slot') {
     const slotId = String(args.slotId || '').trim();
-    const name = String(args.name || '').trim();
-    const email = String(args.email || '').trim();
+    const name = cap(args.name, CAPS.name);
+    const email = cap(args.email, CAPS.email);
     if (!slotId || !name || !email) {
       return {
         content: [{ type: 'text', text: 'Missing required arguments: book_slot needs slotId, name and email.' }],
         isError: true,
       };
     }
-    const result = await bookThroughBackend(request, {
+    const result = await submitThroughBackend(request, 'book', {
       slotId: slotId,
       name: name,
       email: email,
-      topic: String(args.topic || '').trim(),
+      topic: cap(args.topic, CAPS.topic),
       lang: normalizeLang(args.lang),
       via: 'mcp',
     });

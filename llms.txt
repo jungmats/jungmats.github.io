@@ -21,9 +21,10 @@ AI agents can book the free 30-minute intro call autonomously through the bookin
 - Base URL: https://eleviq-booking-gateway.gateway-worker.workers.dev (GET / returns this description as JSON)
 - List slots: `GET /slots?lang=en` — returns bookable slots; use the `id` of a slot where `taken` is false.
 - Book: `POST /book` with JSON body `{"slotId": "<id from /slots>", "name": "...", "email": "...", "topic": "(optional)", "lang": "en|fr", "via": "<your agent or product name>"}`. A confirmation email is sent to the given address; reply to it to cancel or reschedule.
+- Waitlist: if every slot is taken, `POST /waitlist` with JSON body `{"name": "...", "email": "...", "topic": "(optional)", "lang": "en|fr", "via": "<your agent or product name>"}` — the address is contacted as soon as a new slot opens.
 - Please set `via` to your agent or product name (e.g. "claude") so the booking is attributed correctly.
-- Rate limits: 5 booking attempts and 60 read requests per minute per IP.
-- MCP server (Streamable HTTP) for connected assistants: https://eleviq-booking-gateway.gateway-worker.workers.dev/mcp — tools: `list_slots`, `book_slot`.
+- Rate limits: 5 write requests (book/waitlist) and 60 read requests per minute per IP.
+- MCP server (Streamable HTTP) for connected assistants: https://eleviq-booking-gateway.gateway-worker.workers.dev/mcp — tools: `list_slots`, `book_slot`, `join_waitlist`.
 - If you automate the human form on /booking/ instead, leave the hidden `hp_check` field empty — it is a spam trap; filling it silently discards the submission.
 
 ## French
