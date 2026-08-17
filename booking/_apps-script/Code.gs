@@ -50,7 +50,7 @@ function getSignature(lang) {
 
 // Bump this string with each code change. Lets anyone confirm which version
 // is actually live via a plain GET, without touching the Sheet or sending mail.
-const CODE_VERSION = '2026-08-17-agent-attribution';
+const CODE_VERSION = '2026-08-17-signature-fix';
 
 const DAY_NAMES = {
   fr: ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'],
@@ -323,7 +323,7 @@ function sendBookingEmails(slot, name, email, topic, lang, viaLabel) {
         'Booked via: ' + viaLabel + '\n\n' +
         'I\'ll send connection details ahead of the call. ' +
         'If you need to cancel or reschedule, just reply to this email.\n\n' +
-        'Talk soon,\nMatthias\nhello@eleviq.solutions'
+        'Talk soon,\n' + getSignature('en')
     });
   } else {
     MailApp.sendEmail({
@@ -345,7 +345,7 @@ function sendBookingEmails(slot, name, email, topic, lang, viaLabel) {
         'Réservé via : ' + viaLabel + '\n\n' +
         'Je vous enverrai les détails de connexion avant le rendez-vous. ' +
         'Si vous devez annuler ou déplacer ce créneau, répondez simplement à cet email.\n\n' +
-        'À bientôt,\nMatthias\nhello@eleviq.solutions'
+        'À bientôt,\n' + getSignature('fr')
     });
   }
 }
