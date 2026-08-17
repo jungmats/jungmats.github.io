@@ -5,7 +5,11 @@
  * "ScopeRequests", is created automatically on first use if missing.
  *
  * Slots tab columns:   Date (YYYY-MM-DD) | Time (HH:MM) | Active (TRUE/FALSE)
- * Bookings tab columns (appended by this script): Timestamp | SlotID | Name | Email | Topic
+ * Bookings tab columns (appended by this script):
+ *   Timestamp | SlotID | Name | Email | Topic | Via | Agent UA | Verified Bot
+ * The last three are attribution fields stamped by the booking gateway
+ * (Cloudflare Worker) when an AI agent books; they stay empty for
+ * bookings made through the human form on the website.
  * Waitlist tab columns (appended by this script): Timestamp | Name | Email | Topic
  * ScopeRequests tab columns (appended by this script): Timestamp | Name | Company | Email | Website | Use Case | Offer | Lang
  *
@@ -46,7 +50,7 @@ function getSignature(lang) {
 
 // Bump this string with each code change. Lets anyone confirm which version
 // is actually live via a plain GET, without touching the Sheet or sending mail.
-const CODE_VERSION = '2026-08-13-scope-requests';
+const CODE_VERSION = '2026-08-17-agent-attribution';
 
 const DAY_NAMES = {
   fr: ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'],
@@ -131,6 +135,12 @@ function bookSlot(ss, body, lang) {
   const topic = (body.topic || '').trim();
   const slotId = (body.slotId || '').trim();
 
+  // Attribution fields, present only when the booking gateway forwarded
+  // the request on behalf of an AI agent.
+  const via = String(body.via || '').trim();
+  const agentUa = String(body.agent_ua || '').trim();
+  const agentVerified = String(body.agent_verified || '').trim();
+
   if (!name || !email || !slotId || !isValidEmail(email)) {
     return { success: false, reason: 'invalid_input' };
   }
@@ -143,7 +153,7 @@ function bookSlot(ss, body, lang) {
     if (!slot) return { success: false, reason: 'unknown_slot', slots: slots };
     if (slot.taken) return { success: false, reason: 'taken', slots: slots };
 
-    ss.getSheetByName('Bookings').appendRow([new Date(), slotId, name, email, topic]);
+    ss.getSheetByName('Bookings').appendRow([new Date(), slotId, name, email, topic, via, agentUa, agentVerified]);
     SpreadsheetApp.flush();
 
     const confirmedSlots = getSlots(ss, lang);
@@ -152,7 +162,7 @@ function bookSlot(ss, body, lang) {
       return { success: false, reason: 'write_not_confirmed', slots: confirmedSlots };
     }
 
-    sendBookingEmails(slot, name, email, topic, lang);
+    sendBookingEmails(slot, name, email, topic, lang, attributionLabel(via, agentUa, agentVerified, lang));
 
     return { success: true, label: slot.label, slots: confirmedSlots };
   } finally {
@@ -277,13 +287,29 @@ function sendScopeRequestEmails(name, company, email, website, useCase, offer, l
   }
 }
 
-function sendBookingEmails(slot, name, email, topic, lang) {
+// Human-readable attribution line for the notification/confirmation emails,
+// e.g. "AI agent (declared: claude · verified bot: AI Assistant)" or
+// "website form" when no gateway attribution is present.
+function attributionLabel(via, agentUa, agentVerified, lang) {
+  if (!via && !agentUa && !agentVerified) {
+    return lang === 'en' ? 'website form' : 'formulaire du site';
+  }
+  const parts = [];
+  if (via) parts.push((lang === 'en' ? 'declared: ' : 'déclaré : ') + via);
+  if (agentVerified) parts.push((lang === 'en' ? 'verified bot: ' : 'bot vérifié : ') + agentVerified);
+  if (!via && !agentVerified && agentUa) parts.push('UA: ' + agentUa);
+  const label = lang === 'en' ? 'AI agent' : 'agent IA';
+  return parts.length ? label + ' (' + parts.join(' · ') + ')' : label;
+}
+
+function sendBookingEmails(slot, name, email, topic, lang, viaLabel) {
   if (lang === 'en') {
     MailApp.sendEmail({
       to: NOTIFY_EMAIL,
       name: SENDER_NAME,
       subject: 'New booking: ' + slot.label,
-      body: 'Name: ' + name + '\nEmail: ' + email + '\nTopic: ' + (topic || '—') + '\nSlot: ' + slot.label
+      body: 'Name: ' + name + '\nEmail: ' + email + '\nTopic: ' + (topic || '—') + '\nSlot: ' + slot.label +
+        '\nBooked via: ' + viaLabel
     });
 
     MailApp.sendEmail({
@@ -294,6 +320,7 @@ function sendBookingEmails(slot, name, email, topic, lang) {
         'Your free 30-minute slot with Matthias (ElevIQ) is confirmed:\n\n' +
         slot.label + '\n\n' +
         (topic ? 'Topic you shared: ' + topic + '\n\n' : '') +
+        'Booked via: ' + viaLabel + '\n\n' +
         'I\'ll send connection details ahead of the call. ' +
         'If you need to cancel or reschedule, just reply to this email.\n\n' +
         'Talk soon,\nMatthias\nhello@eleviq.solutions'
@@ -303,7 +330,8 @@ function sendBookingEmails(slot, name, email, topic, lang) {
       to: NOTIFY_EMAIL,
       name: SENDER_NAME,
       subject: 'Nouvelle réservation : ' + slot.label,
-      body: 'Nom : ' + name + '\nEmail : ' + email + '\nSujet : ' + (topic || '—') + '\nCréneau : ' + slot.label
+      body: 'Nom : ' + name + '\nEmail : ' + email + '\nSujet : ' + (topic || '—') + '\nCréneau : ' + slot.label +
+        '\nRéservé via : ' + viaLabel
     });
 
     MailApp.sendEmail({
@@ -314,6 +342,7 @@ function sendBookingEmails(slot, name, email, topic, lang) {
         'Votre créneau gratuit de 30 minutes avec Matthias (ElevIQ) est confirmé :\n\n' +
         slot.label + '\n\n' +
         (topic ? 'Sujet indiqué : ' + topic + '\n\n' : '') +
+        'Réservé via : ' + viaLabel + '\n\n' +
         'Je vous enverrai les détails de connexion avant le rendez-vous. ' +
         'Si vous devez annuler ou déplacer ce créneau, répondez simplement à cet email.\n\n' +
         'À bientôt,\nMatthias\nhello@eleviq.solutions'
