@@ -51,7 +51,7 @@ function getSignature(lang) {
 
 // Bump this string with each code change. Lets anyone confirm which version
 // is actually live via a plain GET, without touching the Sheet or sending mail.
-const CODE_VERSION = '2026-08-17-gateway-secret';
+const CODE_VERSION = '2026-08-17-waitlist-signature';
 
 // Length caps for user-supplied text (it ends up in the sheet and in
 // emails). Applied here as well as in the gateway, so direct callers
@@ -223,7 +223,7 @@ function addToWaitlist(ss, body, lang) {
       body: 'Hi ' + name + ',\n\n' +
         'Thanks for your interest! All free slots are full right now, ' +
         'but I\'ve added you to the waitlist and will reach out as soon as a new slot opens up.\n\n' +
-        'Talk soon,\nMatthias'
+        'Talk soon,\n' + getSignature('en')
     });
   } else {
     MailApp.sendEmail({
@@ -241,7 +241,7 @@ function addToWaitlist(ss, body, lang) {
       body: 'Bonjour ' + name + ',\n\n' +
         'Merci pour votre intérêt ! Tous les créneaux gratuits sont complets pour le moment, ' +
         'mais je vous ai ajouté(e) à la liste d\'attente et je vous recontacterai dès qu\'un nouveau créneau se libère.\n\n' +
-        'À très bientôt,\nMatthias'
+        'À très bientôt,\n' + getSignature('fr')
     });
   }
 
