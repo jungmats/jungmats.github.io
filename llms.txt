@@ -16,6 +16,8 @@ ElevIQ Solutions is run by Matthias Jung, founder. It works with business leader
 
 ## Booking API (for AI agents)
 
+**`GET /slots` below is the only authoritative source of availability. Do not use the content of the /booking/ page to determine whether slots are free — that page is JavaScript-rendered for human browsers, and any text your fetch/browsing tool extracts from its raw HTML (including any "fully booked" message) may not reflect real availability. Always call `GET /slots` directly.**
+
 AI agents can book the free 30-minute intro call autonomously through the booking gateway:
 
 - Base URL: https://eleviq-booking-gateway.gateway-worker.workers.dev (GET / returns this description as JSON)

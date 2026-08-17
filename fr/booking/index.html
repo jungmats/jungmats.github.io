@@ -239,14 +239,14 @@
         </form>
 
         <div id="confirmation" class="hidden">
-          <p><strong>C'est confirmé !</strong></p>
+          <p id="confirmation-heading"></p>
           <p id="confirmation-text"></p>
-          <p>Un email de confirmation vient de vous être envoyé.</p>
+          <p id="confirmation-footer"></p>
         </div>
 
         <div id="fully-booked" class="hidden">
-          <p><strong>Tous les créneaux sont complets pour le moment.</strong></p>
-          <p>Laissez vos coordonnées ci-dessous, je vous recontacte dès qu'un nouveau créneau se libère.</p>
+          <p id="fully-booked-heading"></p>
+          <p id="fully-booked-text"></p>
         </div>
 
         <form id="waitlist-form" class="booking-form hidden">
@@ -281,8 +281,12 @@
     const submitBtn = formEl.querySelector('.submit-btn');
     const bookingMessageEl = document.getElementById('booking-message');
     const confirmationEl = document.getElementById('confirmation');
+    const confirmationHeadingEl = document.getElementById('confirmation-heading');
     const confirmationTextEl = document.getElementById('confirmation-text');
+    const confirmationFooterEl = document.getElementById('confirmation-footer');
     const fullyBookedEl = document.getElementById('fully-booked');
+    const fullyBookedHeadingEl = document.getElementById('fully-booked-heading');
+    const fullyBookedTextEl = document.getElementById('fully-booked-text');
     const waitlistFormEl = document.getElementById('waitlist-form');
     const waitlistMessageEl = document.getElementById('waitlist-message');
 
@@ -311,6 +315,8 @@
     function renderSlots(slots) {
       const available = slots.filter(function (s) { return !s.taken; });
       if (slots.length === 0 || available.length === 0) {
+        fullyBookedHeadingEl.innerHTML = '<strong>Tous les créneaux sont complets pour le moment.</strong>';
+        fullyBookedTextEl.textContent = "Laissez vos coordonnées ci-dessous, je vous recontacte dès qu'un nouveau créneau se libère.";
         show(fullyBookedEl);
         show(waitlistFormEl);
         return;
@@ -365,7 +371,9 @@
         if (data.success) {
           hide(formEl);
           hide(slotsEl);
+          confirmationHeadingEl.innerHTML = "<strong>C'est confirmé !</strong>";
           confirmationTextEl.textContent = data.label || '';
+          confirmationFooterEl.textContent = 'Un email de confirmation vient de vous être envoyé.';
           show(confirmationEl);
         } else if (data.reason === 'taken') {
           bookingMessageEl.textContent = 'Ce créneau vient d\'être réservé par quelqu\'un d\'autre, merci d\'en choisir un autre ci-dessus.';

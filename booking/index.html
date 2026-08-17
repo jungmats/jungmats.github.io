@@ -238,14 +238,14 @@
         </form>
 
         <div id="confirmation" class="hidden">
-          <p><strong>You're booked!</strong></p>
+          <p id="confirmation-heading"></p>
           <p id="confirmation-text"></p>
-          <p>A confirmation email is on its way.</p>
+          <p id="confirmation-footer"></p>
         </div>
 
         <div id="fully-booked" class="hidden">
-          <p><strong>All slots are full right now.</strong></p>
-          <p>Leave your details below and I'll reach out as soon as a new slot opens up.</p>
+          <p id="fully-booked-heading"></p>
+          <p id="fully-booked-text"></p>
         </div>
 
         <form id="waitlist-form" class="booking-form hidden">
@@ -280,8 +280,12 @@
     const submitBtn = formEl.querySelector('.submit-btn');
     const bookingMessageEl = document.getElementById('booking-message');
     const confirmationEl = document.getElementById('confirmation');
+    const confirmationHeadingEl = document.getElementById('confirmation-heading');
     const confirmationTextEl = document.getElementById('confirmation-text');
+    const confirmationFooterEl = document.getElementById('confirmation-footer');
     const fullyBookedEl = document.getElementById('fully-booked');
+    const fullyBookedHeadingEl = document.getElementById('fully-booked-heading');
+    const fullyBookedTextEl = document.getElementById('fully-booked-text');
     const waitlistFormEl = document.getElementById('waitlist-form');
     const waitlistMessageEl = document.getElementById('waitlist-message');
 
@@ -310,6 +314,8 @@
     function renderSlots(slots) {
       const available = slots.filter(function (s) { return !s.taken; });
       if (slots.length === 0 || available.length === 0) {
+        fullyBookedHeadingEl.innerHTML = '<strong>All slots are full right now.</strong>';
+        fullyBookedTextEl.textContent = "Leave your details below and I'll reach out as soon as a new slot opens up.";
         show(fullyBookedEl);
         show(waitlistFormEl);
         return;
@@ -364,7 +370,9 @@
         if (data.success) {
           hide(formEl);
           hide(slotsEl);
+          confirmationHeadingEl.innerHTML = "<strong>You're booked!</strong>";
           confirmationTextEl.textContent = data.label || '';
+          confirmationFooterEl.textContent = 'A confirmation email is on its way.';
           show(confirmationEl);
         } else if (data.reason === 'taken') {
           bookingMessageEl.textContent = 'This slot was just booked by someone else — please choose another one above.';
