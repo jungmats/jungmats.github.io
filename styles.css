@@ -382,6 +382,10 @@ footer {
   background: linear-gradient(135deg, var(--petrol), var(--blue));
 }
 
+footer a {
+  color: var(--cyan);
+}
+
 .container {
   flex: 1;
   width: 100%;

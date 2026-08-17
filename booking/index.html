@@ -32,11 +32,20 @@
     "potentialAction": {
       "@type": "ReserveAction",
       "name": "Book a free 30-minute intro call",
-      "target": {
-        "@type": "EntryPoint",
-        "urlTemplate": "https://eleviq.solutions/booking/",
-        "actionPlatform": ["https://schema.org/DesktopWebPlatform", "https://schema.org/MobileWebPlatform"]
-      }
+      "target": [
+        {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://eleviq.solutions/booking/",
+          "actionPlatform": ["https://schema.org/DesktopWebPlatform", "https://schema.org/MobileWebPlatform"]
+        },
+        {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://eleviq-booking-gateway.gateway-worker.workers.dev/book",
+          "httpMethod": "POST",
+          "contentType": "application/json",
+          "description": "Booking API for AI agents — usage documented at https://eleviq.solutions/llms.txt"
+        }
+      ]
     },
     "provider": {
       "@type": "Organization",
@@ -170,6 +179,7 @@
       color: var(--heading-color);
     }
   </style>
+  <link rel="describedby" href="/llms.txt" type="text/plain" title="AI agent instructions">
 </head>
 <body>
 
@@ -254,7 +264,8 @@
   </div>
 
   <footer>
-    &copy; 2025-2026 ElevIQ. All rights reserved. Numéro Siren: 940258254.
+    &copy; 2025-2026 ElevIQ. All rights reserved. Numéro Siren: 940258254.<br />
+    <a href="/llms.txt">AI agent instructions</a>
   </footer>
 
   <script>

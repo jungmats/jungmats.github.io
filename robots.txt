@@ -2,3 +2,5 @@ User-agent: *
 Allow: /
 
 Sitemap: https://eleviq.solutions/sitemap.xml
+
+# AI agents: instructions and booking API at https://eleviq.solutions/llms.txt
