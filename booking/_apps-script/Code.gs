@@ -51,7 +51,7 @@ function getSignature(lang) {
 
 // Bump this string with each code change. Lets anyone confirm which version
 // is actually live via a plain GET, without touching the Sheet or sending mail.
-const CODE_VERSION = '2026-08-17-waitlist-caps';
+const CODE_VERSION = '2026-08-17-gateway-secret';
 
 // Length caps for user-supplied text (it ends up in the sheet and in
 // emails). Applied here as well as in the gateway, so direct callers
@@ -93,6 +93,18 @@ function doPost(e) {
   // Honeypot: bots fill every field, real users never see or fill this one.
   if (body.hp_check) {
     return jsonResponse({ success: true });
+  }
+
+  // Attribution integrity: the booking gateway proves itself with a shared
+  // secret (Script Property GATEWAY_SECRET). Requests without a valid
+  // secret — the human form, or anyone calling this URL directly — get
+  // their attribution fields blanked, so agent attribution can't be forged.
+  // While the property is not set, attribution is accepted as-is.
+  const expectedSecret = PropertiesService.getScriptProperties().getProperty('GATEWAY_SECRET');
+  if (expectedSecret && body.gateway_secret !== expectedSecret) {
+    body.via = '';
+    body.agent_ua = '';
+    body.agent_verified = '';
   }
 
   if (body.action === 'book') {

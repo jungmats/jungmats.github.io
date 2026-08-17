@@ -17,7 +17,12 @@
 const APPS_SCRIPT_URL =
   'https://script.google.com/macros/s/AKfycbyH4RMe-lfQrzbEmCRzDufaOzpUaYpmTTr1Ghn2AfpbCuijNYLUS1_2KJJIPwc2ycFMvQ/exec';
 
-const GATEWAY_VERSION = '2026-08-17-v2';
+const GATEWAY_VERSION = '2026-08-17-v3';
+
+// Set per request in fetch(); holds the Worker bindings, including the
+// GATEWAY_SECRET that authenticates this Worker to the Apps Script
+// (stored encrypted at Cloudflare via `wrangler secret put GATEWAY_SECRET`).
+let ENV = null;
 
 // Field length caps — user-supplied text ends up embedded in the emails the
 // backend sends, so everything is truncated before forwarding.
@@ -38,6 +43,7 @@ const CORS_HEADERS = {
 
 export default {
   async fetch(request, env) {
+    ENV = env;
     const url = new URL(request.url);
     const path = url.pathname.replace(/\/+$/, '') || '/';
 
@@ -253,6 +259,10 @@ function submitThroughBackend(request, action, { slotId, name, email, topic, lan
   const attribution = attributionFrom(request, via);
   return backendPost({
     action: action,
+    // Proves to the Apps Script that this request really came through the
+    // gateway; without a valid secret the backend ignores the attribution
+    // fields (classifies the submission as "website form").
+    gateway_secret: (ENV && ENV.GATEWAY_SECRET) || '',
     slotId: slotId,
     name: name,
     email: email,
