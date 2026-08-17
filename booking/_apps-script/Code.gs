@@ -5,8 +5,13 @@
  * "ScopeRequests", is created automatically on first use if missing.
  *
  * Slots tab columns:   Date (YYYY-MM-DD) | Time (HH:MM) | Active (TRUE/FALSE)
- * Bookings tab columns (appended by this script): Timestamp | SlotID | Name | Email | Topic
- * Waitlist tab columns (appended by this script): Timestamp | Name | Email | Topic
+ * Bookings tab columns (appended by this script):
+ *   Timestamp | SlotID | Name | Email | Topic | Via | Agent UA | Verified Bot
+ * The last three are attribution fields stamped by the booking gateway
+ * (Cloudflare Worker) when an AI agent books; they stay empty for
+ * bookings made through the human form on the website.
+ * Waitlist tab columns (appended by this script):
+ *   Timestamp | Name | Email | Topic | Via | Agent UA | Verified Bot
  * ScopeRequests tab columns (appended by this script): Timestamp | Name | Company | Email | Website | Use Case | Offer | Lang
  *
  * A slot's ID is Date_Time, e.g. "2025-09-23_14:00". One booking per slot.
@@ -46,7 +51,14 @@ function getSignature(lang) {
 
 // Bump this string with each code change. Lets anyone confirm which version
 // is actually live via a plain GET, without touching the Sheet or sending mail.
-const CODE_VERSION = '2026-08-13-scope-requests';
+const CODE_VERSION = '2026-08-17-waitlist-signature';
+
+// Length caps for user-supplied text (it ends up in the sheet and in
+// emails). Applied here as well as in the gateway, so direct callers
+// are capped too.
+function cap(value, max) {
+  return String(value || '').trim().slice(0, max);
+}
 
 const DAY_NAMES = {
   fr: ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'],
@@ -81,6 +93,18 @@ function doPost(e) {
   // Honeypot: bots fill every field, real users never see or fill this one.
   if (body.hp_check) {
     return jsonResponse({ success: true });
+  }
+
+  // Attribution integrity: the booking gateway proves itself with a shared
+  // secret (Script Property GATEWAY_SECRET). Requests without a valid
+  // secret — the human form, or anyone calling this URL directly — get
+  // their attribution fields blanked, so agent attribution can't be forged.
+  // While the property is not set, attribution is accepted as-is.
+  const expectedSecret = PropertiesService.getScriptProperties().getProperty('GATEWAY_SECRET');
+  if (expectedSecret && body.gateway_secret !== expectedSecret) {
+    body.via = '';
+    body.agent_ua = '';
+    body.agent_verified = '';
   }
 
   if (body.action === 'book') {
@@ -126,10 +150,16 @@ function getSlots(ss, lang) {
 }
 
 function bookSlot(ss, body, lang) {
-  const name = (body.name || '').trim();
-  const email = (body.email || '').trim();
-  const topic = (body.topic || '').trim();
-  const slotId = (body.slotId || '').trim();
+  const name = cap(body.name, 120);
+  const email = cap(body.email, 200);
+  const topic = cap(body.topic, 500);
+  const slotId = cap(body.slotId, 50);
+
+  // Attribution fields, present only when the booking gateway forwarded
+  // the request on behalf of an AI agent.
+  const via = cap(body.via, 120);
+  const agentUa = cap(body.agent_ua, 250);
+  const agentVerified = cap(body.agent_verified, 120);
 
   if (!name || !email || !slotId || !isValidEmail(email)) {
     return { success: false, reason: 'invalid_input' };
@@ -143,7 +173,7 @@ function bookSlot(ss, body, lang) {
     if (!slot) return { success: false, reason: 'unknown_slot', slots: slots };
     if (slot.taken) return { success: false, reason: 'taken', slots: slots };
 
-    ss.getSheetByName('Bookings').appendRow([new Date(), slotId, name, email, topic]);
+    ss.getSheetByName('Bookings').appendRow([new Date(), slotId, name, email, topic, via, agentUa, agentVerified]);
     SpreadsheetApp.flush();
 
     const confirmedSlots = getSlots(ss, lang);
@@ -152,7 +182,7 @@ function bookSlot(ss, body, lang) {
       return { success: false, reason: 'write_not_confirmed', slots: confirmedSlots };
     }
 
-    sendBookingEmails(slot, name, email, topic, lang);
+    sendBookingEmails(slot, name, email, topic, lang, attributionLabel(via, agentUa, agentVerified, lang));
 
     return { success: true, label: slot.label, slots: confirmedSlots };
   } finally {
@@ -161,22 +191,29 @@ function bookSlot(ss, body, lang) {
 }
 
 function addToWaitlist(ss, body, lang) {
-  const name = (body.name || '').trim();
-  const email = (body.email || '').trim();
-  const topic = (body.topic || '').trim();
+  const name = cap(body.name, 120);
+  const email = cap(body.email, 200);
+  const topic = cap(body.topic, 500);
+
+  // Attribution, stamped by the booking gateway for agent signups.
+  const via = cap(body.via, 120);
+  const agentUa = cap(body.agent_ua, 250);
+  const agentVerified = cap(body.agent_verified, 120);
+  const viaLabel = attributionLabel(via, agentUa, agentVerified, lang);
 
   if (!name || !email || !isValidEmail(email)) {
     return { success: false, reason: 'invalid_input' };
   }
 
-  ss.getSheetByName('Waitlist').appendRow([new Date(), name, email, topic]);
+  ss.getSheetByName('Waitlist').appendRow([new Date(), name, email, topic, via, agentUa, agentVerified]);
 
   if (lang === 'en') {
     MailApp.sendEmail({
       to: NOTIFY_EMAIL,
       name: SENDER_NAME,
       subject: 'ElevIQ waitlist signup: ' + name,
-      body: 'New waitlist signup.\n\nName: ' + name + '\nEmail: ' + email + '\nTopic: ' + (topic || '—')
+      body: 'New waitlist signup.\n\nName: ' + name + '\nEmail: ' + email + '\nTopic: ' + (topic || '—') +
+        '\nSigned up via: ' + viaLabel
     });
 
     MailApp.sendEmail({
@@ -186,14 +223,15 @@ function addToWaitlist(ss, body, lang) {
       body: 'Hi ' + name + ',\n\n' +
         'Thanks for your interest! All free slots are full right now, ' +
         'but I\'ve added you to the waitlist and will reach out as soon as a new slot opens up.\n\n' +
-        'Talk soon,\nMatthias'
+        'Talk soon,\n' + getSignature('en')
     });
   } else {
     MailApp.sendEmail({
       to: NOTIFY_EMAIL,
       name: SENDER_NAME,
       subject: 'Liste d\'attente ElevIQ : ' + name,
-      body: 'Nouvelle inscription en liste d\'attente.\n\nNom : ' + name + '\nEmail : ' + email + '\nSujet : ' + (topic || '—')
+      body: 'Nouvelle inscription en liste d\'attente.\n\nNom : ' + name + '\nEmail : ' + email + '\nSujet : ' + (topic || '—') +
+        '\nInscription via : ' + viaLabel
     });
 
     MailApp.sendEmail({
@@ -203,7 +241,7 @@ function addToWaitlist(ss, body, lang) {
       body: 'Bonjour ' + name + ',\n\n' +
         'Merci pour votre intérêt ! Tous les créneaux gratuits sont complets pour le moment, ' +
         'mais je vous ai ajouté(e) à la liste d\'attente et je vous recontacterai dès qu\'un nouveau créneau se libère.\n\n' +
-        'À très bientôt,\nMatthias'
+        'À très bientôt,\n' + getSignature('fr')
     });
   }
 
@@ -211,12 +249,12 @@ function addToWaitlist(ss, body, lang) {
 }
 
 function requestScope(ss, body, lang) {
-  const name = (body.name || '').trim();
-  const company = (body.company || '').trim();
-  const email = (body.email || '').trim();
-  const website = (body.website || '').trim();
-  const useCase = (body.useCase || '').trim();
-  const offer = (body.offer || '').trim();
+  const name = cap(body.name, 120);
+  const company = cap(body.company, 120);
+  const email = cap(body.email, 200);
+  const website = cap(body.website, 200);
+  const useCase = cap(body.useCase, 1000);
+  const offer = cap(body.offer, 120);
 
   if (!name || !email || !useCase || !isValidEmail(email)) {
     return { success: false, reason: 'invalid_input' };
@@ -277,13 +315,29 @@ function sendScopeRequestEmails(name, company, email, website, useCase, offer, l
   }
 }
 
-function sendBookingEmails(slot, name, email, topic, lang) {
+// Human-readable attribution line for the notification/confirmation emails,
+// e.g. "AI agent (declared: claude · verified bot: AI Assistant)" or
+// "website form" when no gateway attribution is present.
+function attributionLabel(via, agentUa, agentVerified, lang) {
+  if (!via && !agentUa && !agentVerified) {
+    return lang === 'en' ? 'website form' : 'formulaire du site';
+  }
+  const parts = [];
+  if (via) parts.push((lang === 'en' ? 'declared: ' : 'déclaré : ') + via);
+  if (agentVerified) parts.push((lang === 'en' ? 'verified bot: ' : 'bot vérifié : ') + agentVerified);
+  if (!via && !agentVerified && agentUa) parts.push('UA: ' + agentUa);
+  const label = lang === 'en' ? 'AI agent' : 'agent IA';
+  return parts.length ? label + ' (' + parts.join(' · ') + ')' : label;
+}
+
+function sendBookingEmails(slot, name, email, topic, lang, viaLabel) {
   if (lang === 'en') {
     MailApp.sendEmail({
       to: NOTIFY_EMAIL,
       name: SENDER_NAME,
       subject: 'New booking: ' + slot.label,
-      body: 'Name: ' + name + '\nEmail: ' + email + '\nTopic: ' + (topic || '—') + '\nSlot: ' + slot.label
+      body: 'Name: ' + name + '\nEmail: ' + email + '\nTopic: ' + (topic || '—') + '\nSlot: ' + slot.label +
+        '\nBooked via: ' + viaLabel
     });
 
     MailApp.sendEmail({
@@ -294,16 +348,18 @@ function sendBookingEmails(slot, name, email, topic, lang) {
         'Your free 30-minute slot with Matthias (ElevIQ) is confirmed:\n\n' +
         slot.label + '\n\n' +
         (topic ? 'Topic you shared: ' + topic + '\n\n' : '') +
+        'Booked via: ' + viaLabel + '\n\n' +
         'I\'ll send connection details ahead of the call. ' +
         'If you need to cancel or reschedule, just reply to this email.\n\n' +
-        'Talk soon,\nMatthias\nhello@eleviq.solutions'
+        'Talk soon,\n' + getSignature('en')
     });
   } else {
     MailApp.sendEmail({
       to: NOTIFY_EMAIL,
       name: SENDER_NAME,
       subject: 'Nouvelle réservation : ' + slot.label,
-      body: 'Nom : ' + name + '\nEmail : ' + email + '\nSujet : ' + (topic || '—') + '\nCréneau : ' + slot.label
+      body: 'Nom : ' + name + '\nEmail : ' + email + '\nSujet : ' + (topic || '—') + '\nCréneau : ' + slot.label +
+        '\nRéservé via : ' + viaLabel
     });
 
     MailApp.sendEmail({
@@ -314,9 +370,10 @@ function sendBookingEmails(slot, name, email, topic, lang) {
         'Votre créneau gratuit de 30 minutes avec Matthias (ElevIQ) est confirmé :\n\n' +
         slot.label + '\n\n' +
         (topic ? 'Sujet indiqué : ' + topic + '\n\n' : '') +
+        'Réservé via : ' + viaLabel + '\n\n' +
         'Je vous enverrai les détails de connexion avant le rendez-vous. ' +
         'Si vous devez annuler ou déplacer ce créneau, répondez simplement à cet email.\n\n' +
-        'À bientôt,\nMatthias\nhello@eleviq.solutions'
+        'À bientôt,\n' + getSignature('fr')
     });
   }
 }

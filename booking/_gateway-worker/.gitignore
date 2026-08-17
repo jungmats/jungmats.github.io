@@ -1,0 +1,3 @@
+# Wrangler's local scratch space (created by `wrangler dev`) — never commit.
+.wrangler/
+node_modules/
