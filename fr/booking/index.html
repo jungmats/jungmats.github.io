@@ -33,11 +33,20 @@
     "potentialAction": {
       "@type": "ReserveAction",
       "name": "Réserver un appel découverte gratuit de 30 minutes",
-      "target": {
-        "@type": "EntryPoint",
-        "urlTemplate": "https://eleviq.solutions/fr/booking/",
-        "actionPlatform": ["https://schema.org/DesktopWebPlatform", "https://schema.org/MobileWebPlatform"]
-      }
+      "target": [
+        {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://eleviq.solutions/fr/booking/",
+          "actionPlatform": ["https://schema.org/DesktopWebPlatform", "https://schema.org/MobileWebPlatform"]
+        },
+        {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://eleviq-booking-gateway.gateway-worker.workers.dev/book",
+          "httpMethod": "POST",
+          "contentType": "application/json",
+          "description": "API de réservation pour agents IA — documentation : https://eleviq.solutions/llms.txt"
+        }
+      ]
     },
     "provider": {
       "@type": "Organization",
@@ -171,6 +180,7 @@
       color: var(--heading-color);
     }
   </style>
+  <link rel="describedby" href="/llms.txt" type="text/plain" title="Instructions pour agents IA">
 </head>
 <body>
 
@@ -255,7 +265,8 @@
   </div>
 
   <footer>
-    &copy; 2025-2026 ElevIQ. Tous droits réservés. Numéro Siren : 940258254.
+    &copy; 2025-2026 ElevIQ. Tous droits réservés. Numéro Siren : 940258254.<br />
+    <a href="/llms.txt">Instructions pour agents IA</a>
   </footer>
 
   <script>
