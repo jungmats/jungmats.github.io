@@ -16,6 +16,10 @@
  *
  * A slot's ID is Date_Time, e.g. "2025-09-23_14:00". One booking per slot.
  *
+ * getSlots() only returns slots dated after tomorrow (today and tomorrow
+ * are excluded as too short-notice), capped to the first MAX_SLOTS of those
+ * remaining. MAX_SLOTS is a Script Property (default 6 when unset).
+ *
  * Bilingual: every request (GET query string or POST body) may carry
  * lang=en|fr. Defaults to 'fr' when absent, to match the original
  * French-only behavior of this script.
@@ -119,6 +123,27 @@ function doPost(e) {
   return jsonResponse({ success: false, reason: 'unknown_action' });
 }
 
+// Reads MAX_SLOTS from Script Properties (Project Settings → Script
+// Properties) so the number of slots shown/bookable can be tuned without a
+// redeploy. Falls back to 6 when unset or invalid.
+function getMaxSlots() {
+  const raw = PropertiesService.getScriptProperties().getProperty('MAX_SLOTS');
+  const n = parseInt(raw, 10);
+  return n > 0 ? n : 6;
+}
+
+// Slots dated today or tomorrow are excluded, to keep a minimum lead time
+// for preparation ahead of a call.
+function isTomorrowOrEarlier(dateStr) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const parts = dateStr.split('-').map(Number);
+  const slotDate = new Date(parts[0], parts[1] - 1, parts[2]);
+  return slotDate <= tomorrow;
+}
+
 function getSlots(ss, lang) {
   const slotsSheet = ss.getSheetByName('Slots');
   const bookingsSheet = ss.getSheetByName('Bookings');
@@ -136,6 +161,7 @@ function getSlots(ss, lang) {
     const [date, time, active] = slotsData[i];
     if (!date || !time || active === false || active === 'FALSE') continue;
     const dateStr = formatDate(date);
+    if (isTomorrowOrEarlier(dateStr)) continue;
     const timeStr = formatTime(time);
     const id = dateStr + '_' + timeStr;
     slots.push({
@@ -146,7 +172,7 @@ function getSlots(ss, lang) {
       taken: !!takenIds[id]
     });
   }
-  return slots;
+  return slots.slice(0, getMaxSlots());
 }
 
 function bookSlot(ss, body, lang) {
