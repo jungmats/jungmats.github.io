@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Technologies et standards pour agents IA | ElevIQ Solutions</title>
+  <meta name="description" content="Les technologies, standards et patterns d'ingénierie utilisés par ElevIQ Solutions pour préparer sites web et activités numériques aux agents IA — du contrôle d'accès et des données structurées aux actions activables par un agent, à la logique métier et à la monétisation.">
+  <link rel="canonical" href="https://eleviq.solutions/fr/technologies.html">
+  <link rel="stylesheet" href="../styles.css">
+  <link rel="alternate" hreflang="en" href="https://eleviq.solutions/technologies.html">
+  <link rel="alternate" hreflang="fr" href="https://eleviq.solutions/fr/technologies.html">
+  <link rel="alternate" hreflang="x-default" href="https://eleviq.solutions/technologies.html">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="ElevIQ Solutions">
+  <meta property="og:url" content="https://eleviq.solutions/fr/technologies.html">
+  <meta property="og:title" content="Technologies et standards pour agents IA | ElevIQ Solutions">
+  <meta property="og:description" content="Les technologies, standards et patterns d'ingénierie utilisés par ElevIQ Solutions pour préparer sites web et activités numériques aux agents IA — du contrôle d'accès et des données structurées aux actions activables par un agent, à la logique métier et à la monétisation.">
+  <meta property="og:image" content="https://eleviq.solutions/eleviq_logo_v1.5.png">
+  <meta property="og:locale" content="fr_FR">
+  <meta property="og:locale:alternate" content="en_US">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Technologies et standards pour agents IA | ElevIQ Solutions">
+  <meta name="twitter:description" content="Les technologies, standards et patterns d'ingénierie utilisés par ElevIQ Solutions pour préparer sites web et activités numériques aux agents IA.">
+  <meta name="twitter:image" content="https://eleviq.solutions/eleviq_logo_v1.5.png">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Technologies, standards et plateformes pour agents IA",
+    "description": "Les technologies, standards et patterns d'ingénierie utilisés par ElevIQ Solutions pour préparer sites web et activités numériques aux agents IA.",
+    "url": "https://eleviq.solutions/fr/technologies.html",
+    "inLanguage": "fr",
+    "isPartOf": {
+      "@type": "Organization",
+      "@id": "https://eleviq.solutions/#organization"
+    }
+  }
+  </script>
+  <link rel="describedby" href="/llms.txt" type="text/plain" title="Instructions pour agents IA">
+</head>
+<body>
+
+  <header>
+    <a href="index.html"><img src="../eleviq_logo_v1.5.png" alt="Logo ElevIQ"></a>
+    <p class="brand-line">ElevIQ Solutions — Conseil en IA &amp; Intégration</p>
+    <p><b>Préparez-vous pour le web agentique</b></p>
+    <p class="lang-switch"><a href="../technologies.html">English</a></p>
+  </header>
+
+  <div class="container">
+    <main>
+      <section class="section">
+        <h1 class="page-title">Technologies, standards et plateformes pour agents IA</h1>
+        <p>Les agents IA interagissent avec les sites web différemment des visiteurs humains. Ils doivent pouvoir accéder à l'information, la comprendre de manière fiable, découvrir les actions disponibles, interagir avec les systèmes métier et, de plus en plus, effectuer des transactions directement avec des services numériques.</p>
+        <p>Nous travaillons avec un large éventail de technologies web, de standards pour agents IA, d'API, de plateformes d'automatisation, de systèmes de données et de patterns d'ingénierie pour rendre ces interactions fiables et commercialement utiles.</p>
+        <p>Il n'existe pas de « stack IA agent » figée. La solution adaptée dépend du parcours client, de l'architecture existante du site, des systèmes métier, des exigences de sécurité et du modèle commercial. Dans la mesure du possible, nous nous appuyons sur les technologies déjà en place plutôt que d'introduire une infrastructure superflue.</p>
+        <ul class="toc">
+          <li><a href="#access-control">Contrôle d&rsquo;accès</a></li>
+          <li><a href="#information-understanding">Information et compréhension</a></li>
+          <li><a href="#actions-transactions">Actions et transactions</a></li>
+          <li><a href="#rules-automation">Règles et automatisation</a></li>
+          <li><a href="#data-business-systems">Données et systèmes métier</a></li>
+          <li><a href="#monetization">Monétisation</a></li>
+          <li><a href="#monitoring-accountability">Suivi et redevabilité</a></li>
+        </ul>
+      </section>
+
+      <section class="section" id="access-control">
+        <h2>Contrôle d&rsquo;accès</h2>
+        <p><b>Contrôlez la manière dont les agents IA et les robots d&rsquo;indexation accèdent à votre site, identifiez qui effectue une requête, et protégez les informations ou actions qui ne doivent pas être publiques.</b></p>
+
+        <h3>Cloudflare AI Crawl Control &amp; Bot Management</h3>
+        <p>Identifiez et gérez le trafic automatisé, y compris les robots IA, au niveau du réseau.</p>
+
+        <h3>Cloudflare CDN &amp; WAF</h3>
+        <p>Appliquez routage, mise en cache, politiques d&rsquo;accès, limites de débit et règles de sécurité avant que les requêtes n&rsquo;atteignent l&rsquo;application.</p>
+
+        <h3>Web Bot Auth</h3>
+        <p>Utilisez des requêtes signées cryptographiquement pour vérifier les robots et agents automatisés pris en charge, plutôt que de vous fier uniquement à des chaînes User-Agent facilement imitables.</p>
+
+        <h3>robots.txt</h3>
+        <p>Déclarez les politiques d&rsquo;accès des robots d&rsquo;indexation pour le contenu du site.</p>
+
+        <h3>OAuth</h3>
+        <p>Authentifiez les applications et fournissez un accès délégué lorsqu&rsquo;un agent IA agit pour le compte d&rsquo;un utilisateur.</p>
+
+        <h3>JWT — JSON Web Tokens</h3>
+        <p>Représentez les identités authentifiées et les informations d&rsquo;autorisation à portée limitée entre systèmes.</p>
+
+        <h3>Clés API &amp; jetons d&rsquo;accès</h3>
+        <p>Fournissez un accès machine contrôlé aux API et autres fonctionnalités non publiques.</p>
+
+        <h3>Cloudflare Access</h3>
+        <p>Protégez applications et ressources derrière des contrôles d&rsquo;accès basés sur l&rsquo;identité.</p>
+
+        <h3>Authentification Supabase &amp; sécurité au niveau des lignes</h3>
+        <p>Contrôlez l&rsquo;accès authentifié aux données de l&rsquo;application et restreignez les enregistrements accessibles à chaque utilisateur ou service.</p>
+
+        <p><b>Patterns d&rsquo;ingénierie :</b> classification des agents &middot; identification par User-Agent et plage IP &middot; authentification &middot; autorisation &middot; accès utilisateur délégué &middot; jetons à portée limitée &middot; permissions basées sur les rôles &middot; limites de débit &middot; quotas &middot; accès au moindre privilège</p>
+      </section>
+
+      <section class="section" id="information-understanding">
+        <h2>Information et compréhension</h2>
+        <p><b>Rendez les informations métier importantes faciles à récupérer, identifier, interpréter et tenir à jour pour les agents IA.</b></p>
+
+        <h3>HTML sémantique</h3>
+        <p>Structurez le contenu du site pour que titres, navigation, tableaux, listes, formulaires et autres éléments communiquent clairement leur signification, aussi bien aux machines qu&rsquo;aux humains.</p>
+
+        <h3>HTML rendu côté serveur et statique</h3>
+        <p>Exposez les informations importantes directement dans la réponse de la page plutôt que d&rsquo;exiger une interaction complexe du navigateur ou l&rsquo;exécution de JavaScript.</p>
+
+        <h3>HTML et Markdown orientés machine</h3>
+        <p>Fournissez des représentations simplifiées de certains contenus lorsque l&rsquo;expérience normale du site est inutilement difficile pour un consommateur machine.</p>
+
+        <h3>JSON-LD</h3>
+        <p>Intégrez des informations structurées et lisibles par machine directement dans les pages web.</p>
+
+        <h3>Données structurées Schema.org</h3>
+        <p>Décrivez des entités telles qu&rsquo;organisations, produits, services, offres, événements, articles, FAQ et autres contenus du site à l&rsquo;aide d&rsquo;un vocabulaire partagé.</p>
+
+        <h3>Sitemaps XML</h3>
+        <p>Fournissez une découverte structurée des URL importantes du site.</p>
+
+        <h3>llms.txt</h3>
+        <p>Fournissez des informations complémentaires optionnelles destinées à aider les systèmes IA à découvrir les ressources pertinentes du site.</p>
+
+        <h3>Flux structurés &amp; API</h3>
+        <p>Exposez les informations dynamiques, structurées ou difficiles à représenter de manière fiable via des pages web classiques.</p>
+
+        <h3>API &amp; webhooks du CMS</h3>
+        <p>Maintenez la synchronisation entre le contenu du site, les données structurées, les flux et les représentations orientées agent avec la source de vérité sous-jacente.</p>
+
+        <p><b>Patterns d&rsquo;ingénierie :</b> source de vérité unique &middot; récupération de données faisant autorité &middot; contenu factuel structuré &middot; rendu côté serveur &middot; représentations lisibles par machine &middot; gestion du cache &middot; synchronisation du contenu &middot; récupération de données dynamiques</p>
+      </section>
+
+      <section class="section" id="actions-transactions">
+        <h2>Actions &amp; transactions</h2>
+        <p><b>Permettez aux agents IA de comprendre les actions possibles et, le cas échéant, de les exécuter de manière programmatique.</b></p>
+        <p>Exemples : vérifier une éligibilité, demander un devis, consulter une disponibilité, s&rsquo;inscrire, réserver un rendez-vous, créer un lead ou initier une transaction.</p>
+
+        <h3>API REST</h3>
+        <p>Exposez informations et actions métier via des interfaces programmatiques prévisibles.</p>
+
+        <h3>MCP — Model Context Protocol</h3>
+        <p>Exposez des outils et fonctionnalités que les agents IA compatibles peuvent découvrir et appeler, généralement via un serveur que vous exploitez.</p>
+
+        <h3>WebMCP</h3>
+        <p>Un standard complémentaire, natif du navigateur, qui expose des outils appelables directement à l&rsquo;intérieur d&rsquo;une page web via JavaScript, permettant à un agent dans le navigateur de les appeler sans serveur séparé ni extraction du DOM. Un brouillon de groupe communautaire du W3C porté par Chrome et Edge, avec un support natif des navigateurs attendu plus tard en 2026.</p>
+
+        <h3>A2A — Agent2Agent Protocol</h3>
+        <p>Permet à des agents conçus par différents éditeurs de se découvrir et de coordonner des tâches directement entre eux — un niveau différent du modèle agent-vers-outil de MCP/WebMCP. Initié par Google, désormais gouverné par la Linux Foundation.</p>
+
+        <h3>OpenAPI</h3>
+        <p>Fournissez des spécifications lisibles par machine décrivant les points d&rsquo;accès API, paramètres, requêtes et réponses.</p>
+
+        <h3>JSON Schema</h3>
+        <p>Définissez des formats d&rsquo;entrée et de sortie structurés pour les interfaces machine.</p>
+
+        <h3>JSON-LD Actions</h3>
+        <p>Décrivez certaines actions disponibles via les données structurées du site, lorsque c&rsquo;est pertinent.</p>
+
+        <h3>Cloudflare Workers</h3>
+        <p>Créez des points d&rsquo;accès API légers ou des wrappers autour de systèmes existants, au niveau du réseau.</p>
+
+        <h3>Google Apps Script</h3>
+        <p>Exposez des workflows et opérations métier simples, centrés sur Google, via des services comme Google Sheets, Calendar et Gmail.</p>
+
+        <h3>API SaaS &amp; systèmes métier</h3>
+        <p>Connectez les actions des agents directement aux systèmes existants de réservation, CRM, commerce, paiement, support ou autres plateformes opérationnelles.</p>
+
+        <p><b>Patterns d&rsquo;ingénierie :</b> actions appelables &middot; paramètres lisibles par machine &middot; validation des entrées &middot; réponses JSON structurées &middot; erreurs lisibles par machine &middot; codes de statut HTTP &middot; étapes de confirmation explicites &middot; identifiants de requête &middot; nouvelles tentatives sûres</p>
+      </section>
+
+      <section class="section" id="rules-automation">
+        <h2>Règles &amp; automatisation</h2>
+        <p><b>Exécutez les règles métier, calculs, décisions et workflows derrière une requête d&rsquo;agent.</b></p>
+        <p>Une interface d&rsquo;agent peut être simple, alors que l&rsquo;opération sous-jacente doit déterminer une éligibilité, calculer un prix, sélectionner un produit, coordonner plusieurs applications, attendre un processus externe ou se rétablir en cas d&rsquo;échec.</p>
+
+        <h3>Cloudflare Workers</h3>
+        <p>Exécutez une logique métier serverless légère, proche du site, et exposez-la via des API HTTP.</p>
+
+        <h3>Google Apps Script</h3>
+        <p>Implémentez une logique métier et des automatisations simples autour des applications Google Workspace.</p>
+
+        <h3>Supabase Edge Functions</h3>
+        <p>Exécutez une logique applicative serverless aux côtés des données et de l&rsquo;authentification Supabase.</p>
+
+        <h3>Make</h3>
+        <p>Construisez des workflows visuels connectant plusieurs applications et services SaaS.</p>
+
+        <h3>Pipedream</h3>
+        <p>Créez des workflows pilotés par API et par événements, connectant des systèmes externes.</p>
+
+        <h3>Zapier</h3>
+        <p>Automatisez des processus métier entre applications SaaS courantes.</p>
+
+        <h3>Cloudflare Workflows</h3>
+        <p>Orchestrez des processus serverless plus longs ou multi-étapes.</p>
+
+        <h3>Files d&rsquo;attente &amp; traitements asynchrones</h3>
+        <p>Gérez les opérations qui ne doivent pas rester dans une seule requête web synchrone.</p>
+
+        <p><b>Patterns d&rsquo;ingénierie :</b> règles métier déterministes &middot; validation &middot; idempotence &middot; nouvelles tentatives &middot; orchestration de workflows &middot; traitement asynchrone &middot; limitation de débit &middot; statut d&rsquo;opération &middot; gestion des échecs partiels &middot; compensation et retour arrière</p>
+        <p>Lorsqu&rsquo;une règle déterministe peut résoudre le problème de manière fiable, nous préférons un logiciel déterministe plutôt que d&rsquo;introduire un LLM sans nécessité.</p>
+      </section>
+
+      <section class="section" id="data-business-systems">
+        <h2>Données &amp; systèmes métier</h2>
+        <p><b>Connectez les interactions des agents IA aux systèmes où vivent réellement les données métier, les clients, les réservations, les transactions et l&rsquo;état opérationnel.</b></p>
+
+        <h4>Plateformes de données</h4>
+
+        <h3>Google Sheets &amp; Google Apps Script</h3>
+        <p>Une option légère pour des workflows simples et à faible volume, lorsque les utilisateurs métier ont besoin d&rsquo;un accès direct aux données sous-jacentes.</p>
+
+        <h3>Cloudflare D1</h3>
+        <p>Stockage SQL serverless conçu pour s&rsquo;intégrer étroitement avec Cloudflare Workers.</p>
+
+        <h3>Supabase &amp; PostgreSQL</h3>
+        <p>Infrastructure de données relationnelle adaptée aux applications plus complexes, à l&rsquo;authentification et aux données métier structurées.</p>
+
+        <h3>Firebase &amp; Firestore</h3>
+        <p>Stockage de données orienté document, serverless, fortement intégré à l&rsquo;écosystème Google.</p>
+
+        <h3>Airtable</h3>
+        <p>Stockage structuré convivial pour les utilisateurs métier, adapté aux applications légères et workflows opérationnels.</p>
+
+        <h4>Systèmes métier</h4>
+
+        <h3>Plateformes CRM</h3>
+        <p>Stockez leads, interactions clients, résultats de qualification et activité commerciale dans le système de référence existant.</p>
+
+        <h3>Systèmes de réservation</h3>
+        <p>Exposez les disponibilités et créez ou gérez des réservations via l&rsquo;infrastructure de réservation existante.</p>
+
+        <h3>Systèmes de commerce &amp; d&rsquo;inventaire</h3>
+        <p>Utilisez les systèmes faisant autorité pour les produits, disponibilités, prix, commandes et inventaire plutôt que de créer un état parallèle.</p>
+
+        <h3>Google Calendar</h3>
+        <p>Consultez les disponibilités ou créez des événements de calendrier via des workflows et intégrations légers.</p>
+
+        <h4>Notifications</h4>
+        <p>Prenez en charge notifications transactionnelles, confirmations, approbations et autres étapes humaines au sein d&rsquo;un workflow piloté par un agent :</p>
+        <ul>
+          <li>Google Apps Script MailApp</li>
+          <li>Postmark</li>
+          <li>Resend</li>
+          <li>SendGrid</li>
+          <li>Amazon SES</li>
+        </ul>
+
+        <h4>Secrets &amp; identifiants</h4>
+        <p>Gardez les identifiants disponibles pour l&rsquo;exécution sans les exposer aux visiteurs, aux agents, au code côté client, aux logs ou aux dépôts de code source :</p>
+        <ul>
+          <li>Cloudflare Worker Secrets</li>
+          <li>Google Apps Script Properties</li>
+          <li>Google Secret Manager</li>
+          <li>Supabase Secrets</li>
+          <li>Variables d&rsquo;environnement et gestionnaires d&rsquo;identifiants gérés par la plateforme</li>
+        </ul>
+
+        <p><b>Patterns d&rsquo;ingénierie :</b> transactions &middot; contrôle de concurrence &middot; gestion d&rsquo;état &middot; systèmes de référence faisant autorité &middot; approbation humaine &middot; notifications &middot; gestion des secrets &middot; politiques de rétention &middot; infrastructure appartenant au client</p>
+      </section>
+
+      <section class="section" id="monetization">
+        <h2>Monétisation</h2>
+        <p><b>Maîtrisez la relation économique entre les agents IA et le contenu numérique, les données, API, outils et transactions de valeur.</b></p>
+        <p>Les agents IA peuvent de plus en plus consommer de l&rsquo;information ou accomplir des tâches sans générer les pages vues, clics ou parcours clients classiques dont dépendent de nombreux modèles économiques numériques.</p>
+        <p>La réponse appropriée peut être un accès libre, restreint, sous licence, une entitlement d&rsquo;abonnement, un accès au paiement à l&rsquo;usage, un revenu d&rsquo;affiliation ou de transaction, ou un nouveau produit orienté machine.</p>
+
+        <h3>RSL — Really Simple Licensing</h3>
+        <p>Exprimez de manière lisible par machine les conditions de licence, d&rsquo;usage et de rémunération pour les actifs numériques consommés par des systèmes IA et clients automatisés.</p>
+
+        <h3>HTTP 402 — Payment Required</h3>
+        <p>Un mécanisme HTTP de plus en plus utilisé pour signaler qu&rsquo;une ressource accessible par machine nécessite un paiement avant de poursuivre l&rsquo;accès.</p>
+
+        <h3>x402</h3>
+        <p>Prenez en charge le paiement programmatique d&rsquo;API, de contenu ou d&rsquo;outils appelables via un flux de paiement machine basé sur HTTP 402.</p>
+
+        <h3>MPP — Machine Payments Protocol</h3>
+        <p>Un protocole de paiement machine émergent, formellement proposé à l&rsquo;IETF, qui utilise HTTP 402 pour prendre en charge les paiements programmatiques entre agents et services numériques, via cartes et stablecoins.</p>
+
+        <h3>Cloudflare Pay Per Crawl</h3>
+        <p>Une fonctionnalité d&rsquo;AI Crawl Control permettant de restreindre ou facturer l&rsquo;accès des robots IA au contenu via HTTP 402. Le modèle évolue : de la facturation à chaque accès vers une rémunération des éditeurs lorsque leur contenu est effectivement cité dans une réponse IA — une direction orientée résultat, encore en phase pilote.</p>
+
+        <h3>Stripe Billing &amp; Payments</h3>
+        <p>Prenez en charge abonnements classiques, traitement des paiements, facturation à l&rsquo;usage et relations de paiement client.</p>
+
+        <h3>UCP — Universal Commerce Protocol</h3>
+        <p>Un standard ouvert pour le commerce agentique, connectant entreprises, plateformes, agents IA et prestataires de paiement à travers la découverte, le paiement et les flux commerciaux associés.</p>
+
+        <h3>AP2 — Agent Payments Protocol</h3>
+        <p>Un protocole ouvert utilisant des « mandats » signés cryptographiquement pour autoriser des paiements initiés par un agent, via cartes et stablecoins. Soutenu par une large coalition du secteur des paiements et gouverné via la FIDO Alliance.</p>
+
+        <h3>ACP — Agentic Commerce Protocol</h3>
+        <p>Une spécification ouverte pour le commerce programmatique entre acheteurs, agents IA et marchands, incluant le passage en caisse piloté par un agent.</p>
+
+        <h3>API payantes &amp; outils MCP</h3>
+        <p>Transformez informations, calculs, données ou capacités de valeur en produits machine directement consommables.</p>
+
+        <p><b>Patterns d&rsquo;ingénierie :</b> licences lisibles par machine &middot; accès libre / restreint / sous licence / payant &middot; entitlement d&rsquo;abonnement &middot; paiement à la requête &middot; mesure d&rsquo;usage &middot; tarification dynamique &middot; vérification de paiement &middot; suivi affiliation / CPA &middot; frais de transaction &middot; partage de revenus &middot; attribution commerciale</p>
+        <p>Les standards émergents de paiement, de licence et de commerce agentique sont évalués selon l&rsquo;adoption de l&rsquo;écosystème et les besoins du client, plutôt qu&rsquo;introduits par défaut.</p>
+      </section>
+
+      <section class="section" id="monitoring-accountability">
+        <h2>Suivi &amp; redevabilité</h2>
+        <p><b>Comprenez quels agents interagissent avec vos actifs numériques, ce qu&rsquo;ils font, si les actions réussissent et quels résultats commerciaux ces interactions produisent.</b></p>
+
+        <h3>Logs CDN &amp; edge</h3>
+        <p>Capturez les requêtes avant qu&rsquo;elles n&rsquo;atteignent l&rsquo;application et aidez à distinguer les différentes formes de trafic automatisé.</p>
+
+        <h3>Cloudflare Bot &amp; Crawl Analytics</h3>
+        <p>Analysez l&rsquo;activité des robots et agents automatisés au niveau du réseau.</p>
+
+        <h3>Google Sheets</h3>
+        <p>Fournissez des logs opérationnels et d&rsquo;audit légers et lisibles par un humain pour des workflows simples.</p>
+
+        <p>Les mêmes systèmes de stockage décrits dans <a href="#data-business-systems">Données &amp; systèmes métier</a> — Cloudflare D1, Supabase/PostgreSQL, Firebase/Firestore et Airtable — peuvent aussi servir de piste d&rsquo;audit, en conservant historiques d&rsquo;interactions, résultats de requêtes, transitions d&rsquo;état et événements applicatifs.</p>
+
+        <h3>Historiques CRM, réservation &amp; commerce</h3>
+        <p>Utilisez les systèmes métier existants comme registre faisant autorité des leads, réservations, commandes et transactions.</p>
+
+        <h3>Historiques d&rsquo;exécution des workflows</h3>
+        <p>Utilisez Make, Pipedream, Zapier, Cloudflare Workflows et plateformes similaires pour diagnostiquer l&rsquo;exécution d&rsquo;automatisations multi-étapes.</p>
+
+        <h3>Registres de paiement &amp; de règlement</h3>
+        <p>Reliez l&rsquo;usage machine payant aux événements commerciaux réels.</p>
+
+        <p><b>Patterns d&rsquo;ingénierie :</b> attribution d&rsquo;agent &middot; identifiants de requête &middot; identifiants de transaction &middot; identifiants de référence externes &middot; logs structurés &middot; transitions d&rsquo;état &middot; journalisation d&rsquo;événements côté serveur &middot; mesure d&rsquo;usage &middot; attribution de conversion &middot; attribution de revenus &middot; surveillance des échecs &middot; pistes d&rsquo;audit &middot; journalisation respectueuse de la vie privée</p>
+      </section>
+
+      <section class="section">
+        <h2>La technologie suit le problème métier</h2>
+        <p>Rendre un site prêt pour les agents IA ne signifie pas ajouter tous les protocoles ou plateformes disponibles.</p>
+        <p>Pour certaines entreprises, l&rsquo;amélioration à plus forte valeur peut simplement être un HTML plus clair et une information mieux structurée. D&rsquo;autres auront besoin d&rsquo;API en direct, d&rsquo;actions appelables, d&rsquo;intégration aux systèmes métier, d&rsquo;authentification ou d&rsquo;une expérience dédiée aux agents. Les entreprises disposant de contenus ou de données de valeur devront peut-être aussi envisager des licences, des paiements machine ou de nouveaux produits orientés agent.</p>
+        <p>L&rsquo;objectif est de sélectionner le plus petit ensemble technologique pratique nécessaire pour que le parcours client fonctionne de manière fiable, pour les humains comme pour les agents IA.</p>
+        <div class="cta-actions">
+          <a class="button" href="booking/">Réserver un appel</a>
+          <a class="button button-secondary" href="services/ai-agent-readiness.html">Audit de préparation aux agents IA</a>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <footer>
+    &copy; 2025-2026 ElevIQ. Tous droits réservés. Numéro Siren : 940258254.<br />
+    <a href="/llms.txt">Instructions pour agents IA</a>
+  </footer>
+
+  <!-- Cloudflare Web Analytics -->
+  <script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "d729d74a9a6240a89a195cfcb2a536a4"}'></script>
+  <!-- End Cloudflare Web Analytics -->
+
+</body>
+</html>

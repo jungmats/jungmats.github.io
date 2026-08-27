@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Agent Technologies &amp; Standards | ElevIQ Solutions</title>
+  <meta name="description" content="The technologies, standards, and engineering patterns ElevIQ Solutions works with to make websites and digital businesses ready for AI agents — from access control and structured data to agent-callable actions, business logic, and monetization.">
+  <link rel="canonical" href="https://eleviq.solutions/technologies.html">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="alternate" hreflang="en" href="https://eleviq.solutions/technologies.html">
+  <link rel="alternate" hreflang="fr" href="https://eleviq.solutions/fr/technologies.html">
+  <link rel="alternate" hreflang="x-default" href="https://eleviq.solutions/technologies.html">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="ElevIQ Solutions">
+  <meta property="og:url" content="https://eleviq.solutions/technologies.html">
+  <meta property="og:title" content="AI Agent Technologies &amp; Standards | ElevIQ Solutions">
+  <meta property="og:description" content="The technologies, standards, and engineering patterns ElevIQ Solutions works with to make websites and digital businesses ready for AI agents — from access control and structured data to agent-callable actions, business logic, and monetization.">
+  <meta property="og:image" content="https://eleviq.solutions/eleviq_logo_v1.5.png">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:locale:alternate" content="fr_FR">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="AI Agent Technologies &amp; Standards | ElevIQ Solutions">
+  <meta name="twitter:description" content="The technologies, standards, and engineering patterns ElevIQ Solutions works with to make websites and digital businesses ready for AI agents — from access control and structured data to agent-callable actions, business logic, and monetization.">
+  <meta name="twitter:image" content="https://eleviq.solutions/eleviq_logo_v1.5.png">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "AI Agent Technologies, Standards &amp; Platforms",
+    "description": "The technologies, standards, and engineering patterns ElevIQ Solutions works with to make websites and digital businesses ready for AI agents.",
+    "url": "https://eleviq.solutions/technologies.html",
+    "inLanguage": "en",
+    "isPartOf": {
+      "@type": "Organization",
+      "@id": "https://eleviq.solutions/#organization"
+    }
+  }
+  </script>
+  <link rel="describedby" href="/llms.txt" type="text/plain" title="AI agent instructions">
+</head>
+<body>
+
+  <header>
+    <a href="index.html"><img src="eleviq_logo_v1.5.png" alt="ElevIQ Logo"></a>
+    <p class="brand-line">ElevIQ Solutions — AI Consulting &amp; Integration</p>
+    <p><b>Get ready for the agentic web</b></p>
+    <p class="lang-switch"><a href="fr/technologies.html">Français</a></p>
+  </header>
+
+  <div class="container">
+    <main>
+      <section class="section">
+        <h1 class="page-title">AI Agent Technologies, Standards &amp; Platforms</h1>
+        <p>AI agents interact with websites differently from human visitors. They need to access information, understand it reliably, discover available actions, interact with business systems, and increasingly transact directly with digital services.</p>
+        <p>We work with a broad range of web technologies, AI-agent standards, APIs, automation platforms, data systems, and engineering patterns to make those interactions reliable and commercially useful.</p>
+        <p>There is no fixed &ldquo;AI agent stack.&rdquo; The right solution depends on the customer journey, existing website architecture, business systems, security requirements, and commercial model. Wherever possible, we build on technology already in place rather than introducing unnecessary infrastructure.</p>
+        <ul class="toc">
+          <li><a href="#access-control">Access &amp; Control</a></li>
+          <li><a href="#information-understanding">Information &amp; Understanding</a></li>
+          <li><a href="#actions-transactions">Actions &amp; Transactions</a></li>
+          <li><a href="#rules-automation">Rules &amp; Automation</a></li>
+          <li><a href="#data-business-systems">Data &amp; Business Systems</a></li>
+          <li><a href="#monetization">Monetization</a></li>
+          <li><a href="#monitoring-accountability">Monitoring &amp; Accountability</a></li>
+        </ul>
+      </section>
+
+      <section class="section" id="access-control">
+        <h2>Access &amp; Control</h2>
+        <p><b>Control how AI agents and crawlers access your website, identify who is making a request, and protect information or actions that should not be public.</b></p>
+
+        <h3>Cloudflare AI Crawl Control &amp; Bot Management</h3>
+        <p>Identify and manage automated traffic, including AI crawlers, at the network edge.</p>
+
+        <h3>Cloudflare CDN &amp; WAF</h3>
+        <p>Apply routing, caching, access policies, rate limits, and security rules before requests reach the application.</p>
+
+        <h3>Web Bot Auth</h3>
+        <p>Use cryptographically signed requests to verify supported bots and automated agents rather than relying only on easily imitated User-Agent strings.</p>
+
+        <h3>robots.txt</h3>
+        <p>Declare crawler access policies for website content.</p>
+
+        <h3>OAuth</h3>
+        <p>Authenticate applications and provide delegated access where an AI agent is acting on behalf of a user.</p>
+
+        <h3>JWT — JSON Web Tokens</h3>
+        <p>Represent authenticated identities and scoped authorization information between systems.</p>
+
+        <h3>API Keys &amp; Access Tokens</h3>
+        <p>Provide controlled machine access to APIs and other non-public functionality.</p>
+
+        <h3>Cloudflare Access</h3>
+        <p>Protect applications and resources behind identity-aware access controls.</p>
+
+        <h3>Supabase Authentication &amp; Row-Level Security</h3>
+        <p>Control authenticated access to application data and restrict which records individual users or services may access.</p>
+
+        <p><b>Engineering patterns:</b> agent classification &middot; User-Agent and IP-range identification &middot; authentication &middot; authorization &middot; delegated user access &middot; scoped tokens &middot; role-based permissions &middot; rate limits &middot; quotas &middot; least-privilege access</p>
+      </section>
+
+      <section class="section" id="information-understanding">
+        <h2>Information &amp; Understanding</h2>
+        <p><b>Make important business information easy for AI agents to retrieve, identify, interpret, and keep current.</b></p>
+
+        <h3>Semantic HTML</h3>
+        <p>Structure website content so that headings, navigation, tables, lists, forms, and other elements communicate their meaning clearly to machines as well as humans.</p>
+
+        <h3>Server-Rendered &amp; Static HTML</h3>
+        <p>Expose important information directly in the page response rather than requiring complex browser interaction or JavaScript execution.</p>
+
+        <h3>Machine-Facing HTML &amp; Markdown</h3>
+        <p>Provide simplified representations of selected content when the normal website experience is unnecessarily difficult for machine consumers.</p>
+
+        <h3>JSON-LD</h3>
+        <p>Embed structured, machine-readable information directly into web pages.</p>
+
+        <h3>Schema.org Structured Data</h3>
+        <p>Describe entities such as organizations, products, services, offers, events, articles, FAQs, and other website content using a shared vocabulary.</p>
+
+        <h3>XML Sitemaps</h3>
+        <p>Provide structured discovery of important website URLs.</p>
+
+        <h3>llms.txt</h3>
+        <p>Provide optional supplementary information intended to help AI systems discover relevant website resources.</p>
+
+        <h3>Structured Feeds &amp; APIs</h3>
+        <p>Expose information that is dynamic, structured, or difficult to represent reliably through normal web pages.</p>
+
+        <h3>CMS APIs &amp; Webhooks</h3>
+        <p>Keep website content, structured data, feeds, and agent-facing representations synchronized with the underlying source of truth.</p>
+
+        <p><b>Engineering patterns:</b> single source of truth &middot; authoritative data retrieval &middot; structured factual content &middot; server-side rendering &middot; machine-readable representations &middot; cache management &middot; content synchronization &middot; dynamic-data retrieval</p>
+      </section>
+
+      <section class="section" id="actions-transactions">
+        <h2>Actions &amp; Transactions</h2>
+        <p><b>Allow AI agents to understand what they can do next and, where appropriate, perform those actions programmatically.</b></p>
+        <p>Examples include checking eligibility, requesting a quote, finding availability, registering, booking an appointment, creating a lead, or initiating a transaction.</p>
+
+        <h3>REST APIs</h3>
+        <p>Expose business information and actions through predictable programmatic interfaces.</p>
+
+        <h3>MCP — Model Context Protocol</h3>
+        <p>Expose tools and capabilities that compatible AI agents can discover and call, typically via a server you run.</p>
+
+        <h3>WebMCP</h3>
+        <p>A companion, browser-native standard that exposes callable tools directly inside a web page via JavaScript, so an in-browser agent can call them without a separate server or DOM scraping. A W3C Community Group draft backed by Chrome and Edge, with native browser support expected later in 2026.</p>
+
+        <h3>A2A — Agent2Agent Protocol</h3>
+        <p>Let agents built by different vendors discover each other and coordinate tasks directly — a different layer from MCP/WebMCP&rsquo;s agent-to-tool model. Originated at Google, now governed by the Linux Foundation.</p>
+
+        <h3>OpenAPI</h3>
+        <p>Provide machine-readable specifications describing API endpoints, parameters, requests, and responses.</p>
+
+        <h3>JSON Schema</h3>
+        <p>Define structured input and output formats for machine interfaces.</p>
+
+        <h3>JSON-LD Actions</h3>
+        <p>Describe certain available actions through structured website data where appropriate.</p>
+
+        <h3>Cloudflare Workers</h3>
+        <p>Create lightweight API endpoints or wrappers around existing systems at the network edge.</p>
+
+        <h3>Google Apps Script</h3>
+        <p>Expose simple Google-centric workflows and business operations using services such as Google Sheets, Calendar, and Gmail.</p>
+
+        <h3>SaaS &amp; Business-System APIs</h3>
+        <p>Connect agent actions directly to existing booking, CRM, commerce, payment, support, or other operational platforms.</p>
+
+        <p><b>Engineering patterns:</b> callable actions &middot; machine-readable parameters &middot; input validation &middot; structured JSON responses &middot; machine-readable errors &middot; HTTP status codes &middot; explicit confirmation steps &middot; request IDs &middot; safe retries</p>
+      </section>
+
+      <section class="section" id="rules-automation">
+        <h2>Rules &amp; Automation</h2>
+        <p><b>Execute the business rules, calculations, decisions, and workflows behind an agent request.</b></p>
+        <p>An agent interface may be simple, while the operation behind it needs to determine eligibility, calculate a price, select a product, coordinate multiple applications, wait for an external process, or recover when something fails.</p>
+
+        <h3>Cloudflare Workers</h3>
+        <p>Run lightweight serverless business logic close to the website and expose it through HTTP APIs.</p>
+
+        <h3>Google Apps Script</h3>
+        <p>Implement simple business logic and automations around Google Workspace applications.</p>
+
+        <h3>Supabase Edge Functions</h3>
+        <p>Run serverless application logic alongside Supabase data and authentication.</p>
+
+        <h3>Make</h3>
+        <p>Build visual workflows connecting multiple SaaS applications and services.</p>
+
+        <h3>Pipedream</h3>
+        <p>Create API-driven and event-driven workflows connecting external systems.</p>
+
+        <h3>Zapier</h3>
+        <p>Automate business processes across commonly used SaaS applications.</p>
+
+        <h3>Cloudflare Workflows</h3>
+        <p>Orchestrate longer-running or multi-step serverless processes.</p>
+
+        <h3>Queues &amp; Asynchronous Jobs</h3>
+        <p>Handle operations that should not remain inside a single synchronous web request.</p>
+
+        <p><b>Engineering patterns:</b> deterministic business rules &middot; validation &middot; idempotency &middot; retries &middot; workflow orchestration &middot; asynchronous processing &middot; rate limiting &middot; operation status &middot; partial-failure handling &middot; compensation and rollback</p>
+        <p>Where a deterministic rule can solve the problem reliably, we prefer deterministic software rather than introducing an LLM unnecessarily.</p>
+      </section>
+
+      <section class="section" id="data-business-systems">
+        <h2>Data &amp; Business Systems</h2>
+        <p><b>Connect AI-agent interactions to the systems where business data, customers, bookings, transactions, and operational state actually live.</b></p>
+
+        <h4>Data Platforms</h4>
+
+        <h3>Google Sheets &amp; Google Apps Script</h3>
+        <p>A lightweight option for simple, low-volume workflows where business users need direct access to the underlying data.</p>
+
+        <h3>Cloudflare D1</h3>
+        <p>Serverless SQL storage designed to integrate closely with Cloudflare Workers.</p>
+
+        <h3>Supabase &amp; PostgreSQL</h3>
+        <p>Relational data infrastructure suitable for more complex applications, authentication, and structured business data.</p>
+
+        <h3>Firebase &amp; Firestore</h3>
+        <p>Serverless document-oriented data storage with strong integration into the Google ecosystem.</p>
+
+        <h3>Airtable</h3>
+        <p>Business-user-friendly structured storage suitable for lightweight applications and operational workflows.</p>
+
+        <h4>Business Systems</h4>
+
+        <h3>CRM Platforms</h3>
+        <p>Store leads, customer interactions, qualification outcomes, and sales activity in the existing system of record.</p>
+
+        <h3>Booking &amp; Reservation Systems</h3>
+        <p>Expose availability and create or manage reservations through existing booking infrastructure.</p>
+
+        <h3>Commerce &amp; Inventory Systems</h3>
+        <p>Use authoritative product, availability, pricing, order, and inventory systems rather than creating parallel state.</p>
+
+        <h3>Google Calendar</h3>
+        <p>Read availability or create calendar events through lightweight workflows and integrations.</p>
+
+        <h4>Notifications</h4>
+        <p>Support transactional notifications, confirmations, approvals, and other human steps within an agent-driven workflow:</p>
+        <ul>
+          <li>Google Apps Script MailApp</li>
+          <li>Postmark</li>
+          <li>Resend</li>
+          <li>SendGrid</li>
+          <li>Amazon SES</li>
+        </ul>
+
+        <h4>Secrets &amp; Credentials</h4>
+        <p>Keep credentials available to the runtime without exposing them to visitors, agents, client-side code, logs, or source repositories:</p>
+        <ul>
+          <li>Cloudflare Worker Secrets</li>
+          <li>Google Apps Script Properties</li>
+          <li>Google Secret Manager</li>
+          <li>Supabase Secrets</li>
+          <li>Platform-managed environment variables and credential stores</li>
+        </ul>
+
+        <p><b>Engineering patterns:</b> transactions &middot; concurrency control &middot; state management &middot; authoritative systems of record &middot; human approval &middot; notifications &middot; secret management &middot; retention controls &middot; client-owned infrastructure</p>
+      </section>
+
+      <section class="section" id="monetization">
+        <h2>Monetization</h2>
+        <p><b>Control the economic relationship between AI agents and valuable digital content, data, APIs, tools, and transactions.</b></p>
+        <p>AI agents may increasingly consume information or complete tasks without creating the page views, clicks, or conventional customer journeys on which many digital business models depend.</p>
+        <p>The appropriate response may be free access, restricted access, licensing, subscription entitlement, pay-per-use access, affiliate or transaction revenue, or a new machine-facing product.</p>
+
+        <h3>RSL — Really Simple Licensing</h3>
+        <p>Express machine-readable licensing, usage, and compensation terms for digital assets consumed by AI systems and automated clients.</p>
+
+        <h3>HTTP 402 — Payment Required</h3>
+        <p>An HTTP mechanism increasingly used to signal that a machine-accessible resource requires payment before access can continue.</p>
+
+        <h3>x402</h3>
+        <p>Support programmatic payment for APIs, content, or callable tools using an HTTP 402-based machine-payment flow.</p>
+
+        <h3>MPP — Machine Payments Protocol</h3>
+        <p>An emerging machine-payment protocol, formally proposed to the IETF, that uses HTTP 402 to support programmatic payments between agents and digital services across cards and stablecoins.</p>
+
+        <h3>Cloudflare Pay Per Crawl</h3>
+        <p>An AI Crawl Control capability for gating or charging AI crawler access to content over HTTP 402. The model is shifting from charging per fetch toward compensating publishers when their content is actually cited in an AI answer — an outcome-based direction still being piloted.</p>
+
+        <h3>Stripe Billing &amp; Payments</h3>
+        <p>Support conventional subscriptions, payment processing, usage billing, and customer payment relationships.</p>
+
+        <h3>UCP — Universal Commerce Protocol</h3>
+        <p>An open standard for agentic commerce connecting businesses, platforms, AI agents, and payment providers across discovery, checkout, and related commerce flows.</p>
+
+        <h3>AP2 — Agent Payments Protocol</h3>
+        <p>An open protocol using cryptographically signed &ldquo;mandates&rdquo; to authorize agent-initiated payments across cards and stablecoins. Backed by a broad payments-industry coalition and governed through the FIDO Alliance.</p>
+
+        <h3>ACP — Agentic Commerce Protocol</h3>
+        <p>An open specification for programmatic commerce between buyers, AI agents, and merchants, including agent-driven checkout.</p>
+
+        <h3>Paid APIs &amp; MCP Tools</h3>
+        <p>Package valuable information, calculations, data, or capabilities as directly consumable machine products.</p>
+
+        <p><b>Engineering patterns:</b> machine-readable licensing &middot; free / restricted / licensed / paid access &middot; subscription entitlement &middot; pay-per-request &middot; usage metering &middot; dynamic pricing &middot; payment verification &middot; affiliate / CPA tracking &middot; transaction fees &middot; revenue sharing &middot; commercial attribution</p>
+        <p>Emerging agentic-payment, licensing, and commerce standards are evaluated based on ecosystem adoption and client requirements rather than introduced by default.</p>
+      </section>
+
+      <section class="section" id="monitoring-accountability">
+        <h2>Monitoring &amp; Accountability</h2>
+        <p><b>Understand which agents are interacting with your digital assets, what they are doing, whether actions succeed, and what commercial outcomes those interactions produce.</b></p>
+
+        <h3>CDN &amp; Edge Logs</h3>
+        <p>Capture requests before they reach the application and help distinguish different forms of automated traffic.</p>
+
+        <h3>Cloudflare Bot &amp; Crawl Analytics</h3>
+        <p>Analyze crawler and automated-agent activity at the edge.</p>
+
+        <h3>Google Sheets</h3>
+        <p>Provide lightweight, human-readable operational and audit logs for simple workflows.</p>
+
+        <p>The same data stores described under <a href="#data-business-systems">Data &amp; Business Systems</a> — Cloudflare D1, Supabase/PostgreSQL, Firebase/Firestore, and Airtable — can double as audit trails, persisting interaction histories, request results, state transitions, and application events.</p>
+
+        <h3>CRM, Booking &amp; Commerce Histories</h3>
+        <p>Use existing business systems as the authoritative record of leads, bookings, orders, and transactions.</p>
+
+        <h3>Workflow Execution Histories</h3>
+        <p>Use Make, Pipedream, Zapier, Cloudflare Workflows, and similar platforms to diagnose multi-step automation execution.</p>
+
+        <h3>Payment &amp; Settlement Records</h3>
+        <p>Connect paid machine usage to actual commercial events.</p>
+
+        <p><b>Engineering patterns:</b> agent attribution &middot; request IDs &middot; transaction IDs &middot; external reference IDs &middot; structured logs &middot; state transitions &middot; server-side event logging &middot; usage measurement &middot; conversion attribution &middot; revenue attribution &middot; failure monitoring &middot; audit trails &middot; privacy-aware logging</p>
+      </section>
+
+      <section class="section">
+        <h2>Technology Follows the Business Problem</h2>
+        <p>Making a website ready for AI agents does not mean adding every available protocol or platform.</p>
+        <p>For some businesses, the highest-value improvement may simply be clearer HTML and structured information. Others may need live APIs, callable actions, business-system integration, authentication, or an agent-specific experience. Businesses with valuable digital content or data may also need to consider licensing, machine payments, or new agent-facing products.</p>
+        <p>The objective is to select the smallest practical technology set required to make the customer journey work reliably for both humans and AI agents.</p>
+        <div class="cta-actions">
+          <a class="button" href="booking/">Book a call</a>
+          <a class="button button-secondary" href="services/ai-agent-readiness.html">AI Agent Readiness Audit</a>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <footer>
+    &copy; 2025-2026 ElevIQ. All rights reserved. Numéro Siren: 940258254.<br />
+    <a href="/llms.txt">AI agent instructions</a>
+  </footer>
+
+  <!-- Cloudflare Web Analytics -->
+  <script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "d729d74a9a6240a89a195cfcb2a536a4"}'></script>
+  <!-- End Cloudflare Web Analytics -->
+
+</body>
+</html>

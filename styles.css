@@ -133,6 +133,32 @@ h3 {
   font-weight: 700;
 }
 
+h4 {
+  font-family: var(--heading-font);
+  color: var(--heading-color);
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin: 1.25rem 0 0.5rem;
+}
+
+.toc {
+  margin: 0;
+  padding-left: 1.25rem;
+  columns: 2;
+  column-gap: 1.5rem;
+}
+
+.toc li {
+  break-inside: avoid;
+  margin-bottom: 0.35rem;
+}
+
+@media (max-width: 680px) {
+  .toc {
+    columns: 1;
+  }
+}
+
 p {
   color: var(--text-muted);
 }
