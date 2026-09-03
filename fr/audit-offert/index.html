@@ -256,8 +256,17 @@
         hp_check: formEl.hp_check.value
       };
 
+      const controller = new AbortController();
+      const timeout = setTimeout(function () { controller.abort(); }, 25000);
+
       try {
-        const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify(payload),
+          redirect: 'follow',
+          signal: controller.signal
+        });
+        clearTimeout(timeout);
         const data = await res.json();
         if (!data.success) console.error('audit-offert backend:', data);
         if (data.success && data.claimed) {
@@ -274,7 +283,9 @@
           showError('Une erreur est survenue. Merci de réessayer, ou d\'écrire à hello@eleviq.solutions.');
         }
       } catch (err) {
-        showError('Une erreur est survenue. Merci de réessayer, ou d\'écrire à hello@eleviq.solutions.');
+        clearTimeout(timeout);
+        console.error('audit-offert fetch failed:', err);
+        showError('La réponse du serveur n\'a pas pu être reçue. Votre demande a peut-être bien été enregistrée — écrivez à hello@eleviq.solutions pour confirmation.');
       }
     });
   </script>
