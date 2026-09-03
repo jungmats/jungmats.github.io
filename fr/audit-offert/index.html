@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="robots" content="noindex, nofollow">
+  <title>Audit de préparation aux agents IA — offert | ElevIQ Solutions</title>
+  <meta name="description" content="Un nombre limité d'audits de préparation aux agents IA offerts par ElevIQ. Sur invitation, premier arrivé, premier servi.">
+  <link rel="stylesheet" href="../../styles.css">
+  <style>
+    .pitch-points {
+      list-style: none;
+      padding: 0;
+      margin: 1rem 0;
+    }
+    .pitch-points li {
+      padding: 0.5rem 0 0.5rem 1rem;
+      border-left: 3px solid var(--cyan);
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.5rem;
+    }
+    .scarcity {
+      margin: 1rem 0 0;
+      padding: 0.9rem 1.1rem;
+      background: var(--yellow);
+      color: #4a3b00;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+    .audit-form {
+      max-width: 480px;
+      margin-top: 1rem;
+    }
+    .audit-form label {
+      display: block;
+      font-weight: bold;
+      margin: 0.85rem 0 0.25rem;
+      color: var(--heading-color);
+    }
+    .audit-form .field-hint {
+      font-weight: normal;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    .audit-form input {
+      width: 100%;
+      padding: 0.5rem 0.65rem;
+      border: 1px solid var(--grey2);
+      border-radius: 6px;
+      background: var(--grey);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.95rem;
+      box-sizing: border-box;
+    }
+    .audit-form input:focus {
+      outline: none;
+      border-color: var(--cyan);
+    }
+    button.submit-btn {
+      margin-top: 1.1rem;
+      padding: 0.6rem 1.2rem;
+      background: var(--cyan);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+    button.submit-btn:hover:not(:disabled) {
+      background: #00a0c5;
+    }
+    button.submit-btn:disabled {
+      background: var(--grey2);
+      cursor: not-allowed;
+    }
+    .form-message {
+      margin-top: 0.75rem;
+      font-size: 0.9rem;
+    }
+    .form-message.error {
+      color: #b83232;
+    }
+    .hidden {
+      display: none;
+    }
+    .honeypot {
+      position: absolute;
+      left: -9999px;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+    }
+    #result-success, #result-full {
+      padding: 1rem 1.2rem;
+      background: var(--grey);
+      border-radius: 6px;
+    }
+    #result-success {
+      border-left: 4px solid var(--petrol);
+    }
+    #result-full {
+      border-left: 4px solid var(--grey2);
+    }
+    #result-success h3, #result-full h3 {
+      margin-top: 0;
+    }
+  </style>
+  <link rel="describedby" href="/llms.txt" type="text/plain" title="Instructions pour agents IA">
+</head>
+<body>
+
+  <header>
+    <a href="../index.html"><img src="../../eleviq_logo_v1.6.png" alt="Logo ElevIQ"></a>
+    <p class="brand-line">ElevIQ Solutions — Conseil en IA &amp; Intégration</p>
+    <p><b>Préparez-vous au web agentique</b></p>
+  </header>
+
+  <div class="container">
+    <main>
+      <h1 class="page-title">Un audit de préparation aux agents IA — offert</h1>
+
+      <section class="section">
+        <h2>Pourquoi ça compte maintenant</h2>
+        <p>
+          Vos clients utilisent de plus en plus des agents IA — ChatGPT, Perplexity, assistants d'achat et de recherche — pour trouver des entreprises, comparer des offres et décider de l'étape suivante. Ces agents lisent votre site et agissent à partir de son contenu.
+        </p>
+        <p>
+          Un site peut parfaitement fonctionner pour un visiteur humain tout en restant difficile à interpréter pour un agent : information ambiguë, dispersée, masquée derrière des interfaces, ou simplement absente. Résultat : l'agent comprend mal votre offre, ne sait pas si vous êtes le bon choix, ou recommande un concurrent plus lisible.
+        </p>
+        <ul class="pitch-points">
+          <li>Les agents IA comprennent-ils réellement votre site aujourd'hui ?</li>
+          <li>Où échouent-ils sur les parcours clients qui comptent — et pourquoi ?</li>
+          <li>Quels changements valent la peine d'être faits maintenant ?</li>
+        </ul>
+        <p>
+          L'audit de préparation aux agents IA répond à ces questions avec des tests concrets et des exemples d'échecs réels. C'est le point de départ de la prestation complète décrite sur la page <a href="../services/ai-agent-readiness.html">Audit et optimisation de préparation aux agents IA</a>.
+        </p>
+      </section>
+
+      <section class="section">
+        <h2>Une offre volontairement limitée</h2>
+        <p>
+          Chaque audit est réalisé personnellement par Matthias, fondateur d'ElevIQ. Le nombre d'audits offerts est donc restreint et réservé aux personnes disposant d'un code d'accès.
+        </p>
+        <p class="scarcity">
+          Places limitées · sur invitation · premier arrivé, premier servi. Une fois les places attribuées, l'offre est close.
+        </p>
+      </section>
+
+      <section class="section">
+        <h2>Réclamer votre audit offert</h2>
+        <p>Renseignez vos coordonnées, l'URL du site à auditer et votre code d'accès. Vous saurez immédiatement si une place vous est attribuée.</p>
+
+        <form id="audit-form" class="audit-form">
+          <input type="text" name="hp_check" class="honeypot" tabindex="-1" autocomplete="off">
+
+          <label for="name">Nom</label>
+          <input type="text" id="name" name="name" required autocomplete="name">
+
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" required autocomplete="email">
+
+          <label for="website">URL du site à auditer <span class="field-hint">(https://…)</span></label>
+          <input type="url" id="website" name="website" required placeholder="https://" autocomplete="url">
+
+          <label for="code">Code d'accès</label>
+          <input type="text" id="code" name="code" required autocomplete="off" spellcheck="false">
+
+          <button type="submit" class="submit-btn">Réclamer mon audit</button>
+          <div id="form-message" class="form-message"></div>
+        </form>
+
+        <div id="result-success" class="hidden">
+          <h3>Félicitations !</h3>
+          <p>Une place vous est attribuée. Un email de confirmation vient de vous être envoyé.</p>
+          <p>Matthias examinera votre site et reviendra vers vous par email sous 3 jours ouvrés — avec les premières observations, ou quelques questions de cadrage.</p>
+        </div>
+
+        <div id="result-full" class="hidden">
+          <h3>Désolé, plus de places disponibles</h3>
+          <p>Toutes les places associées à ce code ont été attribuées, ou le code n'est pas reconnu. Votre demande a bien été transmise à Matthias.</p>
+          <p>Vous pouvez aussi écrire directement à <a href="mailto:hello@eleviq.solutions">hello@eleviq.solutions</a> avec l'URL de votre site et le sujet à traiter.</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <footer>
+    &copy; 2025-2026 ElevIQ. Tous droits réservés. Numéro Siren : 940258254.<br />
+    <a href="/llms.txt">Instructions pour agents IA</a>
+  </footer>
+
+  <script>
+    const API_URL = 'REPLACE_WITH_AUDIT_APPS_SCRIPT_URL';
+
+    const formEl = document.getElementById('audit-form');
+    const messageEl = document.getElementById('form-message');
+    const submitBtn = formEl.querySelector('.submit-btn');
+    const successEl = document.getElementById('result-success');
+    const fullEl = document.getElementById('result-full');
+
+    // Pre-fill the access code from ?code= (also accepts ?c=).
+    const params = new URLSearchParams(window.location.search);
+    const codeParam = params.get('code') || params.get('c');
+    if (codeParam) {
+      document.getElementById('code').value = codeParam.trim();
+    }
+
+    function showError(text) {
+      messageEl.textContent = text;
+      messageEl.classList.add('error');
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Réclamer mon audit';
+    }
+
+    formEl.addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const name = formEl.name.value.trim();
+      const email = formEl.email.value.trim();
+      const website = formEl.website.value.trim();
+      const code = formEl.code.value.trim();
+
+      messageEl.textContent = '';
+      messageEl.classList.remove('error');
+
+      if (!name || !email || !website || !code) {
+        showError('Merci de remplir tous les champs.');
+        return;
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        showError('Merci de saisir une adresse email valide.');
+        return;
+      }
+      if (!/^https?:\/\/[^\s.]+\.[^\s]{2,}$/i.test(website)) {
+        showError('Merci de saisir une URL valide, commençant par http:// ou https://');
+        return;
+      }
+      if (!API_URL || API_URL.indexOf('REPLACE_WITH') === 0) {
+        showError('Le formulaire n\'est pas encore configuré. Écrivez à hello@eleviq.solutions.');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Envoi en cours…';
+
+      const payload = {
+        name: name,
+        email: email,
+        website: website,
+        code: code,
+        hp_check: formEl.hp_check.value
+      };
+
+      try {
+        const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+        const data = await res.json();
+        if (!data.success) console.error('audit-offert backend:', data);
+        if (data.success && data.claimed) {
+          formEl.classList.add('hidden');
+          fullEl.classList.add('hidden');
+          successEl.classList.remove('hidden');
+        } else if (data.success) {
+          formEl.classList.add('hidden');
+          successEl.classList.add('hidden');
+          fullEl.classList.remove('hidden');
+        } else if (data.reason === 'invalid_input') {
+          showError('Certaines informations sont invalides. Vérifiez l\'email et l\'URL, puis réessayez.');
+        } else {
+          showError('Une erreur est survenue. Merci de réessayer, ou d\'écrire à hello@eleviq.solutions.');
+        }
+      } catch (err) {
+        showError('Une erreur est survenue. Merci de réessayer, ou d\'écrire à hello@eleviq.solutions.');
+      }
+    });
+  </script>
+
+  <!-- Cloudflare Web Analytics -->
+  <script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "d729d74a9a6240a89a195cfcb2a536a4"}'></script>
+  <!-- End Cloudflare Web Analytics -->
+
+</body>
+</html>
