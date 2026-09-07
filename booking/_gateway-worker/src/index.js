@@ -6,12 +6,13 @@
  *        GET  /slots?lang=en|fr   — list bookable slots
  *        POST /book               — book a slot (JSON body)
  *   2. MCP server for connected assistants (Streamable HTTP, stateless):
- *        POST /mcp                — tools: list_slots, book_slot
+ *        POST /mcp                — tools: list_slots, book_slot, join_waitlist
  *
  * Both doors share the same pipeline: validate → rate-limit → stamp
  * attribution (self-declared `via`, User-Agent, Cloudflare verified-bot
- * signal) → forward to the Apps Script. The human booking page keeps
- * talking to the Apps Script directly and is untouched.
+ * signal) → forward to the Apps Script. The MCP write tools take the same
+ * `via` attribution field as the REST endpoints (default "mcp"). The human
+ * booking page keeps talking to the Apps Script directly and is untouched.
  */
 
 const APPS_SCRIPT_URL =
@@ -296,7 +297,7 @@ const MCP_TOOLS = [
     name: 'book_slot',
     title: 'Book a call slot',
     description:
-      'Book a free 30-minute intro call with ElevIQ Solutions. Requires a slot id from list_slots plus the name and email of the person the call is for; a confirmation email is sent to that address. Ask the user for consent before booking on their behalf.',
+      'Book a free 30-minute intro call with ElevIQ Solutions. Requires a slot id from list_slots plus the name and email of the person the call is for; a confirmation email is sent to that address. Ask the user for consent before booking on their behalf. Set "via" to your agent or product name so the booking is attributed correctly.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -305,6 +306,7 @@ const MCP_TOOLS = [
         email: { type: 'string', description: 'Email address for the confirmation.' },
         topic: { type: 'string', description: 'Optional: what the call should focus on.' },
         lang: { type: 'string', enum: ['en', 'fr'], description: 'Language for the confirmation email (default en).' },
+        via: { type: 'string', description: 'Optional: your agent or product name (e.g. "claude", "gpt-agent"), for correct attribution. Same field as the REST /book endpoint. Defaults to "mcp".' },
       },
       required: ['slotId', 'name', 'email'],
     },
@@ -313,7 +315,7 @@ const MCP_TOOLS = [
     name: 'join_waitlist',
     title: 'Join the waitlist',
     description:
-      'Join the ElevIQ waitlist when no free call slots are available. Matthias will reach out by email as soon as a new slot opens. Ask the user for consent before signing them up.',
+      'Join the ElevIQ waitlist when no free call slots are available. Matthias will reach out by email as soon as a new slot opens. Ask the user for consent before signing them up. Set "via" to your agent or product name so the signup is attributed correctly.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -321,6 +323,7 @@ const MCP_TOOLS = [
         email: { type: 'string', description: 'Email address to contact when a slot opens.' },
         topic: { type: 'string', description: 'Optional: what the call should focus on.' },
         lang: { type: 'string', enum: ['en', 'fr'], description: 'Language for the confirmation email (default en).' },
+        via: { type: 'string', description: 'Optional: your agent or product name (e.g. "claude", "gpt-agent"), for correct attribution. Same field as the REST /waitlist endpoint. Defaults to "mcp".' },
       },
       required: ['name', 'email'],
     },
@@ -421,7 +424,7 @@ async function mcpToolCall(request, params) {
       email: email,
       topic: cap(args.topic, CAPS.topic),
       lang: normalizeLang(args.lang),
-      via: 'mcp',
+      via: cap(args.via, CAPS.via) || 'mcp',
     });
     if (result.success) {
       return {
@@ -450,7 +453,7 @@ async function mcpToolCall(request, params) {
       email: email,
       topic: cap(args.topic, CAPS.topic),
       lang: normalizeLang(args.lang),
-      via: 'mcp',
+      via: cap(args.via, CAPS.via) || 'mcp',
     });
     if (result.success) {
       return {
