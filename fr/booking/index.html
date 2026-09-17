@@ -251,7 +251,9 @@
           <p id="fully-booked-text"></p>
         </div>
 
-        <form id="waitlist-form" class="booking-form hidden">
+        <form id="waitlist-form" class="booking-form hidden" action="https://script.google.com/macros/s/AKfycbyH4RMe-lfQrzbEmCRzDufaOzpUaYpmTTr1Ghn2AfpbCuijNYLUS1_2KJJIPwc2ycFMvQ/exec" method="post">
+          <input type="hidden" name="action" value="waitlist">
+          <input type="hidden" name="lang" value="fr">
           <input type="text" name="hp_check" class="honeypot" tabindex="-1" autocomplete="off">
           <label for="wl-name">Nom</label>
           <input type="text" id="wl-name" name="name" required>

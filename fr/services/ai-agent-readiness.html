@@ -249,7 +249,10 @@
         <h3 id="scope-modal-title">Demander le périmètre et le tarif</h3>
         <p>Dites-nous-en un peu plus sur votre situation. Nous regardons ça et revenons vers vous par email — avec le périmètre détaillé et le tarif si ça semble être un bon fit.</p>
       </div>
-      <form id="scope-form" class="modal-form">
+      <form id="scope-form" class="modal-form" action="https://script.google.com/macros/s/AKfycbyH4RMe-lfQrzbEmCRzDufaOzpUaYpmTTr1Ghn2AfpbCuijNYLUS1_2KJJIPwc2ycFMvQ/exec" method="post">
+        <input type="hidden" name="action" value="request_scope">
+        <input type="hidden" name="lang" value="fr">
+        <input type="hidden" name="offer" value="Audit et optimisation de préparation aux agents IA">
         <input type="text" name="hp_check" class="honeypot" tabindex="-1" autocomplete="off">
         <label for="scope-name">Nom</label>
         <input type="text" id="scope-name" name="name" required>

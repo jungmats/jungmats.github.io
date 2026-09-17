@@ -55,7 +55,7 @@ function getSignature(lang) {
 
 // Bump this string with each code change. Lets anyone confirm which version
 // is actually live via a plain GET, without touching the Sheet or sending mail.
-const CODE_VERSION = '2026-08-17-waitlist-signature';
+const CODE_VERSION = '2026-09-17-form-fallback';
 
 // Length caps for user-supplied text (it ends up in the sheet and in
 // emails). Applied here as well as in the gateway, so direct callers
@@ -85,11 +85,24 @@ function doGet(e) {
 
 function doPost(e) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const contentType = (e.postData && e.postData.type) || '';
   let body;
-  try {
-    body = JSON.parse(e.postData.contents);
-  } catch (err) {
-    return jsonResponse({ success: false, reason: 'bad_request' });
+
+  // A real, non-JS <form> submission (agent-readiness checklist item 3.1's
+  // fallback path — see agent-readiness-technical-checklist.md) arrives as
+  // application/x-www-form-urlencoded (or multipart/form-data), which Apps
+  // Script parses into e.parameter for us. The JS-driven AJAX clients
+  // (scope-form, booking-form, waitlist-form) send a JSON string body with
+  // no explicit Content-Type header, which the Fetch spec defaults to
+  // text/plain — anything not a form submission falls through to JSON.parse.
+  if (contentType.indexOf('application/x-www-form-urlencoded') !== -1 || contentType.indexOf('multipart/form-data') !== -1) {
+    body = e.parameter;
+  } else {
+    try {
+      body = JSON.parse(e.postData.contents);
+    } catch (err) {
+      return jsonResponse({ success: false, reason: 'bad_request' });
+    }
   }
 
   const lang = normalizeLang(body.lang);
