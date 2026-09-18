@@ -1,0 +1,18 @@
+{
+  "linkset": [
+    {
+      "anchor": "https://eleviq.solutions/.well-known/api-catalog",
+      "item": [
+        { "href": "https://eleviq-booking-gateway.gateway-worker.workers.dev/slots" },
+        { "href": "https://eleviq-booking-gateway.gateway-worker.workers.dev/book" },
+        { "href": "https://eleviq-booking-gateway.gateway-worker.workers.dev/waitlist" }
+      ],
+      "service-desc": [
+        { "href": "https://eleviq.solutions/llms.txt", "type": "text/plain" }
+      ],
+      "service-doc": [
+        { "href": "https://eleviq.solutions/llms.txt", "type": "text/plain" }
+      ]
+    }
+  ]
+}
