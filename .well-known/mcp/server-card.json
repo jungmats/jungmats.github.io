@@ -1,0 +1,42 @@
+{
+  "name": "eleviq-booking",
+  "title": "ElevIQ Booking",
+  "description": "MCP server for booking a free 30-minute intro call with Matthias Jung of ElevIQ Solutions (AI agent readiness audits and agentic web monetization strategy). The same backend is also reachable as a plain REST API for agents that don't speak MCP — see documentation_url.",
+  "website": "https://eleviq.solutions",
+  "documentation_url": "https://eleviq.solutions/llms.txt",
+  "contact": {
+    "email": "hello@eleviq.solutions"
+  },
+  "mcp": {
+    "endpoint": "https://eleviq-booking-gateway.gateway-worker.workers.dev/mcp",
+    "transport": "streamable-http",
+    "protocol_versions": ["2025-06-18", "2025-03-26", "2024-11-05"],
+    "auth": "none",
+    "tools": [
+      {
+        "name": "list_slots",
+        "title": "List bookable call slots",
+        "description": "List the bookable slots for the free 30-minute intro call."
+      },
+      {
+        "name": "book_slot",
+        "title": "Book a call slot",
+        "description": "Book a free 30-minute intro call. Requires a slot id from list_slots plus the name and email of the person the call is for."
+      },
+      {
+        "name": "join_waitlist",
+        "title": "Join the waitlist",
+        "description": "Join the waitlist when no free call slots are available."
+      }
+    ],
+    "note": "Full input/output schemas are served live by the MCP server itself via tools/list — this card is a discovery pointer, not a schema mirror."
+  },
+  "rest_api": {
+    "base_url": "https://eleviq-booking-gateway.gateway-worker.workers.dev",
+    "documentation_url": "https://eleviq.solutions/llms.txt"
+  },
+  "rate_limits": {
+    "read": "60 requests/minute/IP",
+    "write": "5 requests/minute/IP"
+  }
+}
