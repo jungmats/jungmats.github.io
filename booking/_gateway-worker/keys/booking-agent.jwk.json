@@ -1,0 +1,8 @@
+{
+  "kty": "OKP",
+  "crv": "Ed25519",
+  "alg": "EdDSA",
+  "kid": "eleviq-booking-gateway-demo-key",
+  "x": "toYUUG2EmodgOOVqtLejnaBwiI0X2Sg-lG6ATj_uyjM",
+  "d": "0fxGfQIpmC4VON8O2HXeFVKdY9kCgQ0hF0sZllsWT9Q"
+}

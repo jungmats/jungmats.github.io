@@ -10,15 +10,23 @@
  *
  * Both doors share the same pipeline: validate → rate-limit → stamp
  * attribution (self-declared `via`, User-Agent, Cloudflare verified-bot
- * signal) → forward to the Apps Script. The MCP write tools take the same
+ * signal, and — if the request is signed — a verified Web Bot Auth
+ * identity) → forward to the Apps Script. The MCP write tools take the same
  * `via` attribution field as the REST endpoints (default "mcp"). The human
  * booking page keeps talking to the Apps Script directly and is untouched.
+ *
+ * Web Bot Auth (RFC 9421 HTTP Message Signatures, Ed25519) — production
+ * port of the eleviq-lab Demo 1 pattern, see ./verify.js. Our own key
+ * directory is published at eleviq.solutions/.well-known/http-message-
+ * signatures-directory; verification of a signed request happens here,
+ * additively — it never blocks a request, only enriches attribution.
  */
+import { checkSignedAgent, signedAgentLabel } from './verify.js';
 
 const APPS_SCRIPT_URL =
   'https://script.google.com/macros/s/AKfycbyH4RMe-lfQrzbEmCRzDufaOzpUaYpmTTr1Ghn2AfpbCuijNYLUS1_2KJJIPwc2ycFMvQ/exec';
 
-const GATEWAY_VERSION = '2026-08-17-v3';
+const GATEWAY_VERSION = '2026-09-18-v4-webbotauth';
 
 // Set per request in fetch(); holds the Worker bindings, including the
 // GATEWAY_SECRET that authenticates this Worker to the Apps Script
@@ -111,12 +119,16 @@ function normalizeLang(value) {
 }
 
 // Attribution evidence stamped into every booking that passes the gateway.
-function attributionFrom(request, declaredVia) {
+// `signedAgent` is the Web Bot Auth verdict from checkSignedAgent(), or null
+// for the common case of an unsigned request — it never affects the other
+// three signals, only adds a fourth when a signature was present and valid.
+function attributionFrom(request, declaredVia, signedAgent) {
   const cf = request.cf || {};
   return {
     via: String(declaredVia || '').trim().slice(0, 120),
     agent_ua: (request.headers.get('User-Agent') || '').slice(0, 250),
     agent_verified: String(cf.verifiedBotCategory || '').slice(0, 120),
+    signed_agent: signedAgentLabel(signedAgent),
   };
 }
 
@@ -149,6 +161,8 @@ function apiIndex(url) {
     },
     attribution:
       'Please set "via" to your agent or product name (e.g. "claude", "gpt-agent") so the booking is attributed correctly.',
+    web_bot_auth:
+      'If you sign requests with Web Bot Auth (RFC 9421 HTTP Message Signatures, Ed25519), a valid signature is recognized and adds to attribution — see https://eleviq.solutions/.well-known/http-message-signatures-directory. Unsigned requests work exactly as before; this is optional.',
     contact: 'hello@eleviq.solutions',
   });
 }
@@ -202,6 +216,7 @@ async function handleBook(request) {
         '. A confirmation email has been sent to ' +
         email +
         '. To cancel or reschedule, reply to that email.',
+      ...(result.signedAgent ? { web_bot_auth: result.signedAgent } : {}),
     });
   }
 
@@ -246,6 +261,7 @@ async function handleWaitlist(request) {
       success: true,
       message:
         'Waitlist signup confirmed for ' + email + '. Matthias will reach out as soon as a new slot opens; a confirmation email has been sent.',
+      ...(result.signedAgent ? { web_bot_auth: result.signedAgent } : {}),
     });
   }
   return json(
@@ -254,11 +270,12 @@ async function handleWaitlist(request) {
   );
 }
 
-// Shared by the HTTP door and the MCP door: stamps attribution and forwards
-// to the Apps Script backend.
-function submitThroughBackend(request, action, { slotId, name, email, topic, lang, via }) {
-  const attribution = attributionFrom(request, via);
-  return backendPost({
+// Shared by the HTTP door and the MCP door: checks for a Web Bot Auth
+// signature, stamps attribution, and forwards to the Apps Script backend.
+async function submitThroughBackend(request, action, { slotId, name, email, topic, lang, via }) {
+  const signedAgent = await checkSignedAgent(request, ENV);
+  const attribution = attributionFrom(request, via, signedAgent);
+  const result = await backendPost({
     action: action,
     // Proves to the Apps Script that this request really came through the
     // gateway; without a valid secret the backend ignores the attribution
@@ -272,10 +289,15 @@ function submitThroughBackend(request, action, { slotId, name, email, topic, lan
     via: attribution.via,
     agent_ua: attribution.agent_ua,
     agent_verified: attribution.agent_verified,
+    signed_agent: attribution.signed_agent,
     // Never set the honeypot field — the backend silently discards
     // submissions that fill it.
     hp_check: '',
   });
+  // Surfaced to the caller (API/MCP response) so a signed request's effect
+  // is directly observable, independent of whether the backend also stores
+  // it — see Code.gs for the sheet/email side of this attribution.
+  return { ...result, signedAgent };
 }
 
 /* ------------------------------------------------------------- MCP server */
@@ -427,8 +449,9 @@ async function mcpToolCall(request, params) {
       via: cap(args.via, CAPS.via) || 'mcp',
     });
     if (result.success) {
+      const signedNote = result.signedAgent?.ok ? ' Signed with Web Bot Auth: ' + signedAgentLabel(result.signedAgent) + '.' : '';
       return {
-        content: [{ type: 'text', text: 'Waitlist signup confirmed for ' + email + '. Matthias will reach out as soon as a new slot opens; a confirmation email was sent.' }],
+        content: [{ type: 'text', text: 'Waitlist signup confirmed for ' + email + '. Matthias will reach out as soon as a new slot opens; a confirmation email was sent.' + signedNote }],
       };
     }
     return {
@@ -456,13 +479,14 @@ async function mcpToolCall(request, params) {
       via: cap(args.via, CAPS.via) || 'mcp',
     });
     if (result.success) {
+      const signedNote = result.signedAgent?.ok ? ' Signed with Web Bot Auth: ' + signedAgentLabel(result.signedAgent) + '.' : '';
       return {
         content: [
           {
             type: 'text',
             text:
               'Booking confirmed: ' + result.label + '. A confirmation email was sent to ' + email +
-              '. To cancel or reschedule, reply to that email.',
+              '. To cancel or reschedule, reply to that email.' + signedNote,
           },
         ],
       };

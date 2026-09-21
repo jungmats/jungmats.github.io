@@ -29,6 +29,7 @@ AI agents can book the free 30-minute intro call autonomously through the bookin
 - Rate limits: 5 write requests (book/waitlist) and 60 read requests per minute per IP.
 - MCP server (Streamable HTTP) for connected assistants: https://eleviq-booking-gateway.gateway-worker.workers.dev/mcp — tools: `list_slots`, `book_slot`, `join_waitlist`. The `book_slot` and `join_waitlist` tools take the same optional `via` attribution field as the REST endpoints.
 - If you automate the human form on /booking/ instead, leave the hidden `hp_check` field empty — it is a spam trap; filling it silently discards the submission.
+- Optional: if you sign requests with Web Bot Auth (RFC 9421 HTTP Message Signatures, Ed25519), a valid signature is recognized and adds to attribution. Our own key directory is at https://eleviq.solutions/.well-known/http-message-signatures-directory. Unsigned requests work exactly as described above.
 
 ## French
 

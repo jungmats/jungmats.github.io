@@ -55,7 +55,7 @@ function getSignature(lang) {
 
 // Bump this string with each code change. Lets anyone confirm which version
 // is actually live via a plain GET, without touching the Sheet or sending mail.
-const CODE_VERSION = '2026-09-17-form-fallback';
+const CODE_VERSION = '2026-09-18-signed-agent-attribution';
 
 // Length caps for user-supplied text (it ends up in the sheet and in
 // emails). Applied here as well as in the gateway, so direct callers
@@ -122,6 +122,7 @@ function doPost(e) {
     body.via = '';
     body.agent_ua = '';
     body.agent_verified = '';
+    body.signed_agent = '';
   }
 
   if (body.action === 'book') {
@@ -195,10 +196,13 @@ function bookSlot(ss, body, lang) {
   const slotId = cap(body.slotId, 50);
 
   // Attribution fields, present only when the booking gateway forwarded
-  // the request on behalf of an AI agent.
+  // the request on behalf of an AI agent. `signedAgent` is cryptographic
+  // (Web Bot Auth, RFC 9421) rather than heuristic — see the gateway's
+  // src/verify.js and the agent-readiness checklist item 4.1.
   const via = cap(body.via, 120);
   const agentUa = cap(body.agent_ua, 250);
   const agentVerified = cap(body.agent_verified, 120);
+  const signedAgent = cap(body.signed_agent, 120);
 
   if (!name || !email || !slotId || !isValidEmail(email)) {
     return { success: false, reason: 'invalid_input' };
@@ -212,7 +216,7 @@ function bookSlot(ss, body, lang) {
     if (!slot) return { success: false, reason: 'unknown_slot', slots: slots };
     if (slot.taken) return { success: false, reason: 'taken', slots: slots };
 
-    ss.getSheetByName('Bookings').appendRow([new Date(), slotId, name, email, topic, via, agentUa, agentVerified]);
+    ss.getSheetByName('Bookings').appendRow([new Date(), slotId, name, email, topic, via, agentUa, agentVerified, signedAgent]);
     SpreadsheetApp.flush();
 
     const confirmedSlots = getSlots(ss, lang);
@@ -221,7 +225,7 @@ function bookSlot(ss, body, lang) {
       return { success: false, reason: 'write_not_confirmed', slots: confirmedSlots };
     }
 
-    sendBookingEmails(slot, name, email, topic, lang, attributionLabel(via, agentUa, agentVerified, lang));
+    sendBookingEmails(slot, name, email, topic, lang, attributionLabel(via, agentUa, agentVerified, signedAgent, lang));
 
     return { success: true, label: slot.label, slots: confirmedSlots };
   } finally {
@@ -238,13 +242,14 @@ function addToWaitlist(ss, body, lang) {
   const via = cap(body.via, 120);
   const agentUa = cap(body.agent_ua, 250);
   const agentVerified = cap(body.agent_verified, 120);
-  const viaLabel = attributionLabel(via, agentUa, agentVerified, lang);
+  const signedAgent = cap(body.signed_agent, 120);
+  const viaLabel = attributionLabel(via, agentUa, agentVerified, signedAgent, lang);
 
   if (!name || !email || !isValidEmail(email)) {
     return { success: false, reason: 'invalid_input' };
   }
 
-  ss.getSheetByName('Waitlist').appendRow([new Date(), name, email, topic, via, agentUa, agentVerified]);
+  ss.getSheetByName('Waitlist').appendRow([new Date(), name, email, topic, via, agentUa, agentVerified, signedAgent]);
 
   if (lang === 'en') {
     MailApp.sendEmail({
@@ -355,16 +360,20 @@ function sendScopeRequestEmails(name, company, email, website, useCase, offer, l
 }
 
 // Human-readable attribution line for the notification/confirmation emails,
-// e.g. "AI agent (declared: claude · verified bot: AI Assistant)" or
-// "website form" when no gateway attribution is present.
-function attributionLabel(via, agentUa, agentVerified, lang) {
-  if (!via && !agentUa && !agentVerified) {
+// e.g. "AI agent (declared: claude · verified bot: AI Assistant · signed:
+// ChatGPT (OpenAI))" or "website form" when no gateway attribution is
+// present. `signedAgent` is cryptographic (Web Bot Auth) rather than
+// heuristic — listed last because it's the strongest signal, worth reading
+// last so it isn't lost among the others.
+function attributionLabel(via, agentUa, agentVerified, signedAgent, lang) {
+  if (!via && !agentUa && !agentVerified && !signedAgent) {
     return lang === 'en' ? 'website form' : 'formulaire du site';
   }
   const parts = [];
   if (via) parts.push((lang === 'en' ? 'declared: ' : 'déclaré : ') + via);
   if (agentVerified) parts.push((lang === 'en' ? 'verified bot: ' : 'bot vérifié : ') + agentVerified);
   if (!via && !agentVerified && agentUa) parts.push('UA: ' + agentUa);
+  if (signedAgent) parts.push((lang === 'en' ? 'signed: ' : 'signé : ') + signedAgent);
   const label = lang === 'en' ? 'AI agent' : 'agent IA';
   return parts.length ? label + ' (' + parts.join(' · ') + ')' : label;
 }

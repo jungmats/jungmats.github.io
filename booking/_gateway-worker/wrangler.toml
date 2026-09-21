@@ -26,3 +26,13 @@ name = "READ_LIMITER"
 type = "ratelimit"
 namespace_id = "1002"
 simple = { limit = 60, period = 60 }
+
+# Web Bot Auth nonce replay protection (src/verify.js) — NOT yet created.
+# Without this binding, checkSignedAgent() still verifies signatures fully;
+# it just skips the replay check (a captured-but-still-valid signature could
+# be resent until its own `expires`). To enable:
+#   npx wrangler kv namespace create eleviq-booking-nonces
+# then uncomment below with the printed id:
+# [[kv_namespaces]]
+# binding = "NONCES"
+# id = "<paste id here>"
