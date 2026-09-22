@@ -1,7 +1,7 @@
 {
   "name": "eleviq-booking",
   "title": "ElevIQ Booking",
-  "description": "MCP server for booking a free 30-minute intro call with Matthias Jung of ElevIQ Solutions (AI agent readiness audits and agentic web monetization strategy). The same backend is also reachable as a plain REST API for agents that don't speak MCP — see documentation_url.",
+  "description": "MCP server for booking a free 30-minute intro call with Matthias Jung of ElevIQ Solutions (AI-assisted customer journey analysis & enablement and agentic web monetization strategy). The same backend is also reachable as a plain REST API for agents that don't speak MCP — see documentation_url.",
   "website": "https://eleviq.solutions",
   "documentation_url": "https://eleviq.solutions/llms.txt",
   "contact": {
