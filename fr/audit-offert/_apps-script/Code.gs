@@ -162,13 +162,13 @@ function sendClaimEmails(name, email, website, code, campaign) {
     subject: 'ElevIQ — votre audit de préparation aux agents IA est confirmé',
     body: 'Bonjour ' + name + ',\n\n' +
       'C\'est confirmé : vous faites partie des personnes qui bénéficient d\'un audit ' +
-      'de préparation aux agents IA offert par ElevIQ.\n\n' +
+      'technique de préparation aux agents IA offert par ElevIQ.\n\n' +
       'Site web transmis : ' + website + '\n\n' +
       'Prochaine étape : je vais examiner votre site et revenir vers vous par email sous ' +
-      '3 jours ouvrés, soit avec les premières observations et la marche à suivre, soit ' +
+      '3 jours ouvrés, soit avec le rapport d\'audit technique et la marche à suivre, soit ' +
       'avec quelques questions de cadrage.\n\n' +
-      'Si vous avez des éléments de contexte utiles (parcours clients prioritaires, pages ' +
-      'clés, objectifs du site), répondez simplement à cet email.\n\n' +
+      'Si vous avez des éléments de contexte utiles (pages clés à couvrir, contraintes ' +
+      'techniques, objectifs du site), répondez simplement à cet email.\n\n' +
       'À très vite,\n' + getSignature()
   });
 }
