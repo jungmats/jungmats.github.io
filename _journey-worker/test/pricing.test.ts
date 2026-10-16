@@ -5,8 +5,8 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
-import { applyStep, nextSteps, prepareStep, start, type StepPlan } from "../src/engine/engine.ts";
-import { lintDefinition } from "../src/engine/definitions.ts";
+import { applyStep, cancel, nextSteps, prepareStep, start, type StepPlan } from "../src/engine/engine.ts";
+import { DefinitionError, lintDefinition } from "../src/engine/definitions.ts";
 import type { Caller, JourneyDefinition, JourneyState, Rejection } from "../src/engine/types.ts";
 import { budgetOf, buildEstimate, checkBudget } from "../src/pricing.ts";
 import { config } from "../src/config.ts";
@@ -59,7 +59,7 @@ test("estimate needs at least one option, without duplicates", () => {
   }
 });
 
-test("estimate can be repeated, updates its data, and stays offered next to finish and follow_up", () => {
+test("estimate can be repeated, updates its data, and stays offered next to close", () => {
   let s = started(PRICING);
   const send = (options: string[], extra: object = {}) => {
     const plan = prepareStep(PRICING, s, "estimate", { fields: { options, ...extra } }, UNSIGNED, T0);
@@ -73,7 +73,7 @@ test("estimate can be repeated, updates its data, and stays offered next to fini
   assert.deepEqual(s.stepData.estimate.options, ["customer-journey-analysis", "agentic-monetization-diagnostic"]);
   assert.equal(s.stepData.estimate.website_url, "https://example.com", "fields left out of a repeat are kept");
   assert.equal(s.stepData.estimate.total, 1, "handler log values are stored beside logged fields");
-  assert.deepEqual(nextSteps(PRICING, s).map((n) => n.step), ["estimate", "finish", "follow_up"]);
+  assert.deepEqual(nextSteps(PRICING, s).map((n) => n.step), ["estimate", "close"]);
 });
 
 function estimated(): JourneyState {
@@ -82,36 +82,45 @@ function estimated(): JourneyState {
   return applyStep(PRICING, s, est as StepPlan, T0, { result: {} }).state;
 }
 
-test("follow-up and finish both need an estimate first", () => {
-  const s = started(PRICING);
-  for (const step of ["follow_up", "finish"]) {
-    const r = prepareStep(PRICING, s, step, { fields: { email: "a@b.co" } }, UNSIGNED, T0) as Rejection;
-    assert.equal(r.reason, "step-out-of-order");
-  }
+test("close needs an estimate first", () => {
+  const r = prepareStep(PRICING, started(PRICING), "close", { fields: { email: "a@b.co" } }, UNSIGNED, T0) as Rejection;
+  assert.equal(r.reason, "step-out-of-order");
 });
 
-test("follow-up needs an email, ends the journey, and never stores email, name or message", () => {
+test("close needs an email, ends the journey as achieved, and never stores email, name or message", () => {
   const s = estimated();
-  const missing = prepareStep(PRICING, s, "follow_up", { fields: { name: "Ada" } }, UNSIGNED, T0) as Rejection;
+  const missing = prepareStep(PRICING, s, "close", { fields: { name: "Ada" } }, UNSIGNED, T0) as Rejection;
   assert.equal(missing.reason, "fields-missing");
 
-  const plan = prepareStep(PRICING, s, "follow_up", { fields: { email: "ada@example.com", name: "Ada", company: "Example AG", message: "Call me" } }, UNSIGNED, T0);
+  const plan = prepareStep(PRICING, s, "close", { fields: { email: "ada@example.com", name: "Ada", company: "Example AG", message: "Hi", journey_feedback: "clear" } }, UNSIGNED, T0);
   assert.equal(plan.ok, true);
   const out = applyStep(PRICING, s, plan as StepPlan, T0, { result: {}, log: { email_domain: "example.com" } });
   assert.equal(out.state.status, "achieved");
-  assert.deepEqual(out.state.stepData["follow_up"], { company: "Example AG", email_domain: "example.com" });
+  assert.deepEqual(out.state.stepData.close, { company: "Example AG", journey_feedback: "clear", email_domain: "example.com" });
 });
 
-test("finish ends the journey without contact details, all fields optional", () => {
+test("cancel takes the definition's extra fields and logs them under cancel", () => {
+  const r = cancel(estimated(), { reason: "price-too-high", preferred_option: "agent-readiness-audit", journey_feedback: "clear" }, UNSIGNED, T0, PRICING);
+  assert.equal(r.ok, true);
+  if (!r.ok) return;
+  assert.equal(r.state.status, "cancelled");
+  assert.equal(r.state.endReason, "price-too-high");
+  assert.deepEqual(r.state.stepData.cancel, { preferred_option: "agent-readiness-audit", journey_feedback: "clear" });
+  assert.deepEqual(r.state.stepData.estimate.options, ["agent-readiness-audit"], "earlier step data is kept");
+});
+
+test("cancel still needs a reason, and refuses contact details and fields of other journeys", () => {
   const s = estimated();
-  const empty = prepareStep(PRICING, s, "finish", {}, UNSIGNED, T0);
-  assert.equal(empty.ok, true);
-  const plan = prepareStep(PRICING, s, "finish", { fields: { preferred_option: "agent-readiness-audit", decision: "still-comparing" } }, UNSIGNED, T0);
-  const out = applyStep(PRICING, s, plan as StepPlan, T0);
-  assert.equal(out.state.status, "achieved");
-  assert.equal(out.state.stepData.finish.decision, "still-comparing");
-  const leak = prepareStep(PRICING, s, "finish", { fields: { email: "a@b.co" } }, UNSIGNED, T0) as Rejection;
-  assert.equal(leak.reason, "fields-invalid", "finish does not accept contact details");
+  assert.equal((cancel(s, { journey_feedback: "x" }, UNSIGNED, T0, PRICING) as Rejection).reason, "cancel-reason-invalid");
+  assert.equal((cancel(s, { reason: "other", email: "a@b.co" }, UNSIGNED, T0, PRICING) as Rejection).reason, "cancel-reason-invalid");
+  assert.equal((cancel(started(SITE_VISIT), { reason: "other", preferred_option: "none" }, UNSIGNED, T0, SITE_VISIT) as Rejection).reason, "cancel-reason-invalid");
+});
+
+test("cancel fields cannot be required, sensitive or shadow a built-in field", () => {
+  const bad = (fields: object) => () => lintDefinition({ ...PRICING, cancel: { fields } } as unknown as JourneyDefinition);
+  assert.throws(bad({ type: "object", required: ["x"], properties: { x: { type: "string" } } }), DefinitionError);
+  assert.throws(bad({ type: "object", properties: { email: { type: "string", sensitive: true } } }), DefinitionError);
+  assert.throws(bad({ type: "object", properties: { reason: { type: "string" } } }), DefinitionError);
 });
 
 /* ------------------------------------------------------------------- price */

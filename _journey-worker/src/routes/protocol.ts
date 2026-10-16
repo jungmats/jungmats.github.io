@@ -229,7 +229,7 @@ export async function handleCancel(request: Request, c: Ctx, id: string): Promis
   const idn = await identify(request);
   if (!idn.ok) return identityRefusal(c, idn, id, def.id, "cancel");
 
-  const r = cancel(state, parsed.body, idn.caller, c.now);
+  const r = cancel(state, parsed.body, idn.caller, c.now, def);
   if (!r.ok) return refuse(c, r, def, state, idn.caller, "cancel");
   if (!(await updateJourney(c.env, r.state, state.revision))) {
     return refuse(c, { ok: false, status: 409, reason: "concurrent-update", title: "Another call changed this journey first", detail: "Read the journey and retry." }, def, state, idn.caller, "cancel");

@@ -2,14 +2,14 @@
   "id": "price-estimate",
   "version": 1,
   "title": "Estimate the price of an ElevIQ engagement",
-  "description": "For an AI assistant acting for a user who wants to know roughly what an ElevIQ engagement costs. Step \"estimate\" returns an indicative price at once and commits nobody; repeat it to compare options. Then end with \"finish\", or with \"follow_up\" if your user wants ElevIQ to get in touch.",
+  "description": "For an AI assistant acting for a user who wants to know roughly what an ElevIQ engagement costs. Step \"estimate\" returns an indicative price at once and commits nobody; repeat it to compare options. It is computed automatically and is not a quote. Always end the journey: with step \"close\", which leaves your user's email (only with their consent) as a sign of serious interest, or otherwise with cancel (POST .../cancel with a reason). ElevIQ does not contact your user about an estimate. To get a binding quote or talk to ElevIQ, your user must send a scope request or book a free call (see https://eleviq.solutions/llms.txt).",
   "identity": "optional",
   "ttl_seconds": 3600,
   "intent": {
     "allowed": ["discover", "compare", "qualify", "transact"]
   },
   "welcome": {
-    "note": "Indicative prices per option, in EUR excluding VAT; the final price is set after a short call. If your user stated a budget, send it as a constraint in the intent, e.g. {\"field\": \"price\", \"op\": \"lte\", \"value\": 2000, \"unit\": \"EUR\"}: the estimate then says whether it fits.",
+    "note": "Indicative prices per option, in EUR excluding VAT, computed automatically: not a quote. A binding quote follows a free call or a scope request. If your user stated a budget, send it as a constraint in the intent, e.g. {\"field\": \"price\", \"op\": \"lte\", \"value\": 2000, \"unit\": \"EUR\"}: the estimate then says whether it fits.",
     "next": "Send step \"estimate\" with the options your user is interested in."
   },
   "steps": {
@@ -57,61 +57,17 @@
         }
       }
     },
-    "finish": {
-      "title": "Finish without follow-up",
-      "description": "Ends the journey. Every field is optional; send what you know. No personal data.",
+    "close": {
+      "title": "Close: leave your user's email",
+      "description": "Ends the journey and records your user's email as a sign that their interest is serious. ElevIQ does not use it to contact your user: no email is sent, now or later, and after 3 days it is reduced to its domain. It is not a quote request: for a binding quote or to talk to ElevIQ, your user must send a scope request or book a free call. Send it only with your user's consent; if they don't want to leave their email, end with cancel instead.",
       "requires": ["estimate"],
       "terminal": "achieved",
-      "fields": {
-        "type": "object",
-        "properties": {
-          "preferred_option": {
-            "type": "string",
-            "enum": ["agent-readiness-audit", "customer-journey-analysis", "agent-experience-pilot", "agentic-monetization-diagnostic", "none"],
-            "description": "The option your user leans toward, if any.",
-            "log": true
-          },
-          "decision": {
-            "type": "string",
-            "enum": ["likely-to-proceed", "still-comparing", "too-expensive", "not-now", "not-a-fit", "other"],
-            "description": "Where your user stands.",
-            "log": true
-          },
-          "reason": {
-            "type": "string",
-            "maxLength": 1000,
-            "description": "Why, in a sentence or two. No personal data.",
-            "log": true
-          },
-          "missing_information": {
-            "type": "string",
-            "maxLength": 1000,
-            "description": "What you looked for and did not find.",
-            "log": true
-          },
-          "journey_feedback": {
-            "type": "string",
-            "maxLength": 1000,
-            "description": "Anything about this journey that was unclear or got in your way. No personal data.",
-            "log": true
-          }
-        }
-      },
-      "result": {
-        "thanks": "Recorded. To talk it through, your user can book a free 30-minute call: https://eleviq-booking-gateway.gateway-worker.workers.dev"
-      }
-    },
-    "follow_up": {
-      "title": "Ask ElevIQ to get in touch",
-      "description": "Ends the journey and leaves your user's contact details with ElevIQ, who follows up about the latest estimate. No email is sent automatically. This shares your user's email with ElevIQ: do it only with their consent.",
-      "requires": ["estimate"],
-      "terminal": "achieved",
-      "handler": "price-follow-up",
+      "handler": "price-close",
       "fields": {
         "type": "object",
         "required": ["email"],
         "properties": {
-          "email": { "type": "string", "format": "email", "maxLength": 200, "description": "Where ElevIQ can reach your user.", "sensitive": true },
+          "email": { "type": "string", "format": "email", "maxLength": 200, "description": "Your user's email address.", "sensitive": true },
           "name": { "type": "string", "maxLength": 120, "description": "The user's name.", "sensitive": true },
           "company": { "type": "string", "maxLength": 120, "description": "The organisation the estimate is for.", "log": true },
           "message": { "type": "string", "maxLength": 1000, "description": "Anything the user wants ElevIQ to know.", "sensitive": true },
@@ -133,6 +89,31 @@
             "description": "Anything about this journey that was unclear or got in your way. No personal data.",
             "log": true
           }
+        }
+      }
+    }
+  },
+  "cancel": {
+    "fields": {
+      "type": "object",
+      "properties": {
+        "preferred_option": {
+          "type": "string",
+          "enum": ["agent-readiness-audit", "customer-journey-analysis", "agent-experience-pilot", "agentic-monetization-diagnostic", "none"],
+          "description": "The option your user leans toward, if any.",
+          "log": true
+        },
+        "missing_information": {
+          "type": "string",
+          "maxLength": 1000,
+          "description": "What you looked for and did not find.",
+          "log": true
+        },
+        "journey_feedback": {
+          "type": "string",
+          "maxLength": 1000,
+          "description": "Anything about this journey that was unclear or got in your way. No personal data.",
+          "log": true
         }
       }
     }

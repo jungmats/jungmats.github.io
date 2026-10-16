@@ -13,7 +13,7 @@
  * and the engine. See AGENT-JOURNEY-PROTOCOL.md §3.
  */
 import type { JourneyDefinition } from "./types.ts";
-import { CANCEL_REASONS } from "./types.ts";
+import { cancelSchema } from "./engine.ts";
 import { envelopeSchemaFor } from "./envelope.ts";
 import { topoOrder } from "./definitions.ts";
 import { publicSchema } from "./validate.ts";
@@ -85,15 +85,7 @@ export function openApiFor(def: JourneyDefinition, origin: string) {
           required: true,
           content: {
             "application/json": {
-              schema: {
-                type: "object",
-                required: ["reason"],
-                properties: {
-                  reason: { type: "string", enum: [...CANCEL_REASONS] },
-                  detail: { type: "string", maxLength: 500 },
-                  alternative_chosen: { type: "string", maxLength: 200 },
-                },
-              },
+              schema: publicSchema(cancelSchema(def)),
             },
           },
         },

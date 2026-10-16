@@ -18,7 +18,7 @@
  *   GET  /api/analytics/summary|journeys[/{ref}]|leads  dashboard data   (Cloudflare Access)
  *   GET  /dashboard/                                the dashboard        (Cloudflare Access)
  *
- * Contact details left for follow-up live only in the `leads` table; a daily
+ * Emails left with step close live only in the `leads` table; a daily
  * cron reduces them after config.leads.retentionDays. No email is sent.
  *
  * The engine (src/engine/) is pure and tested with `npm test`.
@@ -67,7 +67,7 @@ async function route(request: Request, url: URL, env: Env, ctx: ExecutionContext
 
   if (m === "POST") {
     const ip = request.headers.get("CF-Connecting-IP") ?? "unknown";
-    const storesContact = /\/steps\/follow_up$/.test(path);
+    const storesContact = /\/steps\/close$/.test(path);
     const limiter = storesContact ? env.CONTACT_LIMITER : env.WRITE_LIMITER;
     if (limiter && !(await limiter.limit({ key: ip })).success) {
       return problem({ status: 429, reason: "bad-request", title: "Too many requests", detail: "Slow down and retry in a minute." });

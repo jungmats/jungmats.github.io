@@ -91,6 +91,10 @@ export interface JourneyDefinition {
   steps: Record<string, StepDefinition>;
   /** Returned with the start response: what the agent gets for starting. */
   welcome?: unknown;
+  /** Extra optional fields the protocol's cancel accepts for this journey,
+   * beside reason, detail and alternative_chosen. `log: true` fields are kept
+   * in the journey record under "cancel"; none may be required or sensitive. */
+  cancel?: { fields: ObjectSchema };
 }
 
 export const INTENT_KINDS = ["discover", "compare", "qualify", "verify", "transact", "support"] as const;
@@ -182,7 +186,14 @@ export const CANCEL_REASONS = [
   "found-alternative",
   "missing-information",
   "user-unavailable",
+  "not-now",
+  "got-what-needed",
+  "continued-elsewhere",
+  "consent-withheld",
   "agent-error",
   "other",
 ] as const;
 export type CancelReason = (typeof CANCEL_REASONS)[number];
+
+/** The fields every cancel accepts; a definition's `cancel.fields` adds to them. */
+export const CANCEL_BUILTIN_FIELDS: readonly string[] = ["reason", "detail", "alternative_chosen"];

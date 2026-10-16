@@ -2,7 +2,7 @@
  * Journey definition linter. A broken definition must fail loudly at load
  * time, never halfway through a real agent's journey.
  */
-import { INTENT_KINDS, type JourneyDefinition } from "./types.ts";
+import { CANCEL_BUILTIN_FIELDS, INTENT_KINDS, type JourneyDefinition } from "./types.ts";
 import { ENVELOPE_SCHEMA } from "./envelope.ts";
 
 const ID = /^[a-z][a-z0-9-]{1,62}$/;
@@ -60,6 +60,19 @@ export function lintDefinition(def: JourneyDefinition): JourneyDefinition {
     if (step.terminal) terminals++;
   }
   if (names.length && terminals === 0) errs.push("at least one step must be terminal");
+
+  if (def.cancel !== undefined) {
+    const props = def.cancel?.fields?.properties;
+    if (def.cancel?.fields?.type !== "object" || typeof props !== "object") {
+      errs.push("cancel.fields must be an object schema with properties");
+    } else {
+      if (def.cancel.fields.required?.length) errs.push("cancel.fields cannot have required fields");
+      for (const [fname, f] of Object.entries(props)) {
+        if (CANCEL_BUILTIN_FIELDS.includes(fname)) errs.push(`cancel field "${fname}" is built in`);
+        if (f.sensitive) errs.push(`cancel field "${fname}" cannot be sensitive`);
+      }
+    }
+  }
 
   const cycle = findCycle(def);
   if (cycle) errs.push(`requires has a cycle: ${cycle.join(" -> ")}`);

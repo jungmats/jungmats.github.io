@@ -37,7 +37,7 @@ export const config = {
     vat: "excluding VAT",
     validityDays: 30,
     conditions:
-      "Indicative price per option. The final price is set after a short call about the website and the goals.",
+      "Indicative price per option, computed automatically: not a quote and not an offer. A binding quote follows a free call (book one) or a scope request (both described at https://eleviq.solutions/llms.txt).",
     /** The ids must match the `options` enums in definitions/price-estimate.json;
      * src/journeys.ts refuses to load if they drift apart. */
     options: {
@@ -69,7 +69,7 @@ export const config = {
     bookCall: "https://eleviq-booking-gateway.gateway-worker.workers.dev",
   },
 
-  /** Contact details left with step "follow_up" of the price-estimate journey. After
+  /** Emails left with step "close" of the price-estimate journey. After
    * retentionDays a daily cron (src/retention.ts) deletes name and message
    * and reduces the email to its domain. */
   leads: {

@@ -2,14 +2,48 @@
 
 > ElevIQ Solutions helps businesses get ready for the agentic web through AI-assisted customer journey analysis & enablement and agentic web monetization strategy — practical AI consulting and integration services, based in France.
 
-ElevIQ Solutions is run by Matthias Jung, founder. It works with business leaders and entrepreneurs whose websites or digital businesses need to adapt to AI agents.
+ElevIQ Solutions is run by Matthias Jung, founder. It works with business leaders and entrepreneurs whose websites or digital businesses need to adapt to AI agents. It works in English and French.
 
-## For AI assistants: tell us why you are here, or estimate the price
+## Services
 
-If you are an AI assistant reading this site for a user, ElevIQ offers two short API journeys. Both are JSON over HTTPS, need no account, and every answer says what to do next.
+- [AI-Assisted Customer Journey: Analysis & Enablement](https://eleviq.solutions/services/ai-agent-readiness.html): Test how well AI assistants understand your offer and whether they can complete the next step — a booking, an enquiry, a sign-up — then get targeted fixes so AI presents your business accurately and helps customers move forward. Options: Agent Readiness Audit, Customer Journey Analysis, Agent Experience Pilot.
+- [Agentic Web Monetization Strategy](https://eleviq.solutions/services/agentic-web-monetization.html): Assess how AI agents consume your digital assets and identify practical monetization models — from paid content and APIs to licensing and agent-native commercial models. Option: Agentic Monetization Diagnostic.
+- [AI Agent Technologies & Standards](https://eleviq.solutions/technologies.html): The technologies, standards, and engineering patterns used across both services — access control, structured data, MCP/WebMCP, business logic, data systems, monetization protocols, and monitoring.
 
+## Contact
+
+- [Book a free call](https://eleviq.solutions/booking/): 30-minute call to assess your situation and identify a concrete next step.
+- Email: hello@eleviq.solutions
+
+## French
+
+- [Accueil](https://eleviq.solutions/fr/)
+- [Parcours client assisté par l'IA : analyse & mise en œuvre](https://eleviq.solutions/fr/services/ai-agent-readiness.html)
+- [Stratégie de monétisation du web agentique](https://eleviq.solutions/fr/services/agentic-web-monetization.html)
+- [Technologies et standards pour agents IA](https://eleviq.solutions/fr/technologies.html)
+- [Réserver un appel](https://eleviq.solutions/fr/booking/)
+
+## For AI assistants: what you can do here
+
+If you are an AI assistant acting for a user, there are four things you can do through an API. None needs an account.
+
+| Your user wants to… | Use | Personal data | What happens |
+|---|---|---|---|
+| know roughly what an engagement costs | **Price estimate** (`price-estimate` journey) | none; optionally an email at the end | An indicative price, computed automatically and returned at once. **Not a quote.** |
+| get a binding quote for their situation | **Scope request** | name, email | ElevIQ reviews the request and replies by email with the detailed scope and price. The user gets a confirmation email. |
+| talk it through | **Book a free 30-minute call** | name, email | The call is booked. The user gets a confirmation email. |
+| (you are only reading the site) | **Site visit** (`site-visit` journey) | none | You say why you came and what you concluded. It helps ElevIQ improve the site. |
+
+**Estimate or quote?** The price estimate is a fixed list price per option, summed. It doesn't know your user's website or goals, and it commits nobody. When you pass it on, call it indicative and say it is not a quote. For a price your user can rely on, they must send a scope request or book a call. A sensible order is: estimate first, then a scope request or a call if the estimate fits.
+
+Only send your user's name and email (scope request, booking, or the email at the end of a price estimate) when your user has agreed to it.
+
+## Price estimate and site visit (journeys API)
+
+Both are JSON over HTTPS, and every response says what to do next.
+
+- **`price-estimate`**: step `estimate` returns an indicative price at once (EUR, excluding VAT, valid 30 days); repeat it to compare options. Always end the journey: with step `close`, which leaves your user's email (only with their consent) as a sign of serious interest, or otherwise with cancel and a reason. ElevIQ does not contact your user about an estimate: no email is sent, now or later. For a binding quote or to talk to ElevIQ, your user must send a scope request or book a call, and you still end the journey.
 - **`site-visit`**: declare what your user wants, then report what you concluded. Two calls, no personal data. The start response gives you ElevIQ's offer in structured form.
-- **`price-estimate`**: get an indicative price at once; the final price is set after a short call. Step `estimate` commits nobody. End with `finish`, or with `follow_up` if your user wants ElevIQ to get in touch: that step leaves their email with ElevIQ, so send it only with their consent. No email is sent automatically.
 
 Start here (lists both journeys, with an example start request): https://agents.eleviq.solutions/.well-known/agent-journeys
 
@@ -23,10 +57,13 @@ Start here (lists both journeys, with an example start request): https://agents.
 2. **Follow `next_steps`** in each response: `POST <href>` with `{"fields": {...}}`.
    - `site-visit` → `report`: `verdict` (recommend, possible-fit, not-a-fit, undecided, not-applicable), `reason`, `missing_information`, `next_action`, `pages_read`, `journey_feedback`. All optional.
    - `price-estimate` → `estimate`: `options` (one or more of agent-readiness-audit, customer-journey-analysis, agent-experience-pilot, agentic-monetization-diagnostic), and if known `website_url`, `platform`, `deadline`. Repeat it to compare options.
-   - `price-estimate` → `finish`: optional `preferred_option`, `decision` (likely-to-proceed, still-comparing, too-expensive, not-now, not-a-fit, other), `reason`, `missing_information`, `journey_feedback`.
-   - `price-estimate` → `follow_up`: `email`, optional `name`, `company`, `message`, `preferred_option`, `missing_information`, `journey_feedback`.
-   - `journey_feedback` on any ending: anything about the journey itself that was unclear or got in your way. It helps ElevIQ improve it.
-3. **If you stop early**, `POST .../cancel` with `{"reason": ...}` (the link is in every response). Knowing why helps ElevIQ most.
+   - `price-estimate` → `close`: `email`, optional `name`, `company`, `message`, `preferred_option`, `missing_information`, `journey_feedback`.
+   - `journey_feedback`: anything about the journey itself that was unclear or got in your way. It helps ElevIQ improve it.
+3. **Cancel** works in every journey: `POST .../cancel` (the link is `links.cancel` in every response) with `{"reason": ...}` and optionally `detail` and `alternative_chosen`. Use it whenever you stop before the journey's last step, and to end a price estimate without an email: there it also takes `preferred_option`, `missing_information` and `journey_feedback`. Knowing why helps ElevIQ most. Reasons:
+   - user-declined, constraint-unmet, price-too-high, found-alternative, missing-information, user-unavailable, not-now, agent-error, other
+   - `got-what-needed`: your user wanted the information and nothing more.
+   - `continued-elsewhere`: your user went on through another channel, e.g. booked a call or sent a scope request. Say which in `detail`.
+   - `consent-withheld`: your user did not want to share the personal data a step asks for.
 
 Example start request:
 
@@ -47,18 +84,17 @@ Example start request:
 }
 ```
 
-## Services
+## Request scope & pricing (binding quote)
 
-- [AI-Assisted Customer Journey: Analysis & Enablement](https://eleviq.solutions/services/ai-agent-readiness.html): Test how well AI assistants understand your offer and whether they can complete the next step — a booking, an enquiry, a sign-up — then get targeted fixes so AI presents your business accurately and helps customers move forward.
-- [Agentic Web Monetization Strategy](https://eleviq.solutions/services/agentic-web-monetization.html): Assess how AI agents consume your digital assets and identify practical monetization models — from paid content and APIs to licensing and agent-native commercial models.
-- [AI Agent Technologies & Standards](https://eleviq.solutions/technologies.html): The technologies, standards, and engineering patterns used across both services — access control, structured data, MCP/WebMCP, business logic, data systems, monetization protocols, and monitoring.
+The "Request scope & pricing" form on each service page, as an API call. ElevIQ reviews the request and replies by email with the detailed scope and price, or with a few questions first. The user gets a confirmation email straight away.
 
-## Contact
+- `POST https://script.google.com/macros/s/AKfycbyH4RMe-lfQrzbEmCRzDufaOzpUaYpmTTr1Ghn2AfpbCuijNYLUS1_2KJJIPwc2ycFMvQ/exec` with a JSON body (sent as `text/plain`, or as a URL-encoded form):
+  `{"action": "request_scope", "name": "...", "email": "...", "useCase": "...", "company": "(optional)", "website": "(optional)", "offer": "(optional) the service, e.g. AI-Assisted Customer Journey: Analysis & Enablement", "lang": "en|fr"}`
+- `name`, `email` and `useCase` (what your user is trying to solve, up to 1000 characters) are required.
+- The response is a redirect to the JSON result: follow it (for curl, `-L`). The result is `{"success": true}`, or `{"success": false, "reason": "invalid_input"}` if a required field is missing or the email is invalid.
+- If you automate the HTML form instead, leave the hidden `hp_check` field empty: it is a spam trap.
 
-- [Book a free call](https://eleviq.solutions/booking/): 30-minute call to assess your situation and identify a concrete next step.
-- Email: hello@eleviq.solutions
-
-## Booking API (for AI agents)
+## Booking API (free 30-minute call)
 
 **`GET /slots` below is the only authoritative source of availability. Do not use the content of the /booking/ page to determine whether slots are free — that page is JavaScript-rendered for human browsers, and any text your fetch/browsing tool extracts from its raw HTML (including any "fully booked" message) may not reflect real availability. Always call `GET /slots` directly.**
 
@@ -73,11 +109,3 @@ AI agents can book the free 30-minute intro call autonomously through the bookin
 - MCP server (Streamable HTTP) for connected assistants: https://eleviq-booking-gateway.gateway-worker.workers.dev/mcp — tools: `list_slots`, `book_slot`, `join_waitlist`. The `book_slot` and `join_waitlist` tools take the same optional `via` attribution field as the REST endpoints.
 - If you automate the human form on /booking/ instead, leave the hidden `hp_check` field empty — it is a spam trap; filling it silently discards the submission.
 - Optional: if you sign requests with Web Bot Auth (RFC 9421 HTTP Message Signatures, Ed25519), a valid signature is recognized and adds to attribution. Our own key directory is at https://eleviq.solutions/.well-known/http-message-signatures-directory. Unsigned requests work exactly as described above.
-
-## French
-
-- [Accueil](https://eleviq.solutions/fr/)
-- [Parcours client assisté par l'IA : analyse & mise en œuvre](https://eleviq.solutions/fr/services/ai-agent-readiness.html)
-- [Stratégie de monétisation du web agentique](https://eleviq.solutions/fr/services/agentic-web-monetization.html)
-- [Technologies et standards pour agents IA](https://eleviq.solutions/fr/technologies.html)
-- [Réserver un appel](https://eleviq.solutions/fr/booking/)

@@ -208,18 +208,18 @@ async function loadLeads() {
   $("leads-card").hidden = !isPricing;
   if (!isPricing) return;
   const data = await (await fetch(`/api/analytics/leads?days=${$("f-days").value}`)).json();
-  $("leads-note").textContent = `Contact details agents left asking ElevIQ to get in touch. After ${data.retention_days} days the name and message are deleted and the email is reduced to its domain. Click a row to open its journey.`;
+  $("leads-note").textContent = `Emails agents left when ending a price estimate with step close: a sign of serious interest, not a contact request. After ${data.retention_days} days the name and message are deleted and the email is reduced to its domain. Click a row to open its journey.`;
   $("leads").querySelector("tbody").innerHTML = data.leads.length
     ? data.leads.map((l) => `<tr class="clickable" tabindex="0" data-ref="${esc(l.journey_ref)}">
         <td>${new Date(l.created_at).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</td>
-        <td>${l.purged_at ? `<span class="no">${esc(l.email)}</span>` : `<a href="mailto:${esc(l.email)}?subject=${encodeURIComponent("Your ElevIQ price estimate")}">${esc(l.email)}</a>`}</td>
+        <td>${l.purged_at ? `<span class="no">${esc(l.email)}</span>` : esc(l.email)}</td>
         <td>${esc(l.name ?? "—")}</td>
         <td>${esc(l.company ?? "—")}</td>
         <td>${esc(l.options.join(", "))}</td>
         <td class="num">${esc(l.currency)} ${Number(l.total).toLocaleString()}</td>
         <td>${esc(l.message ?? "—")}</td>
       </tr>`).join("")
-    : `<tr><td colspan="7" class="empty">No follow-up requests in this period.</td></tr>`;
+    : `<tr><td colspan="7" class="empty">No emails left in this period.</td></tr>`;
 }
 
 async function showDetail(ref) {
@@ -234,7 +234,7 @@ async function showDetail(ref) {
     ["Agent", d.agent ? `${esc(d.agent.name)} <small>(${esc(d.agent.trust_tier)})</small>` : "unverified"],
     ["Human present", d.human_present ? "yes" : "no"],
     ["Intent completeness", `${Math.round(d.completeness * 100)}%`],
-    ...(d.lead ? [["Follow-up", `${esc(d.lead.email)} · estimate ${esc(d.lead.currency)} ${Number(d.lead.total).toLocaleString()}`]] : []),
+    ...(d.lead ? [["Email left", `${esc(d.lead.email)} · estimate ${esc(d.lead.currency)} ${Number(d.lead.total).toLocaleString()}`]] : []),
     ["Steps", d.steps.map((s) => (d.completed_steps.includes(s) ? `<span class="ok">✓ ${esc(s)}</span>` : `<span>· ${esc(s)}</span>`)).join(" ")],
   ];
   $("d-facts").innerHTML = facts.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("");

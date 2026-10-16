@@ -28,7 +28,7 @@ type Handler = (input: HandlerInput) => Promise<HandlerOutput>;
 
 export const HANDLERS: Record<string, Handler> = {
   "price-estimate": priceEstimate,
-  "price-follow-up": priceFollowUp,
+  "price-close": priceClose,
 };
 
 async function priceEstimate({ state, fields, now }: HandlerInput): Promise<HandlerOutput> {
@@ -41,10 +41,10 @@ async function priceEstimate({ state, fields, now }: HandlerInput): Promise<Hand
         estimate,
         budget_check: budget,
         next: [
+          'This is an indicative price, not a quote. Tell your user so.',
           'To compare other options, send step "estimate" again.',
-          'If your user wants ElevIQ to get in touch, send step "follow_up" with their email, with their consent. No email is sent automatically.',
-          'Otherwise end with step "finish" (all fields optional).',
-          `To talk first, book a free 30-minute call: ${config.pricing.bookCall}`,
+          `For a binding quote or to talk to ElevIQ, your user must send a scope request (https://eleviq.solutions/llms.txt, section "Request scope & pricing") or book a free 30-minute call (${config.pricing.bookCall}).`,
+          'Either way, end this journey: with step "close", which leaves your user\'s email (only with their consent; ElevIQ does not contact your user about it), or otherwise with cancel (links.cancel) and a reason, e.g. got-what-needed, continued-elsewhere or consent-withheld.',
         ],
       },
       log: {
@@ -55,13 +55,13 @@ async function priceEstimate({ state, fields, now }: HandlerInput): Promise<Hand
   };
 }
 
-async function priceFollowUp({ env, state, fields, now }: HandlerInput): Promise<HandlerOutput> {
+async function priceClose({ env, state, fields, now }: HandlerInput): Promise<HandlerOutput> {
   const options = state.stepData.estimate?.options as string[] | undefined;
   if (!options?.length) {
-    return { ok: false, status: 409, title: "No estimate to follow up on", detail: 'Send step "estimate" first.' };
+    return { ok: false, status: 409, title: "No estimate yet", detail: 'Send step "estimate" first.' };
   }
 
-  // Re-priced now, so the follow-up always records current prices.
+  // Re-priced now, so the stored record has current prices.
   const estimate = buildEstimate(options, now);
   const email = String(fields.email).trim();
   const purgeAfter = new Date(now.getTime() + config.leads.retentionDays * 86_400_000);
@@ -84,7 +84,7 @@ async function priceFollowUp({ env, state, fields, now }: HandlerInput): Promise
     computed: {
       result: {
         estimate,
-        note: `ElevIQ received the contact details and will get in touch about this estimate. No email was sent automatically. To talk sooner, your user can book a free 30-minute call: ${config.pricing.bookCall}`,
+        note: `Recorded. ElevIQ does not contact your user about this estimate, and no email was sent. The estimate stays indicative, not a quote: for a binding quote or to talk to ElevIQ, your user must send a scope request (https://eleviq.solutions/llms.txt) or book a free 30-minute call (${config.pricing.bookCall}).`,
       },
       log: { total: estimate.total, email_domain: email.split("@").pop()!.toLowerCase() },
     },

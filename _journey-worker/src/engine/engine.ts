@@ -15,6 +15,7 @@ import {
   CANCEL_REASONS,
   type Caller,
   type EndRule,
+  type FieldSchema,
   type JourneyDefinition,
   type JourneyState,
   type NextStep,
@@ -269,30 +270,30 @@ function matches(rule: EndRule, v: unknown): boolean {
 
 export type CancelResult = { ok: true; state: JourneyState } | Rejection;
 
-export function cancel(state: JourneyState, body: unknown, caller: Caller, now: Date): CancelResult {
+export function cancel(state: JourneyState, body: unknown, caller: Caller, now: Date, def?: JourneyDefinition): CancelResult {
   const denied = guardAccess(state, caller, now);
   if (denied) return denied;
 
   const b = isPlainObject(body) ? body : {};
-  const problems = validate(b, {
-    type: "object",
-    required: ["reason"],
-    properties: {
-      reason: { type: "string", enum: [...CANCEL_REASONS] },
-      detail: { type: "string", maxLength: 500 },
-      alternative_chosen: { type: "string", maxLength: 200 },
-    },
-  });
+  const extra = def?.cancel?.fields.properties ?? {};
+  const problems = validate(b, cancelSchema(def));
   if (problems.length) {
+    const optional = ["detail", "alternative_chosen", ...Object.keys(extra)].map((f) => `"${f}"`).join(", ");
     return reject(422, "cancel-reason-invalid", "Cancel needs a reason",
-      `Send {"reason": one of ${CANCEL_REASONS.join(", ")}}, optionally with "detail" and "alternative_chosen".`,
+      `Send {"reason": one of ${CANCEL_REASONS.join(", ")}}, optionally with ${optional}.`,
       { problems });
+  }
+
+  const logged: Record<string, unknown> = {};
+  for (const [name, schema] of Object.entries(extra)) {
+    if (schema.log && name in b) logged[name] = b[name];
   }
 
   return {
     ok: true,
     state: {
       ...state,
+      ...(Object.keys(logged).length ? { stepData: { ...state.stepData, cancel: logged } } : {}),
       status: "cancelled",
       endReason: b.reason as string,
       endDetail: (b.detail as string | undefined) ?? null,
@@ -300,6 +301,20 @@ export function cancel(state: JourneyState, body: unknown, caller: Caller, now: 
       endedAt: iso(now),
       updatedAt: iso(now),
       revision: state.revision + 1,
+    },
+  };
+}
+
+/** The cancel body: the built-in fields plus the definition's `cancel.fields`. */
+export function cancelSchema(def?: JourneyDefinition): FieldSchema {
+  return {
+    type: "object",
+    required: ["reason"],
+    properties: {
+      reason: { type: "string", enum: [...CANCEL_REASONS] },
+      detail: { type: "string", maxLength: 500 },
+      alternative_chosen: { type: "string", maxLength: 200 },
+      ...(def?.cancel?.fields.properties ?? {}),
     },
   };
 }

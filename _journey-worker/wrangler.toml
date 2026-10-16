@@ -32,7 +32,7 @@ binding = "DB"
 database_name = "eleviq-agent-journeys"
 database_id = "7a2dd155-d9bb-49c6-b616-d910ffaa9a6c"
 
-# POST calls: 30 per minute per IP. The price-estimate "follow-up" step, which stores
+# POST calls: 30 per minute per IP. The price-estimate "close" step, which stores
 # contact details: 3 per minute per IP. Namespace ids must be unique in the account
 # (the booking gateway uses 1001 and 1002).
 [[ratelimits]]

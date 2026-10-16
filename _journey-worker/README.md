@@ -13,7 +13,7 @@ Host: `agents.eleviq.solutions`. The agent API is public, while `/dashboard/` an
 | Journey | Steps | Purpose |
 |---|---|---|
 | `site-visit` | `report` | An assistant reading the site declares why and reports what it concluded |
-| `price-estimate` | `estimate` (repeatable) → `finish` or `follow_up` | Indicative price at once. `follow_up` stores contact details so ElevIQ can get in touch; `finish` ends without them. No email is sent |
+| `price-estimate` | `estimate` (repeatable) → `close`, or the built-in cancel | Indicative price at once. `close` ends it and stores the user's email as a commitment signal (ElevIQ never contacts anyone about an estimate); without an email the agent cancels, with a reason and optional feedback fields (`cancel` in the definition). No email is sent |
 
 Prices and options: `src/config.ts` (`pricing.options`). The `options` and
 `preferred_option` enums in `definitions/price-estimate.json` must list the same
@@ -29,9 +29,9 @@ ids, and the Worker refuses to load if they differ.
   left out keep them.
 - **`welcome`** in a definition is returned with the start response.
 - **Contact details in one place.** `email`, `name` and `message` from the
-  `follow_up` step are `sensitive`, so they never reach the journey record or the
+  `close` step are `sensitive`, so they never reach the journey record or the
   event log. They are stored only in the `leads` table. The dashboard shows them
-  under "Follow-up requests" (select the price-estimate journey). After
+  under "Emails left" (select the price-estimate journey). After
   `config.leads.retentionDays` (3), a daily cron (`src/retention.ts`) deletes the
   name and message and reduces the email to `@domain`.
 - **Nothing is sent.** The Worker sends no email and calls no other service.
@@ -70,6 +70,6 @@ open `http://localhost:8790/__scheduled?cron=17+3+*+*+*`.
    - `https://agents.eleviq.solutions/` returns 200.
    - `/dashboard/` redirects to the Access login.
    - `https://eleviq-agent-journeys.<subdomain>.workers.dev/dashboard/` returns 403.
-   - Run one `price-estimate` journey through to `follow_up`, then check that it
-     appears under "Follow-up requests" on the dashboard.
+   - Run one `price-estimate` journey through to `close`, then check that it
+     appears under "Emails left" on the dashboard.
 6. Only then publish the `llms.txt` section that points agents here.

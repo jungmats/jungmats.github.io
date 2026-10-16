@@ -4,7 +4,7 @@
  *   GET /api/analytics/summary?definition=&days=     funnel, drop-off, intents, competitors, agents
  *   GET /api/analytics/journeys?definition=&status=  recent journeys
  *   GET /api/analytics/journeys/{ref}                one journey: envelope, fields, timeline, lead
- *   GET /api/analytics/leads?days=                   contact details left for follow-up
+ *   GET /api/analytics/leads?days=                   emails left with step close
  *
  * Journeys are addressed by `ref` (a one-way hash), never by journey id: in
  * `identity: optional` mode the id is the only thing binding a journey, so
@@ -120,8 +120,10 @@ export async function handleSummary(env: Env, url: URL): Promise<Response> {
   const completenessByAgent: Record<string, { sum: number; n: number }> = {};
 
   const loggedFields: Array<[string, string, FieldSchema]> = [];
-  for (const step of order) {
-    for (const [name, schema] of Object.entries(def.steps[step].fields.properties)) {
+  const fieldSets: Array<[string, Record<string, FieldSchema>]> = order.map((s) => [s, def.steps[s].fields.properties]);
+  if (def.cancel) fieldSets.push(["cancel", def.cancel.fields.properties]);
+  for (const [step, props] of fieldSets) {
+    for (const [name, schema] of Object.entries(props)) {
       if (schema.log && !schema.sensitive) loggedFields.push([step, name, schema]);
     }
   }
