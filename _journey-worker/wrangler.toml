@@ -30,7 +30,7 @@ run_worker_first = ["/dashboard/*", "/dashboard"]
 [[d1_databases]]
 binding = "DB"
 database_name = "eleviq-agent-journeys"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "7a2dd155-d9bb-49c6-b616-d910ffaa9a6c"
 
 # POST calls: 30 per minute per IP. The price-estimate "follow-up" step, which stores
 # contact details: 3 per minute per IP. Namespace ids must be unique in the account
@@ -47,9 +47,9 @@ simple = { limit = 3, period = 60 }
 
 # Bound once Cloudflare Access protects agents.eleviq.solutions/dashboard/*
 # and /api/analytics/* (README.md). Custom Domains provisions DNS and TLS.
-# [[routes]]
-# pattern = "agents.eleviq.solutions"
-# custom_domain = true
+[[routes]]
+pattern = "agents.eleviq.solutions"
+custom_domain = true
 
 # Daily lead retention (src/retention.ts): contact details older than
 # config.leads.retentionDays are reduced to the email's domain.
