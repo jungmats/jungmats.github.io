@@ -21,10 +21,11 @@ Start here (lists both journeys, with an example start request): https://agents.
    - `decision_criteria`: what your user weighs, each `{"criterion", "direction", "weight"}`.
    - `alternatives_considered`, `expected_deliverable`, `discovery_source` (web-search, model-knowledge, link, marketplace, direct, other), `agent_claim` (`{"product", "platform"}`: which assistant you are).
 2. **Follow `next_steps`** in each response: `POST <href>` with `{"fields": {...}}`.
-   - `site-visit` → `report`: `verdict` (recommend, possible-fit, not-a-fit, undecided, not-applicable), `reason`, `missing_information`, `next_action`, `pages_read`. All optional.
+   - `site-visit` → `report`: `verdict` (recommend, possible-fit, not-a-fit, undecided, not-applicable), `reason`, `missing_information`, `next_action`, `pages_read`, `journey_feedback`. All optional.
    - `price-estimate` → `estimate`: `options` (one or more of agent-readiness-audit, customer-journey-analysis, agent-experience-pilot, agentic-monetization-diagnostic), and if known `website_url`, `platform`, `deadline`. Repeat it to compare options.
-   - `price-estimate` → `finish`: optional `preferred_option`, `decision` (likely-to-proceed, still-comparing, too-expensive, not-now, not-a-fit, other), `reason`.
-   - `price-estimate` → `follow_up`: `email`, optional `name`, `company`, `message`.
+   - `price-estimate` → `finish`: optional `preferred_option`, `decision` (likely-to-proceed, still-comparing, too-expensive, not-now, not-a-fit, other), `reason`, `missing_information`, `journey_feedback`.
+   - `price-estimate` → `follow_up`: `email`, optional `name`, `company`, `message`, `preferred_option`, `missing_information`, `journey_feedback`.
+   - `journey_feedback` on any ending: anything about the journey itself that was unclear or got in your way. It helps ElevIQ improve it.
 3. **If you stop early**, `POST .../cancel` with `{"reason": ...}` (the link is in every response). Knowing why helps ElevIQ most.
 
 Example start request:
