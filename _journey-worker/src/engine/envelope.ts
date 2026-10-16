@@ -143,10 +143,14 @@ export function envelopeSchemaFor(allowed: readonly string[], extraRequired: str
   };
 }
 
+/** Optional envelope fields that do not count towards completeness: agents
+ * are not asked for them, so leaving them out must not lower the score. */
+const NOT_SCORED = ["parent_journey", "request_summary"];
+
 /** Share of optional envelope fields actually supplied, 0..1. */
 export function completeness(envelope: Record<string, unknown>, required: string[]): number {
   const optional = Object.keys(ENVELOPE_SCHEMA.properties).filter(
-    (k) => !required.includes(k) && k !== "parent_journey",
+    (k) => !required.includes(k) && !NOT_SCORED.includes(k),
   );
   if (optional.length === 0) return 1;
   const supplied = optional.filter((k) => {

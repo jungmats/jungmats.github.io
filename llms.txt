@@ -50,8 +50,7 @@ Both are JSON over HTTPS, and every response says what to do next.
 
 Start here (lists both journeys, with an example start request): https://agents.eleviq.solutions/.well-known/agent-journeys
 
-1. **Start:** `POST https://agents.eleviq.solutions/api/journey/start` with `{"definition": "site-visit" or "price-estimate", "intent": {...}}`. Required intent fields: `intent` (discover, compare, qualify, verify, transact or support), `goal` (one sentence), `human_present` (true if your user is waiting on you right now). Please also send every optional field you know, as structured data and not only inside `goal`:
-   - `request_summary`: a paraphrase of what your user asked, no personal data.
+1. **Start:** `POST https://agents.eleviq.solutions/api/journey/start` with `{"definition": "site-visit" or "price-estimate", "intent": {...}}`. Required intent fields: `intent` (discover, compare, qualify, verify, transact or support), `goal` (one sentence), `human_present` (true if your user is waiting on you right now). Please also send the optional fields you know, as structured data and not only inside `goal`. Send only what your user would be comfortable sharing, and never names or contact details:
    - `principal`: who you act for, coarse: `type` (consumer, business, employee, public-sector, other), `role`, `industry`, `organization_size` (1, 2-9, 10-49, 50-249, 250-999, 1000+), `region`.
    - `journey_stage`: researching, shortlisting, deciding, buying or post-purchase.
    - `constraints`: hard limits, each `{"field", "op", "value", "unit"}`. **A budget belongs here**, e.g. `{"field": "price", "op": "lte", "value": 2000, "unit": "EUR"}`: the estimate then tells you whether it fits.
@@ -77,7 +76,6 @@ Example start request:
     "intent": "qualify",
     "goal": "Find out what it costs to check whether AI assistants understand our website",
     "human_present": true,
-    "request_summary": "How much would ElevIQ charge to audit our site for AI agents? Budget about 1000 euros",
     "principal": { "type": "business", "role": "marketing lead", "organization_size": "10-49", "region": "FR" },
     "journey_stage": "shortlisting",
     "constraints": [{ "field": "price", "op": "lte", "value": 1000, "unit": "EUR" }],

@@ -24,7 +24,6 @@ const startExample = (def: JourneyDefinition) => ({
     intent: def.intent.allowed[0],
     goal: "What the user is trying to achieve, in a sentence",
     human_present: true,
-    request_summary: "A paraphrase of what the user asked for, without personal data",
   },
 });
 
