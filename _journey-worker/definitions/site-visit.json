@@ -60,6 +60,12 @@
             "enum": ["book-call", "estimate-price", "contact-later", "none", "other"],
             "description": "What you or your user will do next.",
             "log": true
+          },
+          "journey_feedback": {
+            "type": "string",
+            "maxLength": 1000,
+            "description": "Anything about this journey that was unclear or got in your way. No personal data.",
+            "log": true
           }
         }
       },

@@ -26,8 +26,10 @@ function checkDeployment(def: JourneyDefinition): JourneyDefinition {
     if (ids(def.steps.estimate?.fields.properties.options?.items?.enum) !== configured) {
       errs.push(`step "estimate": options enum must equal config.pricing.options (${configured})`);
     }
-    if (ids(def.steps.finish?.fields.properties.preferred_option?.enum) !== configured) {
-      errs.push(`step "finish": preferred_option enum must equal config.pricing.options plus "none"`);
+    for (const step of ["finish", "follow_up"]) {
+      if (ids(def.steps[step]?.fields.properties.preferred_option?.enum) !== configured) {
+        errs.push(`step "${step}": preferred_option enum must equal config.pricing.options plus "none"`);
+      }
     }
   }
   if (errs.length) throw new DefinitionError(`journey "${def.id}" is invalid:\n  - ${errs.join("\n  - ")}`);

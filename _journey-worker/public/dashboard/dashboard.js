@@ -157,6 +157,16 @@ function renderIntent(s) {
     : `<p class="empty">No logged fields yet.</p>`;
 }
 
+function renderTexts(s) {
+  const rows = s.texts ?? [];
+  $("texts").innerHTML = rows.length
+    ? `<div class="table-wrap"><table class="table"><thead><tr><th>Started</th><th>Step</th><th>Field</th><th>Answer</th></tr></thead>
+      <tbody>${rows.map((t) => `<tr class="clickable" data-ref="${esc(t.ref)}" tabindex="0">
+        <td>${esc(new Date(t.created_at).toLocaleString())}</td><td>${esc(t.step)}</td>
+        <td>${esc(t.field.replace(/_/g, " "))}</td><td>${esc(t.text)}</td></tr>`).join("")}</tbody></table></div>`
+    : `<p class="empty">No free-text answers yet.</p>`;
+}
+
 function renderCompetition(s) {
   $("competition").innerHTML =
     group("Also considered", s.competition.considered.slice(0, 10)) +
@@ -242,14 +252,16 @@ async function showDetail(ref) {
   $("detail").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-$("list").addEventListener("click", (e) => {
-  const row = e.target.closest("tr[data-ref]");
-  if (row) showDetail(row.dataset.ref);
-});
-$("list").addEventListener("keydown", (e) => {
-  const row = e.target.closest("tr[data-ref]");
-  if (row && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); showDetail(row.dataset.ref); }
-});
+for (const id of ["list", "texts"]) {
+  $(id).addEventListener("click", (e) => {
+    const row = e.target.closest("tr[data-ref]");
+    if (row) showDetail(row.dataset.ref);
+  });
+  $(id).addEventListener("keydown", (e) => {
+    const row = e.target.closest("tr[data-ref]");
+    if (row && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); showDetail(row.dataset.ref); }
+  });
+}
 $("leads").addEventListener("click", (e) => {
   const row = e.target.closest("tr[data-ref]");
   if (row && !e.target.closest("a")) showDetail(row.dataset.ref);
@@ -285,6 +297,7 @@ async function load() {
     renderDaily(s);
     renderDropoff(s);
     renderIntent(s);
+    renderTexts(s);
     renderCompetition(s);
     renderAgents(s);
     await loadList();

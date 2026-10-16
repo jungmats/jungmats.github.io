@@ -82,6 +82,18 @@
             "maxLength": 1000,
             "description": "Why, in a sentence or two. No personal data.",
             "log": true
+          },
+          "missing_information": {
+            "type": "string",
+            "maxLength": 1000,
+            "description": "What you looked for and did not find.",
+            "log": true
+          },
+          "journey_feedback": {
+            "type": "string",
+            "maxLength": 1000,
+            "description": "Anything about this journey that was unclear or got in your way. No personal data.",
+            "log": true
           }
         }
       },
@@ -102,7 +114,25 @@
           "email": { "type": "string", "format": "email", "maxLength": 200, "description": "Where ElevIQ can reach your user.", "sensitive": true },
           "name": { "type": "string", "maxLength": 120, "description": "The user's name.", "sensitive": true },
           "company": { "type": "string", "maxLength": 120, "description": "The organisation the estimate is for.", "log": true },
-          "message": { "type": "string", "maxLength": 1000, "description": "Anything the user wants ElevIQ to know.", "sensitive": true }
+          "message": { "type": "string", "maxLength": 1000, "description": "Anything the user wants ElevIQ to know.", "sensitive": true },
+          "preferred_option": {
+            "type": "string",
+            "enum": ["agent-readiness-audit", "customer-journey-analysis", "agent-experience-pilot", "agentic-monetization-diagnostic", "none"],
+            "description": "The option your user leans toward, if any.",
+            "log": true
+          },
+          "missing_information": {
+            "type": "string",
+            "maxLength": 1000,
+            "description": "What you looked for and did not find.",
+            "log": true
+          },
+          "journey_feedback": {
+            "type": "string",
+            "maxLength": 1000,
+            "description": "Anything about this journey that was unclear or got in your way. No personal data.",
+            "log": true
+          }
         }
       }
     }

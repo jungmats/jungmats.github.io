@@ -115,6 +115,7 @@ export async function handleSummary(env: Env, url: URL): Promise<Response> {
     regions: Counts = {}, discovery: Counts = {}, constraintFields: Counts = {}, criteria: Counts = {},
     considered: Counts = {}, chosen: Counts = {}, agents: Counts = {}, claims: Counts = {}, transports: Counts = {};
   const fieldStats: Record<string, Record<string, Counts>> = {};
+  const texts: Array<{ ref: string; created_at: string; step: string; field: string; text: string }> = [];
   let verified = 0, humanPresent = 0, completenessSum = 0;
   const completenessByAgent: Record<string, { sum: number; n: number }> = {};
 
@@ -178,7 +179,11 @@ export async function handleSummary(env: Env, url: URL): Promise<Response> {
       if (schema.type === "number" || schema.type === "integer") bump(stat, bucketLabel(Number(v)));
       else if (Array.isArray(v)) v.forEach((x) => bump(stat, x));
       else if (schema.enum || schema.format === "date") bump(stat, schema.format === "date" ? String(v).slice(0, 7) : v);
-      else bump(stat, "(free text)");
+      else {
+        bump(stat, "(free text)");
+        // Rows come newest first, so this keeps the latest answers.
+        if (texts.length < MAX_TEXTS) texts.push({ ref: r.ref, created_at: r.created_at, step, field: name, text: String(v) });
+      }
     }
   }
 
@@ -219,6 +224,7 @@ export async function handleSummary(env: Env, url: URL): Promise<Response> {
       decision_criteria: sorted(criteria),
     },
     fields,
+    texts,
     competition: { considered: sorted(considered), chosen_instead: sorted(chosen) },
     agents: {
       by_agent: sorted(agents).map((a) => ({ ...a, avg_completeness: Math.round((completenessByAgent[a.key].sum / completenessByAgent[a.key].n) * 100) / 100 })),
@@ -294,6 +300,9 @@ export async function handleDetail(env: Env, ref: string): Promise<Response> {
     lead: await env.DB.prepare(`SELECT ${LEAD_COLUMNS} FROM leads WHERE journey_ref = ?`).bind(row.ref).first(),
   });
 }
+
+/** Free-text answers listed in the summary, newest first. */
+const MAX_TEXTS = 50;
 
 const LEAD_COLUMNS = "journey_ref, created_at, purge_after, purged_at, email, name, company, message, options, total, currency";
 
