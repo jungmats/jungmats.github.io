@@ -7,7 +7,7 @@
     "dev": "wrangler dev --port 8790",
     "test": "node --test 'test/**/*.test.ts'",
     "typecheck": "tsc -p tsconfig.json",
-    "deploy": "npm test && npm run typecheck && wrangler deploy",
+    "deploy": "npm test && npm run typecheck && wrangler deploy --env=\"\"",
     "deploy:staging": "npm test && npm run typecheck && wrangler deploy --env staging",
     "db:local": "wrangler d1 execute eleviq-agent-journeys --local --file=schema.sql",
     "db:remote": "wrangler d1 execute eleviq-agent-journeys --remote --file=schema.sql",
