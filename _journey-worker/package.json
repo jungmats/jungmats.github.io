@@ -8,8 +8,10 @@
     "test": "node --test 'test/**/*.test.ts'",
     "typecheck": "tsc -p tsconfig.json",
     "deploy": "npm test && npm run typecheck && wrangler deploy",
+    "deploy:staging": "npm test && npm run typecheck && wrangler deploy --env staging",
     "db:local": "wrangler d1 execute eleviq-agent-journeys --local --file=schema.sql",
-    "db:remote": "wrangler d1 execute eleviq-agent-journeys --remote --file=schema.sql"
+    "db:remote": "wrangler d1 execute eleviq-agent-journeys --remote --file=schema.sql",
+    "db:staging": "wrangler d1 execute eleviq-agent-journeys-staging --env staging --remote --file=schema.sql"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20260910.1",

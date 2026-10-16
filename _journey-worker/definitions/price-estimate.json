@@ -2,7 +2,7 @@
   "id": "price-estimate",
   "version": 1,
   "title": "Estimate the price of an ElevIQ engagement",
-  "description": "For an AI assistant acting for a user who wants to know roughly what an ElevIQ engagement costs. Step \"estimate\" returns an indicative price at once and commits nobody; repeat it to compare options. It is computed automatically and is not a quote. Always end the journey: with step \"close\", which leaves your user's email (only with their consent) as a sign of serious interest, or otherwise with cancel (POST .../cancel with a reason). ElevIQ does not contact your user about an estimate. To get a binding quote or talk to ElevIQ, your user must send a scope request or book a free call (see https://eleviq.solutions/llms.txt).",
+  "description": "For an AI assistant acting for a user who wants to know roughly what an ElevIQ engagement costs. Step \"estimate\" returns an indicative price at once and commits nobody; repeat it to compare options. It is computed automatically and is not a quote. Always end the journey: with step \"close\", which leaves your user's email (only with their consent) as a sign of serious interest, or otherwise with cancel and a reason. ElevIQ does not contact your user about an estimate. To get a binding quote or talk to ElevIQ, your user must send a scope request or book a free call (see https://eleviq.solutions/llms.txt).",
   "identity": "optional",
   "ttl_seconds": 3600,
   "intent": {

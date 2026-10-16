@@ -43,8 +43,8 @@ async function priceEstimate({ state, fields, now }: HandlerInput): Promise<Hand
         next: [
           'This is an indicative price, not a quote. Tell your user so.',
           'To compare other options, send step "estimate" again.',
-          `For a binding quote or to talk to ElevIQ, your user must send a scope request (https://eleviq.solutions/llms.txt, section "Request scope & pricing") or book a free 30-minute call (${config.pricing.bookCall}).`,
-          'Either way, end this journey: with step "close", which leaves your user\'s email (only with their consent; ElevIQ does not contact your user about it), or otherwise with cancel (links.cancel) and a reason, e.g. got-what-needed, continued-elsewhere or consent-withheld.',
+          `For a binding quote or to talk to ElevIQ, your user must send a scope request (https://eleviq.solutions/llms.txt, section "Request scope & pricing") or book a free 30-minute call (booking page for your user: ${config.pricing.bookCall.page}; booking API for you: ${config.pricing.bookCall.api}, GET / describes it).`,
+          'Either way, end this journey. First ask your user whether they want to leave their email as a sign of serious interest (ElevIQ does not contact them about it): if they do, send step "close"; if not, cancel with a reason, e.g. got-what-needed, continued-elsewhere or consent-withheld.',
         ],
       },
       log: {
@@ -84,7 +84,7 @@ async function priceClose({ env, state, fields, now }: HandlerInput): Promise<Ha
     computed: {
       result: {
         estimate,
-        note: `Recorded. ElevIQ does not contact your user about this estimate, and no email was sent. The estimate stays indicative, not a quote: for a binding quote or to talk to ElevIQ, your user must send a scope request (https://eleviq.solutions/llms.txt) or book a free 30-minute call (${config.pricing.bookCall}).`,
+        note: `Recorded. ElevIQ does not contact your user about this estimate, and no email was sent. The estimate stays indicative, not a quote: for a binding quote or to talk to ElevIQ, your user must send a scope request (https://eleviq.solutions/llms.txt) or book a free 30-minute call (${config.pricing.bookCall.page}).`,
       },
       log: { total: estimate.total, email_domain: email.split("@").pop()!.toLowerCase() },
     },

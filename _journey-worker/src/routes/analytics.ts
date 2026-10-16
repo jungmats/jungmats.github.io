@@ -92,7 +92,7 @@ export async function handleSummary(env: Env, url: URL): Promise<Response> {
   const now = Date.now();
   const order = topoOrder(def);
 
-  const [rowsRes, rejRes] = await Promise.all([
+  const [rowsRes, rejRes, clientRes] = await Promise.all([
     env.DB.prepare(
       `SELECT ref, status, end_reason, alternative_chosen, keyid, agent_name, trust_tier, intent, intent_kind,
               human_present, completeness, completed_steps, step_data, transport, created_at, expires_at
@@ -103,6 +103,12 @@ export async function handleSummary(env: Env, url: URL): Promise<Response> {
        WHERE definition_id = ? AND ts >= ? AND outcome = 'rejected'
        GROUP BY step, reason ORDER BY n DESC`,
     ).bind(def.id, from).all<{ step: string; reason: string; n: number }>(),
+    // Which MCP client software started journeys, as it reported itself (src/mcp/server.ts).
+    env.DB.prepare(
+      `SELECT COALESCE(json_extract(details, '$.mcp_client'), '(not reported)') AS client, COUNT(*) AS n FROM journey_events
+       WHERE definition_id = ? AND ts >= ? AND transport = 'mcp' AND step = 'start' AND outcome = 'accepted'
+       GROUP BY client ORDER BY n DESC`,
+    ).bind(def.id, from).all<{ client: string; n: number }>(),
   ]);
   const rows = rowsRes.results ?? [];
 
@@ -232,6 +238,7 @@ export async function handleSummary(env: Env, url: URL): Promise<Response> {
       by_agent: sorted(agents).map((a) => ({ ...a, avg_completeness: Math.round((completenessByAgent[a.key].sum / completenessByAgent[a.key].n) * 100) / 100 })),
       claims_vs_verified: sorted(claims),
       transports: sorted(transports),
+      mcp_clients: (clientRes.results ?? []).map((r) => ({ key: r.client, n: r.n })),
     },
   });
 }

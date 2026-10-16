@@ -15,6 +15,7 @@
  *   GET  /api/journey/{journey_id}                  state
  *   POST /api/journey/{journey_id}/steps/{step}     perform a step
  *   POST /api/journey/{journey_id}/cancel           end it with a reason
+ *   POST /mcp                                       the same journeys as MCP tools
  *   GET  /api/analytics/summary|journeys[/{ref}]|leads  dashboard data   (Cloudflare Access)
  *   GET  /dashboard/                                the dashboard        (Cloudflare Access)
  *
@@ -25,21 +26,22 @@
  */
 import { config } from "./config";
 import { discoveryLinks, json, preflight, problem, withHeaders } from "./http";
-import { handleApiCatalog, handleDefinition, handleWellKnown, PROTOCOL } from "./routes/discovery";
+import { handleApiCatalog, handleDefinition, handleWellKnown, mcpInfo, PROTOCOL } from "./routes/discovery";
 import { handleCancel, handleGet, handleStart, handleStep } from "./routes/protocol";
 import { handleDetail, handleLeads, handleList, handleSummary } from "./routes/analytics";
+import { handleMcp, mcpMethodNotAllowed, mcpPreflight } from "./mcp/server";
 import { checkAccess } from "./access";
 import { purgeLeads } from "./retention";
 import type { Env } from "./env";
 
 /** Shown at /. Bump it with every deploy that
  * changes what agents see, so a deploy can be checked from outside. */
-const VERSION = "2026-10-16-v2";
+const VERSION = "2026-10-16-v3";
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
-    if (request.method === "OPTIONS") return preflight();
+    if (request.method === "OPTIONS") return url.pathname === "/mcp" ? mcpPreflight() : preflight();
     try {
       return withHeaders(await route(request, url, env, ctx), url.origin);
     } catch (err) {
@@ -67,14 +69,7 @@ async function route(request: Request, url: URL, env: Env, ctx: ExecutionContext
     if (path.startsWith("/dashboard")) return env.ASSETS.fetch(request);
   }
 
-  if (m === "POST") {
-    const ip = request.headers.get("CF-Connecting-IP") ?? "unknown";
-    const storesContact = /\/steps\/close$/.test(path);
-    const limiter = storesContact ? env.CONTACT_LIMITER : env.WRITE_LIMITER;
-    if (limiter && !(await limiter.limit({ key: ip })).success) {
-      return problem({ status: 429, reason: "bad-request", title: "Too many requests", detail: "Slow down and retry in a minute." });
-    }
-  }
+  if (path === "/mcp") return m === "POST" ? handleMcp(request, c, VERSION) : mcpMethodNotAllowed();
 
   if (path === "/" && m === "GET") return info(origin);
   if (path === "/.well-known/agent-journeys" && m === "GET") return handleWellKnown(origin);
@@ -113,6 +108,7 @@ function info(origin: string): Response {
     what: "Tell ElevIQ why you are visiting (journey \"site-visit\"), or estimate the price of an engagement (journey \"price-estimate\").",
     note: "Agent Journey Protocol: an ElevIQ convention, not a ratified standard.",
     start_here: `${origin}/.well-known/agent-journeys`,
+    mcp: mcpInfo(origin),
     api_catalog: `${origin}/.well-known/api-catalog`,
     instructions: config.site,
     link: discoveryLinks(origin),

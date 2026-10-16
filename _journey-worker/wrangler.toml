@@ -32,8 +32,8 @@ binding = "DB"
 database_name = "eleviq-agent-journeys"
 database_id = "7a2dd155-d9bb-49c6-b616-d910ffaa9a6c"
 
-# POST calls: 30 per minute per IP. The price-estimate "close" step, which stores
-# contact details: 3 per minute per IP. Namespace ids must be unique in the account
+# POST calls: 30 per minute per IP. Steps with a sensitive field (contact
+# details, e.g. price-estimate "close") also: 3 per minute per IP (src/operations.ts). Namespace ids must be unique in the account
 # (the booking gateway uses 1001 and 1002).
 [[ratelimits]]
 name = "WRITE_LIMITER"
@@ -58,3 +58,28 @@ crons = ["17 3 * * *"]
 
 # Secret, not set here:
 #   npx wrangler secret put ACCESS_AUD           AUD tag of the Access application
+
+# Staging: a separate Worker (eleviq-agent-journeys-staging) on workers.dev,
+# with its own D1 and rate-limit namespaces, for trying changes before they
+# reach agents.eleviq.solutions. Bindings are not inherited from the top level;
+# routes are, so `routes = []` keeps staging off the production domain.
+# ACCESS_AUD is not set here, so its dashboard is closed (src/access.ts).
+#   npm run db:staging       applies schema.sql
+#   npm run deploy:staging   tests, then deploy
+[env.staging]
+routes = []
+
+[[env.staging.d1_databases]]
+binding = "DB"
+database_name = "eleviq-agent-journeys-staging"
+database_id = "2e0e14ff-2c8d-4559-af02-ae2cc5bec332"
+
+[[env.staging.ratelimits]]
+name = "WRITE_LIMITER"
+namespace_id = "2003"
+simple = { limit = 30, period = 60 }
+
+[[env.staging.ratelimits]]
+name = "CONTACT_LIMITER"
+namespace_id = "2004"
+simple = { limit = 3, period = 60 }

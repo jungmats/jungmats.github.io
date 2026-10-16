@@ -66,7 +66,11 @@ export const config = {
         page: "https://eleviq.solutions/services/agentic-web-monetization.html",
       },
     } as Record<string, { title: string; price: number; summary: string; page: string }>,
-    bookCall: "https://eleviq-booking-gateway.gateway-worker.workers.dev",
+    /** The free call: the page is for people, the API for agents that book themselves. */
+    bookCall: {
+      page: "https://eleviq.solutions/booking/",
+      api: "https://eleviq-booking-gateway.gateway-worker.workers.dev",
+    },
   },
 
   /** Emails left with step "close" of the price-estimate journey. After
@@ -74,6 +78,28 @@ export const config = {
    * and reduces the email to its domain. */
   leads: {
     retentionDays: 3,
+  },
+
+  /** The MCP endpoint (/mcp, src/mcp/server.ts). */
+  mcp: {
+    serverName: "eleviq-agent-journeys",
+    serverTitle: "ElevIQ Solutions: journeys for AI agents",
+    /** Sent with discovery and initialize, before the generated list of journeys. */
+    instructions:
+      "ElevIQ Solutions (eleviq.solutions) helps businesses get ready for AI agents. These tools are its agent journeys: start one with its start tool, then follow the tools named in each result. Send personal data only with your user's consent. Always end a journey, with its last step or its cancel tool and a reason. For a binding quote or a call with ElevIQ, see https://eleviq.solutions/llms.txt.",
+    /** Requests with an Origin header must come from one of these (DNS-rebinding
+     * protection, required by the MCP spec). Requests without one are allowed:
+     * server-side connectors send none. */
+    allowedOrigins: [
+      "https://eleviq.solutions",
+      "https://agents.eleviq.solutions",
+      "https://claude.ai",
+      "https://chatgpt.com",
+      "http://localhost",
+      "http://127.0.0.1",
+    ],
+    /** How long clients may cache server/discover and tools/list. */
+    listTtlMs: 3_600_000,
   },
 
   /** Reject request bodies larger than this. */

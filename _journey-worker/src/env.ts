@@ -4,7 +4,7 @@ export interface Env {
   ASSETS: Fetcher;
   /** Per-IP limit on POST calls (start, steps, cancel). */
   WRITE_LIMITER?: RateLimit;
-  /** Per-IP limit on the step that stores contact details. */
+  /** Per-IP limit on steps with a sensitive field (contact details). */
   CONTACT_LIMITER?: RateLimit;
   /** AUD tag of the Cloudflare Access application guarding the dashboard. */
   ACCESS_AUD?: string;

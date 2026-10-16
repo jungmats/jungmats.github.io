@@ -6,6 +6,8 @@
  *   GET /journeys/{id}                       the definition, public view
  *   GET /journeys/{id}/openapi.json          derived OpenAPI 3.1
  *   GET /journeys/{id}/arazzo.json           derived Arazzo 1.0.1 workflow
+ *
+ * Both list the MCP endpoint (/mcp) beside the HTTP API.
  */
 import { DEFINITIONS } from "../journeys";
 import { json, problem } from "../http";
@@ -14,6 +16,8 @@ import { envelopeSchemaFor } from "../engine/envelope";
 import { publicSchema } from "../engine/validate";
 import { topoOrder } from "../engine/definitions";
 import { arazzoFor, openApiFor } from "../engine/export";
+import { cancelTool, startTool, stepTool } from "../mcp/tools";
+import { MCP_VERSIONS } from "../mcp/server";
 import type { JourneyDefinition } from "../engine/types";
 
 export const PROTOCOL = "agent-journey/0.1";
@@ -27,6 +31,19 @@ const startExample = (def: JourneyDefinition) => ({
   },
 });
 
+/** The same journeys as MCP tools, for assistants that connect to /mcp. */
+export const mcpInfo = (origin: string) => ({
+  endpoint: `${origin}/mcp`,
+  transport: "streamable-http",
+  protocol_versions: MCP_VERSIONS,
+  note: "The same journeys as MCP tools, for assistants connected to this server as a connector. No account or authentication.",
+});
+
+const mcpTools = (def: JourneyDefinition) =>
+  def.identity === "required"
+    ? null
+    : { start: startTool(def.id), steps: Object.fromEntries(topoOrder(def).map((s) => [s, stepTool(def.id, s)])), cancel: cancelTool(def.id), read: "get_journey" };
+
 export function handleWellKnown(origin: string): Response {
   return json({
     protocol: PROTOCOL,
@@ -34,6 +51,7 @@ export function handleWellKnown(origin: string): Response {
     docs: config.site,
     how_it_works:
       "POST to a journey's start link with an intent declaration. You get a journey_id and the next steps. Each step is a POST that must follow the steps it requires and carry the fields it asks for. Every refusal says what to do next.",
+    mcp: mcpInfo(origin),
     journeys: [...DEFINITIONS.values()].map((def) => ({
       id: def.id,
       version: def.version,
@@ -46,6 +64,7 @@ export function handleWellKnown(origin: string): Response {
       openapi: `${origin}/journeys/${def.id}/openapi.json`,
       arazzo: `${origin}/journeys/${def.id}/arazzo.json`,
       start: { method: "POST", href: `${origin}/api/journey/start`, body_example: startExample(def) },
+      mcp_tools: mcpTools(def),
     })),
   });
 }
@@ -59,6 +78,11 @@ export function handleApiCatalog(origin: string): Response {
           href: `${origin}/journeys/${id}/openapi.json`,
           type: "application/openapi+json",
         })),
+        "service-doc": [{ href: config.site, type: "text/html" }],
+        describedby: [{ href: `${origin}/.well-known/agent-journeys`, type: "application/json" }],
+      },
+      {
+        anchor: `${origin}/mcp`,
         "service-doc": [{ href: config.site, type: "text/html" }],
         describedby: [{ href: `${origin}/.well-known/agent-journeys`, type: "application/json" }],
       },

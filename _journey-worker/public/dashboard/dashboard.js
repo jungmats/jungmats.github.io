@@ -179,7 +179,15 @@ function renderAgents(s) {
       s.agents.by_agent.map((a) => [esc(a.key), a.n, `${Math.round(a.avg_completeness * 100)}%`])) +
     `<h3>Claimed product → verified identity</h3>` +
     table([{ label: "Claim → verified" }, { label: "Journeys", num: true }],
-      s.agents.claims_vs_verified.map((c) => [esc(c.key), c.n]));
+      s.agents.claims_vs_verified.map((c) => [esc(c.key), c.n])) +
+    `<h3>By transport</h3>` +
+    table([{ label: "Transport" }, { label: "Journeys", num: true }],
+      s.agents.transports.map((t) => [esc(t.key), t.n])) +
+    ((s.agents.mcp_clients ?? []).length
+      ? `<h3>MCP clients (as they report themselves)</h3>` +
+        table([{ label: "Client" }, { label: "Journeys", num: true }],
+          s.agents.mcp_clients.map((c) => [esc(c.key), c.n]))
+      : "");
 }
 
 /* --------------------------------------------------------- list + detail */

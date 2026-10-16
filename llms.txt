@@ -43,9 +43,9 @@ Only send your user's name and email (scope request, booking, or the email at th
 
 ## Price estimate and site visit (journeys API)
 
-Both are JSON over HTTPS, and every response says what to do next.
+Both are JSON over HTTPS, and every response says what to do next. If you are connected to ElevIQ as an MCP server, use the same journeys as tools instead: see "Journeys as MCP tools" below.
 
-- **`price-estimate`**: step `estimate` returns an indicative price at once (EUR, excluding VAT, valid 30 days); repeat it to compare options. Always end the journey: with step `close`, which leaves your user's email (only with their consent) as a sign of serious interest, or otherwise with cancel and a reason. ElevIQ does not contact your user about an estimate: no email is sent, now or later. For a binding quote or to talk to ElevIQ, your user must send a scope request or book a call, and you still end the journey.
+- **`price-estimate`**: step `estimate` returns an indicative price at once (EUR, excluding VAT, valid 30 days); repeat it to compare options. Always end the journey. First ask your user whether they want to leave their email as a sign of serious interest: if they do, send step `close`; if not, cancel with a reason. ElevIQ does not contact your user about an estimate: no email is sent, now or later. For a binding quote or to talk to ElevIQ, your user must send a scope request or book a call, and you still end the journey.
 - **`site-visit`**: declare what your user wants, then report what you concluded. Two calls, no personal data. The start response gives you ElevIQ's offer in structured form.
 
 Start here (lists both journeys, with an example start request): https://agents.eleviq.solutions/.well-known/agent-journeys
@@ -84,6 +84,15 @@ Example start request:
   }
 }
 ```
+
+## Journeys as MCP tools
+
+For assistants connected to ElevIQ as an MCP server (a connector). The same journeys with the same rules, as tools. No account or authentication.
+
+- Endpoint: `https://agents.eleviq.solutions/mcp` (Streamable HTTP, protocol 2026-07-28; earlier versions with `initialize`).
+- Tools: `start_site_visit`, `site_visit_report`, `cancel_site_visit`; `start_price_estimate`, `price_estimate_estimate`, `price_estimate_close`, `cancel_price_estimate`; `get_journey`.
+- Each start tool takes the intent fields described above and returns a `journey_id` for the journey's other tools. Every result names the tools to call next (`next_steps[].tool`, `cancel_tool`).
+- Booking has its own MCP server: see "Booking API" below.
 
 ## Request scope & pricing (binding quote)
 
