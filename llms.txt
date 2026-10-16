@@ -4,6 +4,8 @@
 
 ElevIQ Solutions is run by Matthias Jung, founder. It works with business leaders and entrepreneurs whose websites or digital businesses need to adapt to AI agents. It works in English and French.
 
+Last updated: 2026-10-16
+
 ## Services
 
 - [AI-Assisted Customer Journey: Analysis & Enablement](https://eleviq.solutions/services/ai-agent-readiness.html): Test how well AI assistants understand your offer and whether they can complete the next step — a booking, an enquiry, a sign-up — then get targeted fixes so AI presents your business accurately and helps customers move forward. Options: Agent Readiness Audit, Customer Journey Analysis, Agent Experience Pilot.

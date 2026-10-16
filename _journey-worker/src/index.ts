@@ -32,7 +32,9 @@ import { checkAccess } from "./access";
 import { purgeLeads } from "./retention";
 import type { Env } from "./env";
 
-const VERSION = "2026-10-15-v1";
+/** Shown at /. Bump it with every deploy that
+ * changes what agents see, so a deploy can be checked from outside. */
+const VERSION = "2026-10-16-v1";
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
