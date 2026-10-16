@@ -1,0 +1,60 @@
+# ElevIQ Agent Journey Worker (Cloudflare): journeys for AI agents on
+# eleviq.solutions. Separate from ElevIQ Lab: own Worker, D1 and dashboard.
+#
+#   npm run dev      local: http://localhost:8790
+#   npm run deploy   tests, then deploy
+#
+# One host for agents and dashboard: agents.eleviq.solutions. /dashboard/ and
+# /api/analytics/ sit behind Cloudflare Access, and the Worker checks the
+# Access token itself as well (src/access.ts), so the workers.dev URL never
+# serves them. First-deploy steps: README.md.
+
+name = "eleviq-agent-journeys"
+main = "src/index.ts"
+compatibility_date = "2026-10-01"
+workers_dev = true
+
+[observability]
+enabled = true
+
+# The dashboard. run_worker_first makes every /dashboard/ request go through
+# the Worker's Access check before an asset is served.
+[assets]
+directory = "./public"
+binding = "ASSETS"
+run_worker_first = ["/dashboard/*", "/dashboard"]
+
+# Journeys + journey_events. BEFORE THE FIRST DEPLOY:
+#   npx wrangler d1 create eleviq-agent-journeys     (paste the id below)
+#   npm run db:remote                                 (applies schema.sql)
+[[d1_databases]]
+binding = "DB"
+database_name = "eleviq-agent-journeys"
+database_id = "00000000-0000-0000-0000-000000000000"
+
+# POST calls: 30 per minute per IP. The price-estimate "follow-up" step, which stores
+# contact details: 3 per minute per IP. Namespace ids must be unique in the account
+# (the booking gateway uses 1001 and 1002).
+[[ratelimits]]
+name = "WRITE_LIMITER"
+namespace_id = "2001"
+simple = { limit = 30, period = 60 }
+
+[[ratelimits]]
+name = "CONTACT_LIMITER"
+namespace_id = "2002"
+simple = { limit = 3, period = 60 }
+
+# Bound once Cloudflare Access protects agents.eleviq.solutions/dashboard/*
+# and /api/analytics/* (README.md). Custom Domains provisions DNS and TLS.
+# [[routes]]
+# pattern = "agents.eleviq.solutions"
+# custom_domain = true
+
+# Daily lead retention (src/retention.ts): contact details older than
+# config.leads.retentionDays are reduced to the email's domain.
+[triggers]
+crons = ["17 3 * * *"]
+
+# Secret, not set here:
+#   npx wrangler secret put ACCESS_AUD           AUD tag of the Access application

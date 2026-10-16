@@ -1,0 +1,81 @@
+/**
+ * Everything this deployment is expected to change, in one place. Prices,
+ * options and wording live here, not in the handlers.
+ */
+export const config = {
+  /** Where problem+json `type` links and the service description point. */
+  site: "https://eleviq.solutions/llms.txt",
+
+  /** Event sinks. D1 is the dashboard's source; the webhook forwards every
+   * event as JSON elsewhere. */
+  sinks: {
+    d1: true,
+    webhook: {
+      enabled: false,
+      url: "",
+      /** Sent as `Authorization: Bearer <JOURNEY_WEBHOOK_SECRET>` when that secret is set. */
+    },
+  },
+
+  analytics: {
+    /** /dashboard/ and /api/analytics/ additionally require a valid
+     * Cloudflare Access token (src/access.ts). */
+    enabled: true,
+    /** Upper bound on journeys aggregated per request. */
+    maxJourneys: 2000,
+    listLimit: 100,
+  },
+
+  /** Cloudflare Access (Zero Trust) team domain, the issuer of the tokens
+   * src/access.ts verifies. The application's AUD tag is the ACCESS_AUD var. */
+  access: {
+    teamDomain: "https://nameless-wind-f7be.cloudflareaccess.com",
+  },
+
+  pricing: {
+    currency: "EUR",
+    vat: "excluding VAT",
+    validityDays: 30,
+    conditions:
+      "Indicative price per option. The final price is set after a short call about the website and the goals.",
+    /** The ids must match the `options` enums in definitions/price-estimate.json;
+     * src/journeys.ts refuses to load if they drift apart. */
+    options: {
+      "agent-readiness-audit": {
+        title: "Agent Readiness Audit",
+        price: 500,
+        summary: "Technical analysis: can AI agents reach, read and correctly interpret the website.",
+        page: "https://eleviq.solutions/services/ai-agent-readiness.html",
+      },
+      "customer-journey-analysis": {
+        title: "Customer Journey Analysis",
+        price: 1500,
+        summary: "Intent workshop, testing of key customer journeys with AI assistants, diagnosis and prioritized recommendations.",
+        page: "https://eleviq.solutions/services/ai-agent-readiness.html",
+      },
+      "agent-experience-pilot": {
+        title: "Agent Experience Pilot",
+        price: 4900,
+        summary: "Implementation of the prioritized improvements, with before/after validation.",
+        page: "https://eleviq.solutions/services/ai-agent-readiness.html",
+      },
+      "agentic-monetization-diagnostic": {
+        title: "Agentic Monetization Diagnostic",
+        price: 1900,
+        summary: "How AI agents consume the digital assets, and which monetization models fit.",
+        page: "https://eleviq.solutions/services/agentic-web-monetization.html",
+      },
+    } as Record<string, { title: string; price: number; summary: string; page: string }>,
+    bookCall: "https://eleviq-booking-gateway.gateway-worker.workers.dev",
+  },
+
+  /** Contact details left with step "follow_up" of the price-estimate journey. After
+   * retentionDays a daily cron (src/retention.ts) deletes name and message
+   * and reduces the email to its domain. */
+  leads: {
+    retentionDays: 3,
+  },
+
+  /** Reject request bodies larger than this. */
+  maxBodyBytes: 32_000,
+} as const;

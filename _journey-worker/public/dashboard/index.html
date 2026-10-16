@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Agent Journeys</title>
+  <link rel="stylesheet" href="dashboard.css">
+</head>
+<body data-palette="#2a78d6,#eb6834,#1baf7a,#eda100">
+  <header class="top">
+    <div>
+      <p class="eyebrow">eleviq.solutions · Agent Journey Protocol</p>
+      <h1>Agent journeys</h1>
+      <p class="sub">What agents came to do, how far they got, and why they stopped.</p>
+    </div>
+    <div class="filters" role="group" aria-label="Filters">
+      <label>Journey
+        <select id="f-definition"></select>
+      </label>
+      <label>Period
+        <select id="f-days">
+          <option value="7">7 days</option>
+          <option value="30" selected>30 days</option>
+          <option value="90">90 days</option>
+          <option value="365">1 year</option>
+        </select>
+      </label>
+      <button id="refresh" type="button">Refresh</button>
+    </div>
+  </header>
+
+  <main>
+    <p class="notice" id="notice" hidden></p>
+
+    <section class="tiles" aria-label="Headline numbers">
+      <div class="tile"><span class="tile-label">Journeys started</span><span class="tile-value" id="t-started">—</span></div>
+      <div class="tile"><span class="tile-label">Achieved</span><span class="tile-value" id="t-achieved">—</span><span class="tile-note" id="t-achieved-note"></span></div>
+      <div class="tile"><span class="tile-label">Verified agents</span><span class="tile-value" id="t-verified">—</span><span class="tile-note" id="t-verified-note"></span></div>
+      <div class="tile"><span class="tile-label">Intent completeness</span><span class="tile-value" id="t-complete">—</span><span class="tile-note">average share of optional intent fields supplied</span></div>
+    </section>
+
+    <section class="grid two">
+      <article class="card">
+        <h2>Funnel</h2>
+        <p class="card-sub">Journeys that completed each step.</p>
+        <div id="funnel" class="bars"></div>
+      </article>
+      <article class="card">
+        <h2>Journeys per day, by outcome</h2>
+        <div id="daily"></div>
+        <div class="legend" id="daily-legend"></div>
+        <details class="as-table">
+          <summary>Show as table</summary>
+          <div id="daily-table"></div>
+        </details>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="card">
+        <h2>Where journeys stop</h2>
+        <p class="card-sub">For every journey that did not reach the end: the step it stopped at, and how.</p>
+        <div id="dropoff"></div>
+      </article>
+      <article class="card">
+        <h2>Refused calls</h2>
+        <p class="card-sub">Calls the protocol rejected. The journey stays open after these; agents can correct and retry.</p>
+        <div id="rejections"></div>
+      </article>
+    </section>
+
+    <section class="card">
+      <h2>What agents came to do</h2>
+      <p class="card-sub">From the intent declaration each agent sent when it started a journey.</p>
+      <div class="grid three" id="intent"></div>
+    </section>
+
+    <section class="card">
+      <h2>What they told us along the way</h2>
+      <p class="card-sub">Fields the journey definition marks for logging. Emails and codes are never stored.</p>
+      <div class="grid three" id="fields"></div>
+    </section>
+
+    <section class="grid two">
+      <article class="card">
+        <h2>Competition</h2>
+        <div class="grid" id="competition"></div>
+      </article>
+      <article class="card">
+        <h2>Agents</h2>
+        <div id="agents"></div>
+      </article>
+    </section>
+
+    <section class="card" id="leads-card" hidden>
+      <h2>Follow-up requests</h2>
+      <p class="card-sub" id="leads-note"></p>
+      <div class="table-wrap">
+        <table class="table" id="leads">
+          <thead><tr><th>Received</th><th>Email</th><th>Name</th><th>Company</th><th>Options</th><th class="num">Estimate</th><th>Message</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Journeys</h2>
+      <div class="list-filters">
+        <label>Outcome
+          <select id="f-status">
+            <option value="">All</option>
+            <option value="active">Active</option>
+            <option value="achieved">Achieved</option>
+            <option value="not_achieved">Not achieved</option>
+            <option value="cancelled">Cancelled</option>
+            <option value="abandoned">Abandoned</option>
+          </select>
+        </label>
+      </div>
+      <div class="table-wrap tall">
+        <table class="table" id="list">
+          <thead><tr><th>Started</th><th>Outcome</th><th>Agent</th><th>Intent</th><th>Goal</th><th>Steps</th><th>Completeness</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card" id="detail" hidden>
+      <div class="detail-head">
+        <h2>Journey <code id="d-ref"></code></h2>
+        <button type="button" id="d-close">Close</button>
+      </div>
+      <div class="grid two">
+        <div>
+          <h3>Reconstructed prompt</h3>
+          <blockquote id="d-prompt"></blockquote>
+          <p class="card-sub" id="d-prompt-note"></p>
+          <h3>Timeline</h3>
+          <ol class="timeline" id="d-events"></ol>
+        </div>
+        <div>
+          <h3>Outcome</h3>
+          <dl class="facts" id="d-facts"></dl>
+          <h3>Intent declaration</h3>
+          <pre id="d-intent"></pre>
+          <h3>Logged fields</h3>
+          <pre id="d-fields"></pre>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Real agent journeys on eleviq.solutions. Agent Journey Protocol is an ElevIQ convention, not a ratified standard.
+  </footer>
+
+  <div class="tooltip" id="tooltip" role="tooltip" hidden></div>
+  <script type="module" src="dashboard.js"></script>
+</body>
+</html>

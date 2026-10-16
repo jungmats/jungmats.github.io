@@ -1,0 +1,27 @@
+{
+  "id": "demo-expiring",
+  "version": 1,
+  "title": "Demo: a journey that expires after 5 seconds of idling",
+  "description": "Exists only so the demo page can show an abandoned journey without waiting 30 minutes.",
+  "identity": "optional",
+  "ttl_seconds": 5,
+  "intent": {
+    "allowed": ["discover", "compare", "qualify", "verify", "transact", "support"]
+  },
+  "steps": {
+    "discover": {
+      "title": "Look around",
+      "description": "No fields needed.",
+      "requires": [],
+      "fields": { "type": "object", "properties": {} },
+      "result": { "note": "Nothing to see: this journey only demonstrates expiry." }
+    },
+    "finish": {
+      "title": "Finish",
+      "description": "Ends the journey.",
+      "requires": ["discover"],
+      "terminal": "achieved",
+      "fields": { "type": "object", "properties": {} }
+    }
+  }
+}

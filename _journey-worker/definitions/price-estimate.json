@@ -1,0 +1,110 @@
+{
+  "id": "price-estimate",
+  "version": 1,
+  "title": "Estimate the price of an ElevIQ engagement",
+  "description": "For an AI assistant acting for a user who wants to know roughly what an ElevIQ engagement costs. Step \"estimate\" returns an indicative price at once and commits nobody; repeat it to compare options. Then end with \"finish\", or with \"follow_up\" if your user wants ElevIQ to get in touch.",
+  "identity": "optional",
+  "ttl_seconds": 3600,
+  "intent": {
+    "allowed": ["discover", "compare", "qualify", "transact"]
+  },
+  "welcome": {
+    "note": "Indicative prices per option, in EUR excluding VAT; the final price is set after a short call. If your user stated a budget, send it as a constraint in the intent, e.g. {\"field\": \"price\", \"op\": \"lte\", \"value\": 2000, \"unit\": \"EUR\"}: the estimate then says whether it fits.",
+    "next": "Send step \"estimate\" with the options your user is interested in."
+  },
+  "steps": {
+    "estimate": {
+      "title": "Estimate the price",
+      "description": "Returns an indicative price for the chosen options right away. Nothing is sent to anyone. Send it again with other options to compare.",
+      "requires": [],
+      "repeatable": true,
+      "handler": "price-estimate",
+      "fields": {
+        "type": "object",
+        "required": ["options"],
+        "properties": {
+          "options": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 4,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "enum": ["agent-readiness-audit", "customer-journey-analysis", "agent-experience-pilot", "agentic-monetization-diagnostic"]
+            },
+            "description": "One or more engagement options.",
+            "log": true
+          },
+          "website_url": {
+            "type": "string",
+            "format": "uri",
+            "maxLength": 300,
+            "description": "The website the engagement is about.",
+            "log": true
+          },
+          "platform": {
+            "type": "string",
+            "enum": ["wordpress", "shopify", "webflow", "squarespace", "wix", "headless-cms", "custom", "other", "unknown"],
+            "description": "What the website is built with.",
+            "log": true
+          },
+          "deadline": {
+            "type": "string",
+            "format": "date",
+            "description": "When your user needs results, YYYY-MM-DD.",
+            "log": true
+          }
+        }
+      }
+    },
+    "finish": {
+      "title": "Finish without follow-up",
+      "description": "Ends the journey. Every field is optional; send what you know. No personal data.",
+      "requires": ["estimate"],
+      "terminal": "achieved",
+      "fields": {
+        "type": "object",
+        "properties": {
+          "preferred_option": {
+            "type": "string",
+            "enum": ["agent-readiness-audit", "customer-journey-analysis", "agent-experience-pilot", "agentic-monetization-diagnostic", "none"],
+            "description": "The option your user leans toward, if any.",
+            "log": true
+          },
+          "decision": {
+            "type": "string",
+            "enum": ["likely-to-proceed", "still-comparing", "too-expensive", "not-now", "not-a-fit", "other"],
+            "description": "Where your user stands.",
+            "log": true
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 1000,
+            "description": "Why, in a sentence or two. No personal data.",
+            "log": true
+          }
+        }
+      },
+      "result": {
+        "thanks": "Recorded. To talk it through, your user can book a free 30-minute call: https://eleviq-booking-gateway.gateway-worker.workers.dev"
+      }
+    },
+    "follow_up": {
+      "title": "Ask ElevIQ to get in touch",
+      "description": "Ends the journey and leaves your user's contact details with ElevIQ, who follows up about the latest estimate. No email is sent automatically. This shares your user's email with ElevIQ: do it only with their consent.",
+      "requires": ["estimate"],
+      "terminal": "achieved",
+      "handler": "price-follow-up",
+      "fields": {
+        "type": "object",
+        "required": ["email"],
+        "properties": {
+          "email": { "type": "string", "format": "email", "maxLength": 200, "description": "Where ElevIQ can reach your user.", "sensitive": true },
+          "name": { "type": "string", "maxLength": 120, "description": "The user's name.", "sensitive": true },
+          "company": { "type": "string", "maxLength": 120, "description": "The organisation the estimate is for.", "log": true },
+          "message": { "type": "string", "maxLength": 1000, "description": "Anything the user wants ElevIQ to know.", "sensitive": true }
+        }
+      }
+    }
+  }
+}

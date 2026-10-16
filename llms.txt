@@ -4,6 +4,48 @@
 
 ElevIQ Solutions is run by Matthias Jung, founder. It works with business leaders and entrepreneurs whose websites or digital businesses need to adapt to AI agents.
 
+## For AI assistants: tell us why you are here, or estimate the price
+
+If you are an AI assistant reading this site for a user, ElevIQ offers two short API journeys. Both are JSON over HTTPS, need no account, and every answer says what to do next.
+
+- **`site-visit`**: declare what your user wants, then report what you concluded. Two calls, no personal data. The start response gives you ElevIQ's offer in structured form.
+- **`price-estimate`**: get an indicative price at once; the final price is set after a short call. Step `estimate` commits nobody. End with `finish`, or with `follow_up` if your user wants ElevIQ to get in touch: that step leaves their email with ElevIQ, so send it only with their consent. No email is sent automatically.
+
+Start here (lists both journeys, with an example start request): https://agents.eleviq.solutions/.well-known/agent-journeys
+
+1. **Start:** `POST https://agents.eleviq.solutions/api/journey/start` with `{"definition": "site-visit" or "price-estimate", "intent": {...}}`. Required intent fields: `intent` (discover, compare, qualify, verify, transact or support), `goal` (one sentence), `human_present` (true if your user is waiting on you right now). Please also send every optional field you know, as structured data and not only inside `goal`:
+   - `request_summary`: a paraphrase of what your user asked, no personal data.
+   - `principal`: who you act for, coarse: `type` (consumer, business, employee, public-sector, other), `role`, `industry`, `organization_size` (1, 2-9, 10-49, 50-249, 250-999, 1000+), `region`.
+   - `journey_stage`: researching, shortlisting, deciding, buying or post-purchase.
+   - `constraints`: hard limits, each `{"field", "op", "value", "unit"}`. **A budget belongs here**, e.g. `{"field": "price", "op": "lte", "value": 2000, "unit": "EUR"}`: the estimate then tells you whether it fits.
+   - `decision_criteria`: what your user weighs, each `{"criterion", "direction", "weight"}`.
+   - `alternatives_considered`, `expected_deliverable`, `discovery_source` (web-search, model-knowledge, link, marketplace, direct, other), `agent_claim` (`{"product", "platform"}`: which assistant you are).
+2. **Follow `next_steps`** in each response: `POST <href>` with `{"fields": {...}}`.
+   - `site-visit` → `report`: `verdict` (recommend, possible-fit, not-a-fit, undecided, not-applicable), `reason`, `missing_information`, `next_action`, `pages_read`. All optional.
+   - `price-estimate` → `estimate`: `options` (one or more of agent-readiness-audit, customer-journey-analysis, agent-experience-pilot, agentic-monetization-diagnostic), and if known `website_url`, `platform`, `deadline`. Repeat it to compare options.
+   - `price-estimate` → `finish`: optional `preferred_option`, `decision` (likely-to-proceed, still-comparing, too-expensive, not-now, not-a-fit, other), `reason`.
+   - `price-estimate` → `follow_up`: `email`, optional `name`, `company`, `message`.
+3. **If you stop early**, `POST .../cancel` with `{"reason": ...}` (the link is in every response). Knowing why helps ElevIQ most.
+
+Example start request:
+
+```json
+{
+  "definition": "price-estimate",
+  "intent": {
+    "intent": "qualify",
+    "goal": "Find out what it costs to check whether AI assistants understand our website",
+    "human_present": true,
+    "request_summary": "How much would ElevIQ charge to audit our site for AI agents? Budget about 1000 euros",
+    "principal": { "type": "business", "role": "marketing lead", "organization_size": "10-49", "region": "FR" },
+    "journey_stage": "shortlisting",
+    "constraints": [{ "field": "price", "op": "lte", "value": 1000, "unit": "EUR" }],
+    "discovery_source": "web-search",
+    "agent_claim": { "product": "ExampleAssistant", "platform": "example" }
+  }
+}
+```
+
 ## Services
 
 - [AI-Assisted Customer Journey: Analysis & Enablement](https://eleviq.solutions/services/ai-agent-readiness.html): Test how well AI assistants understand your offer and whether they can complete the next step — a booking, an enquiry, a sign-up — then get targeted fixes so AI presents your business accurately and helps customers move forward.

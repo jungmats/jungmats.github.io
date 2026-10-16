@@ -1,0 +1,7 @@
+# Wrangler's local scratch space (created by `wrangler dev`) — never commit.
+.wrangler/
+node_modules/
+# Local-only variables (ALLOW_UNAUTHENTICATED_ANALYTICS, test secrets).
+.dev.vars
+# Derived OpenAPI/Arazzo documents written by test/export.test.ts.
+.out/

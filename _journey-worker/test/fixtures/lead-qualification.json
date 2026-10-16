@@ -1,0 +1,106 @@
+{
+  "id": "lead-qualification",
+  "version": 1,
+  "title": "Qualify for an agent-readiness engagement",
+  "description": "Find out whether ElevIQ can help an organisation become usable by AI agents, and book a first call or request a quote. Demo journey: nothing is actually booked.",
+  "identity": "optional",
+  "ttl_seconds": 1800,
+  "intent": {
+    "allowed": ["discover", "compare", "qualify", "transact"]
+  },
+  "steps": {
+    "discover": {
+      "title": "See what is offered",
+      "description": "Returns the service catalogue. No fields needed.",
+      "requires": [],
+      "fields": { "type": "object", "properties": {} },
+      "result": {
+        "services": [
+          { "id": "site-analysis", "title": "Agent-readiness site analysis", "from_eur": 2000, "duration_weeks": 1 },
+          { "id": "readiness-scorecard", "title": "Agent readiness scorecard across real assistants", "from_eur": 4500, "duration_weeks": 3 },
+          { "id": "gateway", "title": "Agent gateway: identity, policy, payment, measurement", "from_eur": 9000, "duration_weeks": 6 }
+        ],
+        "minimum_engagement_eur": 2000,
+        "languages": ["en", "de", "fr"]
+      }
+    },
+    "qualify": {
+      "title": "Describe the need",
+      "description": "Who the agent acts for, what problem they have, and the budget and deadline they work with.",
+      "requires": ["discover"],
+      "fields": {
+        "type": "object",
+        "required": ["customer_type", "problem", "budget_eur", "deadline"],
+        "properties": {
+          "customer_type": {
+            "type": "string",
+            "enum": ["b2b-shop", "b2c-shop", "saas", "publisher", "services", "public-sector", "other"],
+            "log": true
+          },
+          "problem": {
+            "type": "string",
+            "minLength": 20,
+            "maxLength": 1000,
+            "description": "The problem in a few sentences. No personal data.",
+            "log": true
+          },
+          "budget_eur": { "type": "number", "minimum": 0, "description": "Available budget in EUR.", "log": true },
+          "deadline": { "type": "string", "format": "date", "log": true },
+          "services_of_interest": {
+            "type": "array",
+            "items": { "type": "string", "enum": ["site-analysis", "readiness-scorecard", "gateway"] },
+            "log": true
+          }
+        }
+      },
+      "end_if": [
+        {
+          "field": "budget_eur",
+          "op": "lt",
+          "value": 2000,
+          "status": "not_achieved",
+          "reason": "below-minimum-budget",
+          "message": "The smallest engagement starts at 2000 EUR. The public checklist at eleviq.solutions is a free starting point."
+        }
+      ],
+      "result": {
+        "fit": "likely",
+        "next": "Verify that you act for a real person, then book a call or request a quote."
+      }
+    },
+    "verify": {
+      "title": "Prove who the agent acts for",
+      "description": "Request a one-time code for the user's email via this journey's verification-code endpoint, then present it here. Only while the user is present.",
+      "requires": ["qualify"],
+      "require_human_present": true,
+      "user_binding": "verification-code",
+      "fields": {
+        "type": "object",
+        "required": ["acting_for", "code"],
+        "properties": {
+          "acting_for": { "type": "string", "format": "email", "sensitive": true },
+          "code": { "type": "string", "pattern": "^[0-9]{6}$", "sensitive": true }
+        }
+      },
+      "result": { "verified": true }
+    },
+    "transact": {
+      "title": "Book a call or request a quote",
+      "description": "Ends the journey. Demo only: nothing is actually booked.",
+      "requires": ["verify"],
+      "terminal": "achieved",
+      "fields": {
+        "type": "object",
+        "required": ["requested_action"],
+        "properties": {
+          "requested_action": { "type": "string", "enum": ["book-call", "request-quote"], "log": true },
+          "preferred_slot": { "type": "string", "maxLength": 100, "description": "Free text, e.g. 'mornings next week'.", "log": true }
+        }
+      },
+      "result": {
+        "confirmation": "DEMO-ONLY",
+        "note": "In a real deployment this step would call the booking or quoting system."
+      }
+    }
+  }
+}
