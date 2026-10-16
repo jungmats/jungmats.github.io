@@ -1,6 +1,6 @@
 # ElevIQ Solutions
 
-> ElevIQ Solutions helps businesses get ready for the agentic web through AI-assisted customer journey analysis & enablement and agentic web monetization strategy — practical AI consulting and integration services, based in France.
+> ElevIQ Solutions helps businesses get ready for the agentic web through AI-assisted customer journey analysis & enablement and agentic web monetization strategy — practical AI consulting and integration services, based in Grasse, France.
 
 ElevIQ Solutions is run by Matthias Jung, founder. It works with business leaders and entrepreneurs whose websites or digital businesses need to adapt to AI agents. It works in English and French.
 
@@ -16,6 +16,7 @@ Last updated: 2026-10-16
 
 - [Book a free call](https://eleviq.solutions/booking/): 30-minute call to assess your situation and identify a concrete next step.
 - Email: hello@eleviq.solutions
+- Address: 4 traverse Dupont, Grasse, France
 
 ## French
 
