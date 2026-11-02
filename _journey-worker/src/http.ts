@@ -21,7 +21,7 @@ export function discoveryLinks(origin: string): string {
 export function json(body: unknown, status = 200, extra: Record<string, string> = {}): Response {
   return new Response(JSON.stringify(body, null, 2), {
     status,
-    headers: { "content-type": "application/json; charset=utf-8", ...CORS, ...extra },
+    headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store", ...CORS, ...extra },
   });
 }
 
@@ -37,7 +37,7 @@ export function problem(r: Pick<Rejection, "status" | "reason" | "title" | "deta
   };
   return new Response(JSON.stringify(body, null, 2), {
     status: r.status,
-    headers: { "content-type": "application/problem+json; charset=utf-8", ...CORS },
+    headers: { "content-type": "application/problem+json; charset=utf-8", "cache-control": "no-store", ...CORS },
   });
 }
 
