@@ -36,7 +36,7 @@ import type { Env } from "./env";
 
 /** Shown at /. Bump it with every deploy that
  * changes what agents see, so a deploy can be checked from outside. */
-const VERSION = "2026-10-16-v3";
+const VERSION = "2026-11-02-v1";
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {

@@ -26,7 +26,7 @@ import { checkSignedAgent, signedAgentLabel } from './verify.js';
 const APPS_SCRIPT_URL =
   'https://script.google.com/macros/s/AKfycbyH4RMe-lfQrzbEmCRzDufaOzpUaYpmTTr1Ghn2AfpbCuijNYLUS1_2KJJIPwc2ycFMvQ/exec';
 
-const GATEWAY_VERSION = '2026-09-18-v4-webbotauth';
+const GATEWAY_VERSION = '2026-11-02-v1-nostore';
 
 // Set per request in fetch(); holds the Worker bindings, including the
 // GATEWAY_SECRET that authenticates this Worker to the Apps Script
