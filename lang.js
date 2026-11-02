@@ -3,9 +3,10 @@
  * on every page that has translations:  <script src="/lang.js"></script>
  *
  * Translated pages live at the same path under a language prefix
- * (/x -> /fr/x), and English is the unprefixed default. Only first-time
- * visitors on an English page are redirected. A language URL is treated as a
- * deliberate choice, and so is a click on a .lang-switch link, which needs an
+ * (/x -> /fr/x), and English is the unprefixed default. Only English pages
+ * redirect, to the visitor's saved language or else their browser's preferred
+ * one. A language URL is treated as a deliberate choice and never redirects.
+ * Clicking a .lang-switch link saves the language, so each link needs an
  * hreflang attribute.
  *
  * To add a language, add it to SUPPORTED once its pages are published.
@@ -47,8 +48,13 @@
     return DEFAULT;
   }
 
-  if (!isOnTranslatedPath() && !savedLanguage()) {
-    var lang = preferredLanguage();
+  function targetLanguage() {
+    var saved = savedLanguage();
+    return SUPPORTED.indexOf(saved) !== -1 ? saved : preferredLanguage();
+  }
+
+  if (!isOnTranslatedPath()) {
+    var lang = targetLanguage();
     if (lang !== DEFAULT) {
       location.replace('/' + lang + location.pathname + location.search + location.hash);
       return;
