@@ -1,5 +1,5 @@
 {
-  "$comment": "Public ElevIQ list prices: the website's subset of ~/Documents/Consulting/consulting-methodology/price-list.md. How to update: _data/README.md. After any change, run `node _tools/build-prices.mjs` (writes the JSON-LD, the visible prices, the journey definitions and llms.txt); the journey worker reads this file directly. Only public offers belong here: no add-ons, day rate, reseller terms or Insights.",
+  "$comment": "Public ElevIQ list prices: the website's subset of ~/Documents/Consulting/consulting-methodology/price-list.md. How to update: _data/README.md. After any change, run `node _tools/build-prices.mjs` (writes the JSON-LD, the visible prices, the journey definitions and llms.txt); the journey worker reads this file directly. Only offers that are shown on the website belong here.",
   "as_of": "2026-11-03",
   "currency": "EUR",
   "vat_included": false,

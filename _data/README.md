@@ -1,10 +1,10 @@
 # Prices on the website
 
-Not published: Jekyll doesn't serve folders that start with `_`.
+Not served on eleviq.solutions (Jekyll skips folders that start with `_`), but readable by anyone on GitHub: the repo is public.
 
 `_data/prices.json` is the only place where website prices live. The master price list is
 `~/Documents/Consulting/consulting-methodology/price-list.md`. This file holds only its
-**public** part, so leave out add-ons, the day rate, reseller terms and Insights.
+**public** part: only offers that are shown on the website. This repo is public, so don't mention unpublished offers or prices here.
 
 ## Change a price
 
@@ -17,20 +17,20 @@ Not published: Jekyll doesn't serve folders that start with `_`.
 4. Push the site **and** deploy the worker: `cd _journey-worker && npm run deploy`.
    The worker reads `prices.json` when it is built, so the quote service keeps the old prices until it is deployed again.
 
-## Add a new public offer (e.g. Insights)
+## Add a new public offer
 
 1. Add an entry to `offers` in `prices.json`:
-   - `id`: lowercase with hyphens, e.g. `agent-tracking`. It becomes the page anchor, the JSON-LD id and the quote service option.
+   - `id`: lowercase with hyphens, e.g. `new-offer`. It becomes the page anchor, the JSON-LD id and the quote service option.
    - `service`: the page it belongs to (`ai-agent-readiness` or `agentic-web-monetization`).
    - `name` and `summary` in `en` and `fr`.
    - `price` (a number, 0 = free), `from` (true for a "from" price), `unit` (`once` or `month`), optional `minimum_months`.
-   - `estimate`: true if the quote service should price it. Only allowed for paid one-off offers. A setup fee plus a monthly fee (Insights) would need a code change in `_journey-worker/src/pricing.ts` first.
+   - `estimate`: true if the quote service should price it. Only allowed for paid one-off offers. An offer with a setup fee plus a monthly fee would need a code change in `_journey-worker/src/pricing.ts` first.
 2. On **both** language pages of that service, write the card or line by hand and give it the anchor and a price marker:
    ```html
-   <div class="offering-card" id="agent-tracking">
+   <div class="offering-card" id="new-offer">
      <h3>…</h3>
      <p>…</p>
-     <p class="price"><!-- price:agent-tracking --><!-- /price:agent-tracking --></p>
+     <p class="price"><!-- price:new-offer --><!-- /price:new-offer --></p>
    </div>
    ```
    Leave the marker empty: the script fills it ("€99 excl. VAT", "à partir de 490 € HT", …).
