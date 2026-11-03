@@ -11,10 +11,14 @@
   "welcome": {
     "company": "ElevIQ Solutions, AI consulting and integration, based in France. Works in English and French.",
     "services": [
-      { "id": "agent-readiness-audit", "title": "Agent Readiness Audit", "page": "https://eleviq.solutions/services/ai-agent-readiness.html" },
-      { "id": "customer-journey-analysis", "title": "Customer Journey Analysis", "page": "https://eleviq.solutions/services/ai-agent-readiness.html" },
-      { "id": "agent-experience-pilot", "title": "Agent Experience Pilot", "page": "https://eleviq.solutions/services/ai-agent-readiness.html" },
-      { "id": "agentic-monetization-diagnostic", "title": "Agentic Monetization Diagnostic", "page": "https://eleviq.solutions/services/agentic-web-monetization.html" }
+      { "id": "prospect-preview", "title": "Free preview", "price": "Free", "page": "https://eleviq.solutions/services/ai-agent-readiness.html#prospect-preview" },
+      { "id": "site-report", "title": "Site report", "price": "€499 excl. VAT", "page": "https://eleviq.solutions/services/ai-agent-readiness.html#site-report" },
+      { "id": "implementation-kit", "title": "Implementation kit", "price": "from €490 excl. VAT", "page": "https://eleviq.solutions/services/ai-agent-readiness.html#implementation-kit" },
+      { "id": "implementation-done-for-you", "title": "Implementation, done for you", "price": "from €990 excl. VAT", "page": "https://eleviq.solutions/services/ai-agent-readiness.html#implementation-done-for-you" },
+      { "id": "customer-journey-analysis", "title": "Customer journey analysis", "price": "€1,900 excl. VAT", "page": "https://eleviq.solutions/services/ai-agent-readiness.html#customer-journey-analysis" },
+      { "id": "monthly-monitoring", "title": "Monthly monitoring", "price": "€99 / month excl. VAT, 3-month minimum", "page": "https://eleviq.solutions/services/ai-agent-readiness.html#monthly-monitoring" },
+      { "id": "monetization-diagnostic", "title": "Agentic Monetization Diagnostic", "price": "€2,900 excl. VAT", "page": "https://eleviq.solutions/services/agentic-web-monetization.html#monetization-diagnostic" },
+      { "id": "monetization-blueprint", "title": "Agentic Monetization Blueprint", "price": "€5,900 excl. VAT", "page": "https://eleviq.solutions/services/agentic-web-monetization.html#monetization-blueprint" }
     ],
     "book_a_call": "Booking page for your user: https://eleviq.solutions/booking/. Booking API for you: https://eleviq-booking-gateway.gateway-worker.workers.dev (GET / describes it).",
     "agent_instructions": "https://eleviq.solutions/llms.txt",

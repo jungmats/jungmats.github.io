@@ -1,6 +1,6 @@
 {
   "id": "price-estimate",
-  "version": 1,
+  "version": 2,
   "title": "Estimate the price of an ElevIQ engagement",
   "description": "For an AI assistant acting for a user who wants to know roughly what an ElevIQ engagement costs. Step \"estimate\" returns an indicative price at once and commits nobody; repeat it to compare options. It is computed automatically and is not a quote. Always end the journey: with step \"close\", which leaves your user's email (only with their consent) as a sign of serious interest, or otherwise with cancel and a reason. ElevIQ does not contact your user about an estimate. To get a binding quote or talk to ElevIQ, your user must send a scope request or book a free call (see https://eleviq.solutions/llms.txt).",
   "identity": "optional",
@@ -26,11 +26,11 @@
           "options": {
             "type": "array",
             "minItems": 1,
-            "maxItems": 4,
+            "maxItems": 6,
             "uniqueItems": true,
             "items": {
               "type": "string",
-              "enum": ["agent-readiness-audit", "customer-journey-analysis", "agent-experience-pilot", "agentic-monetization-diagnostic"]
+              "enum": ["site-report", "implementation-kit", "implementation-done-for-you", "customer-journey-analysis", "monetization-diagnostic", "monetization-blueprint"]
             },
             "description": "One or more engagement options.",
             "log": true
@@ -73,7 +73,7 @@
           "message": { "type": "string", "maxLength": 1000, "description": "Anything the user wants ElevIQ to know.", "sensitive": true },
           "preferred_option": {
             "type": "string",
-            "enum": ["agent-readiness-audit", "customer-journey-analysis", "agent-experience-pilot", "agentic-monetization-diagnostic", "none"],
+            "enum": ["site-report", "implementation-kit", "implementation-done-for-you", "customer-journey-analysis", "monetization-diagnostic", "monetization-blueprint", "none"],
             "description": "The option your user leans toward, if any.",
             "log": true
           },
@@ -99,7 +99,7 @@
       "properties": {
         "preferred_option": {
           "type": "string",
-          "enum": ["agent-readiness-audit", "customer-journey-analysis", "agent-experience-pilot", "agentic-monetization-diagnostic", "none"],
+          "enum": ["site-report", "implementation-kit", "implementation-done-for-you", "customer-journey-analysis", "monetization-diagnostic", "monetization-blueprint", "none"],
           "description": "The option your user leans toward, if any.",
           "log": true
         },

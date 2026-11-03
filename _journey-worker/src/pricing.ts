@@ -2,9 +2,10 @@
  * Price estimation. Pure, so it runs under `node --test`: prices come from
  * config, the budget from the intent envelope's constraints.
  *
- * v1 pricing is deliberately simple: a fixed indicative price per option,
- * summed, no package discounts. website_url, platform and deadline are
- * collected for analysis but do not change the price yet.
+ * Pricing is deliberately simple: the list price per option (from
+ * _data/prices.json), summed, no package discounts. A "from" option makes the
+ * total a minimum. website_url, platform and deadline are collected for
+ * analysis but do not change the price yet.
  */
 import { config } from "./config.ts";
 
@@ -12,6 +13,7 @@ export interface EstimateLine {
   option: string;
   title: string;
   price: number;
+  from: boolean;
   summary: string;
   page: string;
 }
@@ -20,6 +22,8 @@ export interface Estimate {
   currency: string;
   lines: EstimateLine[];
   total: number;
+  /** True when any line is a "from" price: the quoted total can be higher. */
+  total_is_minimum: boolean;
   vat: string;
   indicative: true;
   prices_as_of: string;
@@ -52,12 +56,13 @@ export function budgetOf(intent: Record<string, unknown>): { value: number; stri
 export function buildEstimate(options: string[], now: Date): Estimate {
   const lines = options.map((id) => {
     const o = config.pricing.options[id];
-    return { option: id, title: o.title, price: o.price, summary: o.summary, page: o.page };
+    return { option: id, title: o.title, price: o.price, from: o.from, summary: o.summary, page: o.page };
   });
   return {
     currency: config.pricing.currency,
     lines,
     total: lines.reduce((sum, l) => sum + l.price, 0),
+    total_is_minimum: lines.some((l) => l.from),
     vat: config.pricing.vat,
     indicative: true,
     prices_as_of: day(now),

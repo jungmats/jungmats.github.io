@@ -1,7 +1,29 @@
 /**
- * Everything this deployment is expected to change, in one place. Prices,
- * options and wording live here, not in the handlers.
+ * Everything this deployment is expected to change, in one place. Options
+ * and wording live here, not in the handlers. Prices come from the site's
+ * _data/prices.json, the one source for the pages, llms.txt and this Worker.
  */
+import prices from "../../_data/prices.json" with { type: "json" };
+
+export interface PricedOption {
+  title: string;
+  price: number;
+  /** A "from" price: the real price is fixed by a quote and can be higher. */
+  from: boolean;
+  summary: string;
+  page: string;
+}
+
+/** The offers the price-estimate journey can price: paid, one-off, marked `estimate`. */
+function estimableOptions(): Record<string, PricedOption> {
+  const pages = new Map(prices.services.map((s) => [s.id, prices.site + s.pages.en]));
+  return Object.fromEntries(
+    prices.offers
+      .filter((o) => o.estimate)
+      .map((o) => [o.id, { title: o.name.en, price: o.price, from: o.from, summary: o.summary.en, page: `${pages.get(o.service)}#${o.id}` }]),
+  );
+}
+
 export const config = {
   /** Where problem+json `type` links and the service description point. */
   site: "https://eleviq.solutions/llms.txt",
@@ -33,39 +55,15 @@ export const config = {
   },
 
   pricing: {
-    currency: "EUR",
-    vat: "excluding VAT",
+    currency: prices.currency,
+    vat: prices.vat_included ? "including VAT" : "excluding VAT",
     validityDays: 30,
     conditions:
-      "Indicative price per option, computed automatically: not a quote and not an offer. A binding quote follows a free call (book one) or a scope request (both described at https://eleviq.solutions/llms.txt).",
-    /** The ids must match the `options` enums in definitions/price-estimate.json;
+      "Indicative list price per option, computed automatically: not a quote and not an offer. Options with from: true have a minimum price, fixed by a quote, so the total is then a minimum too. A binding quote follows a free call (book one) or a scope request (both described at https://eleviq.solutions/llms.txt).",
+    /** From _data/prices.json. The ids must match the `options` enums in
+     * definitions/price-estimate.json, which _tools/build-prices.mjs writes;
      * src/journeys.ts refuses to load if they drift apart. */
-    options: {
-      "agent-readiness-audit": {
-        title: "Agent Readiness Audit",
-        price: 500,
-        summary: "Technical analysis: can AI agents reach, read and correctly interpret the website.",
-        page: "https://eleviq.solutions/services/ai-agent-readiness.html",
-      },
-      "customer-journey-analysis": {
-        title: "Customer Journey Analysis",
-        price: 1500,
-        summary: "Intent workshop, testing of key customer journeys with AI assistants, diagnosis and prioritized recommendations.",
-        page: "https://eleviq.solutions/services/ai-agent-readiness.html",
-      },
-      "agent-experience-pilot": {
-        title: "Agent Experience Pilot",
-        price: 4900,
-        summary: "Implementation of the prioritized improvements, with before/after validation.",
-        page: "https://eleviq.solutions/services/ai-agent-readiness.html",
-      },
-      "agentic-monetization-diagnostic": {
-        title: "Agentic Monetization Diagnostic",
-        price: 1900,
-        summary: "How AI agents consume the digital assets, and which monetization models fit.",
-        page: "https://eleviq.solutions/services/agentic-web-monetization.html",
-      },
-    } as Record<string, { title: string; price: number; summary: string; page: string }>,
+    options: estimableOptions(),
     /** The free call: the page is for people, the API for agents that book themselves. */
     bookCall: {
       page: "https://eleviq.solutions/booking/",

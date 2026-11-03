@@ -1,0 +1,144 @@
+{
+  "$comment": "Public ElevIQ list prices: the website's subset of ~/Documents/Consulting/consulting-methodology/price-list.md. After any change, run `node _tools/build-prices.mjs` (writes the JSON-LD, the visible prices, the journey definitions and llms.txt); the journey worker reads this file directly. Only public offers belong here: no add-ons, day rate, reseller terms or Insights.",
+  "as_of": "2026-11-03",
+  "currency": "EUR",
+  "vat_included": false,
+  "organization": "https://eleviq.solutions/#organization",
+  "site": "https://eleviq.solutions",
+  "estimate_endpoint": "https://agents.eleviq.solutions/api/journey/start",
+  "services": [
+    {
+      "id": "ai-agent-readiness",
+      "pages": { "en": "/services/ai-agent-readiness.html", "fr": "/fr/services/ai-agent-readiness.html" },
+      "name": {
+        "en": "AI-Assisted Customer Journey: Analysis & Enablement",
+        "fr": "Parcours client assisté par l'IA : analyse & mise en œuvre"
+      },
+      "description": {
+        "en": "AI-assisted customer journey analysis and enablement — technical audit, AI assistant testing, and targeted fixes so AI presents your business accurately. ElevIQ Solutions.",
+        "fr": "Parcours client assisté par l'IA : audit technique, tests des assistants IA et améliorations ciblées pour que l'IA présente fidèlement votre activité. ElevIQ Solutions."
+      },
+      "catalog": { "en": "Engagement options", "fr": "Formats d'accompagnement" }
+    },
+    {
+      "id": "agentic-web-monetization",
+      "pages": { "en": "/services/agentic-web-monetization.html", "fr": "/fr/services/agentic-web-monetization.html" },
+      "name": {
+        "en": "Agentic Web Monetization Strategy",
+        "fr": "Stratégie de monétisation du web agentique"
+      },
+      "description": {
+        "en": "Prepare your digital business to monetize AI agent traffic — paid content, APIs, licensing, and agent-native commercial models, from ElevIQ Solutions.",
+        "fr": "Préparez votre activité digitale à monétiser le trafic des agents IA — contenu payant, API, licences et modèles commerciaux natifs pour les agents, par ElevIQ Solutions."
+      },
+      "catalog": { "en": "Engagement options", "fr": "Formats d'accompagnement" }
+    }
+  ],
+  "offers": [
+    {
+      "id": "prospect-preview",
+      "service": "ai-agent-readiness",
+      "name": { "en": "Free preview", "fr": "Aperçu gratuit" },
+      "summary": {
+        "en": "Four questions tested on one AI assistant, with a short write-up of the results.",
+        "fr": "Quatre questions testées sur un assistant IA, avec une courte synthèse des résultats."
+      },
+      "price": 0,
+      "from": false,
+      "unit": "once",
+      "estimate": false
+    },
+    {
+      "id": "site-report",
+      "service": "ai-agent-readiness",
+      "name": { "en": "Site report", "fr": "Rapport de site" },
+      "summary": {
+        "en": "Technical audit (33 checks), a read of every page, general observations and a prioritised action plan.",
+        "fr": "Audit technique (33 points), lecture de toutes les pages, observations générales et plan d'action priorisé."
+      },
+      "price": 499,
+      "from": false,
+      "unit": "once",
+      "estimate": true
+    },
+    {
+      "id": "implementation-kit",
+      "service": "ai-agent-readiness",
+      "name": { "en": "Implementation kit", "fr": "Kit de mise en œuvre" },
+      "summary": {
+        "en": "Ready-to-use files and text changes from the site report's action plan, put in place by your team; before/after check.",
+        "fr": "Fichiers et textes prêts à intégrer, issus du plan d'action du rapport de site, mis en place par votre équipe ; contrôle avant/après."
+      },
+      "price": 490,
+      "from": true,
+      "unit": "once",
+      "estimate": true
+    },
+    {
+      "id": "implementation-done-for-you",
+      "service": "ai-agent-readiness",
+      "name": { "en": "Implementation, done for you", "fr": "Mise en œuvre réalisée" },
+      "summary": {
+        "en": "We make the action plan's changes on your site; before/after check.",
+        "fr": "Nous faisons les changements du plan d'action sur votre site ; contrôle avant/après."
+      },
+      "price": 990,
+      "from": true,
+      "unit": "once",
+      "estimate": true
+    },
+    {
+      "id": "customer-journey-analysis",
+      "service": "ai-agent-readiness",
+      "name": { "en": "Customer journey analysis", "fr": "Analyse des parcours clients" },
+      "summary": {
+        "en": "Intent workshop, 3 customer journeys (up to 12 intents) tested on 3 AI assistants, scorecard, root causes, prioritised recommendations, blueprint and review session.",
+        "fr": "Atelier sur les intentions clients, 3 parcours (jusqu'à 12 intentions) testés sur 3 assistants IA, grille d'évaluation, causes, recommandations priorisées, blueprint et séance de revue."
+      },
+      "price": 1900,
+      "from": false,
+      "unit": "once",
+      "estimate": true
+    },
+    {
+      "id": "monthly-monitoring",
+      "service": "ai-agent-readiness",
+      "name": { "en": "Monthly monitoring", "fr": "Suivi mensuel" },
+      "summary": {
+        "en": "Core prompts rerun automatically and technical checks repeated every month, with a short alert on any regression.",
+        "fr": "Questions principales relancées automatiquement et points techniques vérifiés chaque mois, avec une courte alerte en cas de recul."
+      },
+      "price": 99,
+      "from": false,
+      "unit": "month",
+      "minimum_months": 3,
+      "estimate": false
+    },
+    {
+      "id": "monetization-diagnostic",
+      "service": "agentic-web-monetization",
+      "name": { "en": "Agentic Monetization Diagnostic", "fr": "Diagnostic de monétisation agentique" },
+      "summary": {
+        "en": "Business model and exposure session, up to 5 content or transaction areas, exposure and value map, up to 3 monetization models, review session.",
+        "fr": "Séance sur le modèle économique et l'exposition, jusqu'à 5 domaines de contenu ou de transaction, carte d'exposition et de valeur, jusqu'à 3 modèles de monétisation, séance de revue."
+      },
+      "price": 2900,
+      "from": false,
+      "unit": "once",
+      "estimate": true
+    },
+    {
+      "id": "monetization-blueprint",
+      "service": "agentic-web-monetization",
+      "name": { "en": "Agentic Monetization Blueprint", "fr": "Blueprint de monétisation agentique" },
+      "summary": {
+        "en": "The Diagnostic plus up to 10 areas, asset map, machine-only products, up to 5 models, distribution design, experiment portfolio, written blueprint and decision session.",
+        "fr": "Le diagnostic, plus jusqu'à 10 domaines, carte des actifs, produits réservés aux machines, jusqu'à 5 modèles, conception de la distribution, portefeuille d'expérimentations, blueprint écrit et séance de décision."
+      },
+      "price": 5900,
+      "from": false,
+      "unit": "once",
+      "estimate": true
+    }
+  ]
+}

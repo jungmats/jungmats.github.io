@@ -52,7 +52,7 @@ test("site-visit: an empty report is accepted", () => {
 
 test("estimate needs at least one option, without duplicates", () => {
   const s = started(PRICING);
-  for (const options of [[], ["agent-readiness-audit", "agent-readiness-audit"]]) {
+  for (const options of [[], ["site-report", "site-report"]]) {
     const r = prepareStep(PRICING, s, "estimate", { fields: { options } }, UNSIGNED, T0) as Rejection;
     assert.equal(r.ok, false);
     assert.equal(r.reason, "fields-invalid");
@@ -67,10 +67,10 @@ test("estimate can be repeated, updates its data, and stays offered next to clos
     assert.equal((plan as StepPlan).repeated, false);
     s = applyStep(PRICING, s, plan as StepPlan, T0, { result: {}, log: { total: 1 } }).state;
   };
-  send(["agent-readiness-audit"], { website_url: "https://example.com" });
-  send(["customer-journey-analysis", "agentic-monetization-diagnostic"]);
+  send(["site-report"], { website_url: "https://example.com" });
+  send(["customer-journey-analysis", "monetization-diagnostic"]);
   assert.deepEqual(s.completedSteps, ["estimate"]);
-  assert.deepEqual(s.stepData.estimate.options, ["customer-journey-analysis", "agentic-monetization-diagnostic"]);
+  assert.deepEqual(s.stepData.estimate.options, ["customer-journey-analysis", "monetization-diagnostic"]);
   assert.equal(s.stepData.estimate.website_url, "https://example.com", "fields left out of a repeat are kept");
   assert.equal(s.stepData.estimate.total, 1, "handler log values are stored beside logged fields");
   assert.deepEqual(nextSteps(PRICING, s).map((n) => n.step), ["estimate", "close"]);
@@ -78,7 +78,7 @@ test("estimate can be repeated, updates its data, and stays offered next to clos
 
 function estimated(): JourneyState {
   const s = started(PRICING);
-  const est = prepareStep(PRICING, s, "estimate", { fields: { options: ["agent-readiness-audit"] } }, UNSIGNED, T0);
+  const est = prepareStep(PRICING, s, "estimate", { fields: { options: ["site-report"] } }, UNSIGNED, T0);
   return applyStep(PRICING, s, est as StepPlan, T0, { result: {} }).state;
 }
 
@@ -100,13 +100,13 @@ test("close needs an email, ends the journey as achieved, and never stores email
 });
 
 test("cancel takes the definition's extra fields and logs them under cancel", () => {
-  const r = cancel(estimated(), { reason: "price-too-high", preferred_option: "agent-readiness-audit", journey_feedback: "clear" }, UNSIGNED, T0, PRICING);
+  const r = cancel(estimated(), { reason: "price-too-high", preferred_option: "site-report", journey_feedback: "clear" }, UNSIGNED, T0, PRICING);
   assert.equal(r.ok, true);
   if (!r.ok) return;
   assert.equal(r.state.status, "cancelled");
   assert.equal(r.state.endReason, "price-too-high");
-  assert.deepEqual(r.state.stepData.cancel, { preferred_option: "agent-readiness-audit", journey_feedback: "clear" });
-  assert.deepEqual(r.state.stepData.estimate.options, ["agent-readiness-audit"], "earlier step data is kept");
+  assert.deepEqual(r.state.stepData.cancel, { preferred_option: "site-report", journey_feedback: "clear" });
+  assert.deepEqual(r.state.stepData.estimate.options, ["site-report"], "earlier step data is kept");
 });
 
 test("cancel still needs a reason, and refuses contact details and fields of other journeys", () => {
@@ -126,12 +126,32 @@ test("cancel fields cannot be required, sensitive or shadow a built-in field", (
 /* ------------------------------------------------------------------- price */
 
 test("estimate sums option prices, dated and valid 30 days", () => {
-  const q = buildEstimate(["agent-readiness-audit", "agentic-monetization-diagnostic"], T0);
-  assert.equal(q.total, 500 + 1900);
+  const q = buildEstimate(["site-report", "monetization-diagnostic"], T0);
+  assert.equal(q.total, 499 + 2900);
+  assert.equal(q.total_is_minimum, false);
   assert.equal(q.currency, "EUR");
   assert.equal(q.prices_as_of, "2026-10-15");
   assert.equal(q.valid_until, "2026-11-14");
   assert.equal(q.indicative, true);
+});
+
+test("a from price makes the total a minimum", () => {
+  const q = buildEstimate(["site-report", "implementation-kit"], T0);
+  assert.equal(q.total, 499 + 490);
+  assert.equal(q.total_is_minimum, true);
+  assert.deepEqual(q.lines.map((l) => l.from), [false, true]);
+});
+
+test("prices come from _data/prices.json: paid one-off offers marked estimate, nothing else", () => {
+  const data = JSON.parse(readFileSync(new URL("../../_data/prices.json", import.meta.url), "utf8"));
+  const expected = data.offers.filter((o: { estimate: boolean }) => o.estimate);
+  assert.deepEqual(Object.keys(config.pricing.options), expected.map((o: { id: string }) => o.id));
+  for (const o of expected) {
+    assert.equal(config.pricing.options[o.id].price, o.price);
+    assert.equal(config.pricing.options[o.id].from, o.from);
+  }
+  assert.ok(!("monthly-monitoring" in config.pricing.options), "monthly prices are not summed with one-off prices");
+  assert.ok(!("prospect-preview" in config.pricing.options));
 });
 
 test("budget is read from a price ceiling constraint in EUR only", () => {
@@ -147,11 +167,11 @@ test("budget check says whether the estimate fits and which options would", () =
   const tight = checkBudget(q, { constraints: [{ field: "price", op: "lte", value: 1000, unit: "EUR" }] });
   assert.equal(tight.stated, true);
   assert.equal(tight.stated && tight.fits, false);
-  assert.deepEqual(tight.stated && tight.options_within_budget, ["agent-readiness-audit"]);
+  assert.deepEqual(tight.stated && tight.options_within_budget, ["site-report", "implementation-kit", "implementation-done-for-you"]);
 
-  const exact = checkBudget(q, { constraints: [{ field: "price", op: "lte", value: 1500 }] });
+  const exact = checkBudget(q, { constraints: [{ field: "price", op: "lte", value: 1900 }] });
   assert.equal(exact.stated && exact.fits, true);
-  const strict = checkBudget(q, { constraints: [{ field: "price", op: "lt", value: 1500 }] });
+  const strict = checkBudget(q, { constraints: [{ field: "price", op: "lt", value: 1900 }] });
   assert.equal(strict.stated && strict.fits, false);
 
   assert.equal(checkBudget(q, {}).stated, false);

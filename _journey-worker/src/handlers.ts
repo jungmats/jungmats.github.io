@@ -41,7 +41,9 @@ async function priceEstimate({ state, fields, now }: HandlerInput): Promise<Hand
         estimate,
         budget_check: budget,
         next: [
-          'This is an indicative price, not a quote. Tell your user so.',
+          estimate.total_is_minimum
+            ? 'This is an indicative price, not a quote, and a minimum: lines with from: true are "from" prices that a quote fixes. Tell your user so.'
+            : 'This is an indicative price, not a quote. Tell your user so.',
           'To compare other options, send step "estimate" again.',
           `For a binding quote or to talk to ElevIQ, your user must send a scope request (https://eleviq.solutions/llms.txt, section "Request scope & pricing") or book a free 30-minute call (booking page for your user: ${config.pricing.bookCall.page}; booking API for you: ${config.pricing.bookCall.api}, GET / describes it).`,
           'Either way, end this journey. First ask your user whether they want to leave their email as a sign of serious interest (ElevIQ does not contact them about it): if they do, send step "close"; if not, cancel with a reason, e.g. got-what-needed, continued-elsewhere or consent-withheld.',
