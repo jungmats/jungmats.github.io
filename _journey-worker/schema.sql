@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS journeys (
   end_detail           TEXT,
   alternative_chosen   TEXT,
   keyid                TEXT,                  -- binding key; null when started unsigned
-  agent_name           TEXT,                  -- verified agent name
+  agent_name           TEXT,                  -- verified agent name (operator product), set only for a valid signature
   trust_tier           TEXT,
   intent               TEXT NOT NULL,         -- the intent envelope, JSON
   intent_kind          TEXT NOT NULL,         -- envelope.intent, for grouping
@@ -30,7 +30,15 @@ CREATE TABLE IF NOT EXISTS journeys (
   created_at           TEXT NOT NULL,
   updated_at           TEXT NOT NULL,
   expires_at           TEXT NOT NULL,         -- idle timeout; lazily turned into "abandoned"
-  ended_at             TEXT
+  ended_at             TEXT,
+  -- Evidence signals of the start request (JRN-2; migrations/0002_journey_evidence.sql).
+  sig_status           TEXT,                  -- none | valid | invalid | unverifiable; NULL = started before checking existed
+  sig_agent            TEXT,                  -- Signature-Agent host; for a valid signature, the vouching operator's host
+  cf_bot_category      TEXT,                  -- Cloudflare verifiedBotCategory, if any
+  ua_match             TEXT,                  -- name matched in the shared signature list
+  ua_raw               TEXT,                  -- User-Agent, only when not browser-looking or attested; '' = empty
+  mcp_client           TEXT,                  -- MCP clientInfo label, for journeys started over MCP
+  internal             INTEGER NOT NULL DEFAULT 0  -- 1 = ElevIQ's own test journey (INT-2)
 );
 
 CREATE INDEX IF NOT EXISTS journeys_created ON journeys (created_at DESC);

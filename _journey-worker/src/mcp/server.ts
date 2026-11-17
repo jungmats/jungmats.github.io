@@ -11,18 +11,18 @@
  *   legacy  (2025-11-25 and earlier)   initialize handshake; no session is kept,
  *                                      so no Mcp-Session-Id is minted.
  */
-import { config } from "../config";
-import { DEFINITIONS } from "../journeys";
-import { identify } from "../adapters/identity";
-import { nextSteps } from "../engine/engine";
-import { isPlainObject } from "../engine/validate";
+import { config } from "../config.ts";
+import { DEFINITIONS } from "../journeys.ts";
+import { identify } from "../adapters/identity.ts";
+import { nextSteps } from "../engine/engine.ts";
+import { isPlainObject } from "../engine/validate.ts";
 import {
   cancelJourney, journeyView, journeyViewTail, readJourney, runStep, startJourney,
   type OpContext, type OpResult,
-} from "../operations";
-import { cancelTool, startTool, stepTool, toolsFor, type ToolRoute } from "./tools";
-import type { JourneyDefinition, JourneyState } from "../engine/types";
-import type { Env } from "../env";
+} from "../operations.ts";
+import { cancelTool, startTool, stepTool, toolsFor, type ToolRoute } from "./tools.ts";
+import type { JourneyDefinition, JourneyState } from "../engine/types.ts";
+import type { Env } from "../env.ts";
 
 const MODERN = ["2026-07-28"];
 const LEGACY = ["2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05"];
@@ -185,7 +185,7 @@ export async function handleMcp(request: Request, c: Ctx, version: string): Prom
         ...c,
         transport: "mcp",
         ip: request.headers.get("CF-Connecting-IP") ?? "unknown",
-        identified: await identify(request),
+        identified: await identify(request, c.env),
         traceparent: typeof meta.traceparent === "string" ? meta.traceparent : request.headers.get("traceparent"),
         client: { mcp_protocol: protocol, ...(client ? { mcp_client: clientLabel(client) } : {}) },
       };

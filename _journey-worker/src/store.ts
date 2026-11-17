@@ -3,9 +3,10 @@
  * concurrent calls on one journey cannot both win: the second gets
  * `concurrent-update` and can simply retry.
  */
-import type { Env } from "./env";
-import type { JourneyState } from "./engine/types";
-import { reconstructPrompt } from "./engine/prompt";
+import type { Env } from "./env.ts";
+import type { JourneyState } from "./engine/types.ts";
+import { reconstructPrompt } from "./engine/prompt.ts";
+import type { Evidence } from "./adapters/identity.ts";
 
 interface Row {
   id: string;
@@ -92,13 +93,17 @@ export async function getJourney(env: Env, id: string): Promise<JourneyState | n
 export async function insertJourney(
   env: Env,
   s: JourneyState,
-  extra: { transport: "http" | "mcp"; traceparent: string | null },
+  extra: { transport: "http" | "mcp"; traceparent: string | null; evidence: Evidence | null; mcpClient: string | null },
 ): Promise<void> {
+  // JRN-2: the start request's evidence signals. sig_status stays null only when no
+  // evidence was gathered (never for a journey started through identify()).
+  const ev = extra.evidence;
   await env.DB.prepare(
     `INSERT INTO journeys (id, ref, definition_id, definition_version, status, end_reason, end_detail, alternative_chosen,
        keyid, agent_name, trust_tier, intent, intent_kind, human_present, completeness, completed_steps, step_data,
-       reconstructed_prompt, transport, traceparent, revision, created_at, updated_at, expires_at, ended_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       reconstructed_prompt, transport, traceparent, revision, created_at, updated_at, expires_at, ended_at,
+       sig_status, sig_agent, cf_bot_category, ua_match, ua_raw, mcp_client, internal)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   )
     .bind(
       s.id, await refFor(s.id), s.definitionId, s.definitionVersion, s.status, s.endReason, s.endDetail,
@@ -106,6 +111,8 @@ export async function insertJourney(
       s.intent.human_present === true ? 1 : 0, s.completeness, JSON.stringify(s.completedSteps),
       JSON.stringify(s.stepData), reconstructPrompt(s.intent, s.stepData), extra.transport, extra.traceparent,
       s.revision, s.createdAt, s.updatedAt, s.expiresAt, s.endedAt,
+      ev?.sigStatus ?? null, ev?.sigAgent ?? null, ev?.cfCategory ?? null, ev?.uaMatch ?? null, ev?.uaRaw ?? null,
+      extra.mcpClient, ev?.internal ?? 0,
     )
     .run();
 }

@@ -1,0 +1,9 @@
+{
+  "derive.ts": "3bfb8dcd7a9da025002ad45ec8d0c5de148116af9572d7a450045d21cdd29d20",
+  "index.ts": "aa47004c98b37960dffa96aa4d7aadf0eede73bcbd42750018504779394f3442",
+  "internal-marker.ts": "3b9498277997690552605cdfde6b0867c9aa61d3aecd7897f34f0d1951c80296",
+  "legend.en.json": "bcecfcca834bacefa3c967d615aff30b631cc632f07f2e104da7368756e1707d",
+  "legend.fr.json": "cefe1bae5eac5180a8c9145c4ea4e4911f91947b028bbc40662334187bea67e2",
+  "signature-check.ts": "c5fbc99a8975934b89bab38c9a6f5aef32f41b398a8f9c8ed1b556520606aa3e",
+  "signatures.ts": "2b53212ac76542eed2c356f210eb6be2e13e591e096f2b9888752536eae3ebd4"
+}

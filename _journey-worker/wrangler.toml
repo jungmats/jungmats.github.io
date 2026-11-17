@@ -14,6 +14,14 @@ main = "src/index.ts"
 compatibility_date = "2026-10-01"
 workers_dev = true
 
+[vars]
+# Accept ElevIQ's published demo signing key as Verified (LOG-8). ElevIQ's own
+# deployment only; a client deployment sets "false".
+ACCEPT_DEMO_SIGNATURES = "true"
+# "true" shows ElevIQ's own test journeys on the dashboard, with a banner (INT-4).
+SHOW_INTERNAL = "false"
+# Secret (wrangler secret put): ELEVIQ_INTERNAL_TOKEN — marks ElevIQ's test journeys.
+
 [observability]
 enabled = true
 
@@ -68,6 +76,10 @@ crons = ["17 3 * * *"]
 #   npm run deploy:staging   tests, then deploy
 [env.staging]
 routes = []
+
+[env.staging.vars]
+ACCEPT_DEMO_SIGNATURES = "true"
+SHOW_INTERNAL = "false"
 
 [[env.staging.d1_databases]]
 binding = "DB"

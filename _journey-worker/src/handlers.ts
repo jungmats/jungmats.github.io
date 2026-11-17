@@ -6,12 +6,12 @@
  * A handler runs after the engine has accepted the step. If it fails, the
  * step is refused and the journey stays as it was, so the agent can retry.
  */
-import { config } from "./config";
-import { buildEstimate, checkBudget } from "./pricing";
-import { refFor } from "./store";
-import type { Computed } from "./engine/engine";
-import type { JourneyState } from "./engine/types";
-import type { Env } from "./env";
+import { config } from "./config.ts";
+import { buildEstimate, checkBudget } from "./pricing.ts";
+import { refFor } from "./store.ts";
+import type { Computed } from "./engine/engine.ts";
+import type { JourneyState } from "./engine/types.ts";
+import type { Env } from "./env.ts";
 
 export interface HandlerInput {
   env: Env;

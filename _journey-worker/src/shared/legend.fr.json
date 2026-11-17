@@ -1,0 +1,42 @@
+{
+  "panelTitle": "Quel est notre degré de certitude ?",
+  "texts": {
+    "TXT-VERIFIED": "Nous avons vérifié une signature numérique envoyée avec la requête : elle provient bien de l'opérateur qu'elle indique.",
+    "TXT-ATTESTED": "Cloudflare, qui diffuse ce site, reconnaît ce visiteur comme un robot ou un agent connu. Nous nous fions à son jugement, sans pouvoir voir sur quoi il repose.",
+    "TXT-DECLARED": "Le visiteur indique lui-même son nom, mais rien ne le confirme. N'importe qui peut utiliser n'importe quel nom.",
+    "TXT-PEOPLE": "Ressemble à une personne qui utilise un navigateur. Ce groupe comprend aussi les agents IA qui travaillent dans un navigateur sans s'identifier.",
+    "TXT-CONTRADICTED": "Utilise le nom d'un robot que Cloudflare reconnaît habituellement, mais Cloudflare ne l'a pas reconnu cette fois — le plus souvent, quelqu'un qui emprunte ce nom.",
+    "TXT-SIG-INVALID": "A envoyé une signature qui ne correspond pas. Considérez l'identité annoncée comme fausse.",
+    "TXT-SIG-UNCHECKED": "A envoyé une signature que nous n'avons pas pu vérifier au moment de la visite.",
+    "TXT-LIMITS": "Certains agents IA ne peuvent pas être distingués des personnes : ceux qui fonctionnent dans un navigateur sur l'appareil de l'utilisateur, et ceux qui répondent à partir d'un index de recherche sans visiter le site."
+  },
+  "levels": {
+    "verified": "Vérifié",
+    "attested": "Attesté",
+    "declared": "Déclaré"
+  },
+  "flags": {
+    "contradicted": "Allégation non confirmée",
+    "signature-invalid": "Signature invalide"
+  },
+  "notes": {
+    "sig-unchecked": "Signature non vérifiée"
+  },
+  "kinds": {
+    "people": "Personnes",
+    "ai-assistant": "Assistants IA",
+    "search": "Moteurs de recherche",
+    "ai-training": "Entraînement IA",
+    "other-bot": "Autres robots",
+    "unknown": "Non identifiés"
+  },
+  "kindsTitle": "Que signifient les catégories ?",
+  "kindTexts": {
+    "people": "Ressemble à une personne qui utilise un navigateur. Ce groupe comprend aussi les agents IA qui travaillent dans un navigateur sans s'identifier.",
+    "ai-assistant": "Consulte les pages en direct pour le compte d'un utilisateur qui a posé une question à un assistant IA, par exemple ChatGPT, Claude ou Perplexity.",
+    "search": "Indexe les pages pour des résultats de recherche, recherche IA comprise, par exemple Googlebot, Bingbot ou OAI-SearchBot.",
+    "ai-training": "Collecte des pages en masse pour entraîner des modèles d'IA, par exemple GPTBot, ClaudeBot ou CCBot, sans lien avec la question d'un utilisateur précis.",
+    "other-bot": "Autres visiteurs automatisés sans finalité IA : aperçus de liens, surveillance, outils SEO, lecteurs de flux.",
+    "unknown": "Automatisé, mais rien n'indique de quoi il s'agit : pas un navigateur, pas de nom connu, non reconnu par Cloudflare. Comprend des agents et scripts développés sur mesure."
+  }
+}

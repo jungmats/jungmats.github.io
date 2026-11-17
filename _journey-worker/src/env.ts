@@ -12,4 +12,10 @@ export interface Env {
   ALLOW_UNAUTHENTICATED_ANALYTICS?: string;
   /** Optional: sent as a bearer token by the webhook sink. */
   JOURNEY_WEBHOOK_SECRET?: string;
+  /** Secret: marks ElevIQ's own test journeys (X-ElevIQ-Internal proof; requirements INT-2). */
+  ELEVIQ_INTERNAL_TOKEN?: string;
+  /** "true" only on ElevIQ's own deployment: accept the published demo signing key (LOG-8). */
+  ACCEPT_DEMO_SIGNATURES?: string;
+  /** "true" shows internal journeys on the dashboard, with a banner (INT-4). Consultant only. */
+  SHOW_INTERNAL?: string;
 }

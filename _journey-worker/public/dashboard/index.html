@@ -26,17 +26,28 @@
           <option value="365">1 year</option>
         </select>
       </label>
+      <label>Minimum evidence
+        <span class="with-info">
+          <select id="f-min">
+            <option value="all">All</option>
+            <option value="attested">Verified + Attested</option>
+            <option value="verified">Verified only</option>
+          </select>
+          <button type="button" class="info-btn" id="legend-info" aria-haspopup="dialog" aria-label="How sure are we?" title="How sure are we?">i</button>
+        </span>
+      </label>
       <button id="refresh" type="button">Refresh</button>
     </div>
   </header>
 
   <main>
     <p class="notice" id="notice" hidden></p>
+    <p class="banner-internal" id="banner-internal" role="status" hidden>Includes ElevIQ test traffic</p>
 
     <section class="tiles" aria-label="Headline numbers">
       <div class="tile"><span class="tile-label">Journeys started</span><span class="tile-value" id="t-started">—</span></div>
       <div class="tile"><span class="tile-label">Achieved</span><span class="tile-value" id="t-achieved">—</span><span class="tile-note" id="t-achieved-note"></span></div>
-      <div class="tile"><span class="tile-label">Verified agents</span><span class="tile-value" id="t-verified">—</span><span class="tile-note" id="t-verified-note"></span></div>
+      <div class="tile"><span class="tile-label">Evidence</span><div class="evidence-tile" id="t-evidence">—</div></div>
       <div class="tile"><span class="tile-label">Intent completeness</span><span class="tile-value" id="t-complete">—</span><span class="tile-note">average share of optional intent fields supplied</span></div>
     </section>
 
@@ -94,7 +105,10 @@
         <div class="grid" id="competition"></div>
       </article>
       <article class="card">
-        <h2>Agents</h2>
+        <div class="h2-row">
+          <h2>Agents</h2>
+          <button type="button" class="info-btn" id="kinds-info" aria-haspopup="dialog" aria-label="What do the kinds mean?" title="What do the kinds mean?">i</button>
+        </div>
         <div id="agents"></div>
       </article>
     </section>
@@ -126,7 +140,7 @@
       </div>
       <div class="table-wrap tall">
         <table class="table" id="list">
-          <thead><tr><th>Started</th><th>Outcome</th><th>Agent</th><th>Intent</th><th>Goal</th><th>Steps</th><th>Completeness</th></tr></thead>
+          <thead><tr><th>Started</th><th>Outcome</th><th>Agent</th><th>Evidence</th><th>Intent</th><th>Goal</th><th>Steps</th><th>Completeness</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -160,6 +174,15 @@
   <footer>
     Real agent journeys on eleviq.solutions. Agent Journey Protocol is an ElevIQ convention, not a ratified standard.
   </footer>
+
+  <dialog class="overlay" id="legend-dialog" aria-labelledby="legend-title">
+    <div class="overlay-head"><h3 id="legend-title">How sure are we?</h3><button type="button" class="overlay-close" data-close aria-label="Close">×</button></div>
+    <div id="legend-body"></div>
+  </dialog>
+  <dialog class="overlay" id="kinds-dialog" aria-labelledby="kinds-title">
+    <div class="overlay-head"><h3 id="kinds-title">What do the kinds mean?</h3><button type="button" class="overlay-close" data-close aria-label="Close">×</button></div>
+    <div id="kinds-body"></div>
+  </dialog>
 
   <div class="tooltip" id="tooltip" role="tooltip" hidden></div>
   <script type="module" src="dashboard.js"></script>

@@ -1,0 +1,42 @@
+{
+  "panelTitle": "How sure are we?",
+  "texts": {
+    "TXT-VERIFIED": "We checked a digital signature sent with the request: it really comes from the operator it names.",
+    "TXT-ATTESTED": "Cloudflare, which delivers this site, recognises this visitor as a known bot or agent. We rely on its judgement but cannot see how it reached it.",
+    "TXT-DECLARED": "The visitor names itself, but nothing confirms it. Anyone can use any name.",
+    "TXT-PEOPLE": "Looks like a person using a browser. This group also includes AI agents that work inside a browser without identifying themselves.",
+    "TXT-CONTRADICTED": "Uses the name of a bot Cloudflare normally recognises, but Cloudflare did not recognise it this time — usually someone borrowing the name.",
+    "TXT-SIG-INVALID": "Sent a signature that did not check out. Treat the claimed identity as false.",
+    "TXT-SIG-UNCHECKED": "Sent a signature we could not check at the time of the visit.",
+    "TXT-LIMITS": "Some AI agents can't be told apart from people: those running in a browser on the user's own device, and those answering from a search index without visiting the site."
+  },
+  "levels": {
+    "verified": "Verified",
+    "attested": "Attested",
+    "declared": "Declared"
+  },
+  "flags": {
+    "contradicted": "Claim not confirmed",
+    "signature-invalid": "Invalid signature"
+  },
+  "notes": {
+    "sig-unchecked": "Signature not checked"
+  },
+  "kinds": {
+    "people": "People",
+    "ai-assistant": "AI assistants",
+    "search": "Search",
+    "ai-training": "AI training",
+    "other-bot": "Other bots",
+    "unknown": "Unidentified"
+  },
+  "kindsTitle": "What do the kinds mean?",
+  "kindTexts": {
+    "people": "Looks like a person using a browser. This group also includes AI agents that work inside a browser without identifying themselves.",
+    "ai-assistant": "Fetches pages live on behalf of a user who asked an AI assistant something, for example ChatGPT, Claude or Perplexity answering a question.",
+    "search": "Indexes pages for search results, AI search included, for example Googlebot, Bingbot or OAI-SearchBot.",
+    "ai-training": "Collects pages in bulk to train AI models, for example GPTBot, ClaudeBot or CCBot. Not tied to any one user's question.",
+    "other-bot": "Other automated visitors without an AI purpose: link previews, monitoring, SEO tools, feed readers.",
+    "unknown": "Automated, but nothing says what it is: not a browser, no known name, not recognised by Cloudflare. Includes custom-built agents and scripts."
+  }
+}

@@ -10,15 +10,15 @@
  * and renders it: next steps as links to POST to. Every refusal on a journey
  * carries the next steps and the cancel link, so an agent can recover on its own.
  */
-import { json, problem, readJson } from "../http";
-import { identify } from "../adapters/identity";
-import { nextSteps } from "../engine/engine";
+import { json, problem, readJson } from "../http.ts";
+import { identify } from "../adapters/identity.ts";
+import { nextSteps } from "../engine/engine.ts";
 import {
   cancelJourney, journeyView, journeyViewTail, readJourney, runStep, startJourney,
   type OpContext, type OpResult,
-} from "../operations";
-import type { JourneyDefinition, JourneyState } from "../engine/types";
-import type { Env } from "../env";
+} from "../operations.ts";
+import type { JourneyDefinition, JourneyState } from "../engine/types.ts";
+import type { Env } from "../env.ts";
 
 type Ctx = { env: Env; ctx: ExecutionContext; origin: string; now: Date };
 
@@ -63,7 +63,7 @@ async function opContext(request: Request, c: Ctx): Promise<OpContext> {
     ...c,
     transport: "http",
     ip: request.headers.get("CF-Connecting-IP") ?? "unknown",
-    identified: await identify(request),
+    identified: await identify(request, c.env),
     traceparent: request.headers.get("traceparent"),
   };
 }

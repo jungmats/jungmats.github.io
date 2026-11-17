@@ -3,13 +3,13 @@
  * file in definitions/ and list it here. Every definition is linted when the
  * Worker loads, so a broken one fails the deploy, not an agent.
  */
-import { DefinitionError, lintDefinition } from "./engine/definitions";
-import type { JourneyDefinition } from "./engine/types";
-import { HANDLERS } from "./handlers";
-import { config } from "./config";
+import { DefinitionError, lintDefinition } from "./engine/definitions.ts";
+import type { JourneyDefinition } from "./engine/types.ts";
+import { HANDLERS } from "./handlers.ts";
+import { config } from "./config.ts";
 
-import siteVisit from "../definitions/site-visit.json";
-import priceEstimate from "../definitions/price-estimate.json";
+import siteVisit from "../definitions/site-visit.json" with { type: "json" };
+import priceEstimate from "../definitions/price-estimate.json" with { type: "json" };
 
 const ALL = [siteVisit, priceEstimate] as unknown as JourneyDefinition[];
 

@@ -1,6 +1,6 @@
 /** Response helpers for the journey Worker. */
-import { config } from "./config";
-import type { Rejection } from "./engine/types";
+import { config } from "./config.ts";
+import type { Rejection } from "./engine/types.ts";
 
 const CORS: Record<string, string> = {
   "access-control-allow-origin": "*",

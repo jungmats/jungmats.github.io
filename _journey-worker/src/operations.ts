@@ -8,16 +8,16 @@
  * an existing journey carries the journey, so the transport can show the
  * next steps and the agent can recover on its own.
  */
-import { DEFINITIONS } from "./journeys";
-import { emit } from "./sinks";
-import { getJourney, insertJourney, newJourneyId, updateJourney } from "./store";
-import { HANDLERS } from "./handlers";
-import { storesContact } from "./rules";
-import { applyStep, cancel, expire, isExpired, prepareStep, start, type Computed } from "./engine/engine";
-import { isPlainObject } from "./engine/validate";
-import type { Identified } from "./adapters/identity";
-import type { Caller, JourneyDefinition, JourneyState, Rejection } from "./engine/types";
-import type { Env } from "./env";
+import { DEFINITIONS } from "./journeys.ts";
+import { emit } from "./sinks.ts";
+import { getJourney, insertJourney, newJourneyId, updateJourney } from "./store.ts";
+import { HANDLERS } from "./handlers.ts";
+import { storesContact } from "./rules.ts";
+import { applyStep, cancel, expire, isExpired, prepareStep, start, type Computed } from "./engine/engine.ts";
+import { isPlainObject } from "./engine/validate.ts";
+import type { Identified } from "./adapters/identity.ts";
+import type { Caller, JourneyDefinition, JourneyState, Rejection } from "./engine/types.ts";
+import type { Env } from "./env.ts";
 
 export type Transport = "http" | "mcp";
 
@@ -175,7 +175,13 @@ export async function startJourney(c: OpContext, body: unknown): Promise<OpResul
   }
 
   const tp = c.traceparent;
-  await insertJourney(c.env, r.state, { transport: c.transport, traceparent: tp && TRACEPARENT.test(tp) ? tp : null });
+  const mcpClient = typeof c.client?.mcp_client === "string" ? c.client.mcp_client.slice(0, 200) : null;
+  await insertJourney(c.env, r.state, {
+    transport: c.transport,
+    traceparent: tp && TRACEPARENT.test(tp) ? tp : null,
+    evidence: idn.evidence,
+    mcpClient,
+  });
   emit(c.env, c.ctx, { journeyId: r.state.id, definitionId: def.id, step: "start", outcome: "accepted", reason: null, status: 201, details: c.client ?? null, keyid: idn.caller.keyid, transport: c.transport });
 
   return {

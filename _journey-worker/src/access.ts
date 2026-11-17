@@ -10,8 +10,8 @@
  *   token not signed by the team's keys,
  *   wrong audience/issuer, or expired     -> refused
  */
-import { config } from "./config";
-import type { Env } from "./env";
+import { config } from "./config.ts";
+import type { Env } from "./env.ts";
 
 interface Jwk extends JsonWebKey { kid: string }
 

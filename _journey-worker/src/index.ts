@@ -24,15 +24,15 @@
  *
  * The engine (src/engine/) is pure and tested with `npm test`.
  */
-import { config } from "./config";
-import { discoveryLinks, json, preflight, problem, withHeaders } from "./http";
-import { handleApiCatalog, handleDefinition, handleWellKnown, mcpInfo, PROTOCOL } from "./routes/discovery";
-import { handleCancel, handleGet, handleStart, handleStep } from "./routes/protocol";
-import { handleDetail, handleLeads, handleList, handleSummary } from "./routes/analytics";
-import { handleMcp, mcpMethodNotAllowed, mcpPreflight } from "./mcp/server";
-import { checkAccess } from "./access";
-import { purgeLeads } from "./retention";
-import type { Env } from "./env";
+import { config } from "./config.ts";
+import { discoveryLinks, json, preflight, problem, withHeaders } from "./http.ts";
+import { handleApiCatalog, handleDefinition, handleWellKnown, mcpInfo, PROTOCOL } from "./routes/discovery.ts";
+import { handleCancel, handleGet, handleStart, handleStep } from "./routes/protocol.ts";
+import { handleDetail, handleLeads, handleList, handleSummary } from "./routes/analytics.ts";
+import { handleMcp, mcpMethodNotAllowed, mcpPreflight } from "./mcp/server.ts";
+import { checkAccess } from "./access.ts";
+import { purgeLeads } from "./retention.ts";
+import type { Env } from "./env.ts";
 
 /** Shown at /. Bump it with every deploy that
  * changes what agents see, so a deploy can be checked from outside. */

@@ -5,6 +5,11 @@
  * not identity); journeys per day as stacked bars in four fixed categorical
  * hues, with legend and per-segment tooltips; everything else as tables.
  * Every bar carries its value as text, so nothing is read from color alone.
+ *
+ * Evidence (agent-analytics requirements JRN-4–JRN-9): every journey is
+ * classified server-side with the shared rules; `min` (minimum evidence)
+ * applies to every card. Evidence wording comes only from the API's `legend`
+ * (the shared legend texts), never from this file.
  */
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -26,18 +31,109 @@ const HUMAN = {
   regions: "Region", discovery_sources: "How they found us", constraint_fields: "Hard constraints on", decision_criteria: "Decision criteria",
 };
 
+/* ------------------------------------------------------------- evidence */
+
+const params = new URLSearchParams(location.search);
+const LANG = params.get("lang") === "fr" ? "fr" : "en";
+let legend = null; // from the API (shared legend texts)
+const KINDS = ["people", "ai-assistant", "search", "ai-training", "other-bot", "unknown"];
+const KIND_VARS = { people: "--kind-people", "ai-assistant": "--kind-ai-assistant", search: "--kind-search", "ai-training": "--kind-ai-training", "other-bot": "--kind-other-bot", unknown: "--kind-unknown" };
+const LEVEL_TEXT = { verified: "TXT-VERIFIED", attested: "TXT-ATTESTED", declared: "TXT-DECLARED" };
+const FLAG_TEXT = { contradicted: "TXT-CONTRADICTED", "signature-invalid": "TXT-SIG-INVALID" };
+const kindLabel = (k) => (legend ? legend.kinds[k] : k);
+const evidenceQuery = () => {
+  const q = new URLSearchParams();
+  if ($("f-min").value !== "all") q.set("min", $("f-min").value);
+  if (LANG !== "en") q.set("lang", LANG);
+  return q;
+};
+
+/** Badge (level, method on hover) + flag and note markers (DSH-4, DSH-10). */
+function evidenceCell(ev) {
+  if (!ev || !legend) return "—";
+  const parts = [];
+  if (ev.level) {
+    parts.push(`<span class="ev-badge ev-${ev.level}" tabindex="0" data-tip="${esc(legend.texts[LEVEL_TEXT[ev.level]] + (ev.method ? ` (${ev.method})` : ""))}">${esc(legend.levels[ev.level])}</span>`);
+  } else {
+    parts.push(`<span class="muted">—</span>`);
+  }
+  for (const f of ev.flags) {
+    if (FLAG_TEXT[f]) parts.push(`<span class="flag-marker flag-${f}" tabindex="0" data-tip="${esc(legend.texts[FLAG_TEXT[f]])}"><span aria-hidden="true">${f === "contradicted" ? "!" : "✕"}</span> ${esc(legend.flags[f])}</span>`);
+    else if (f === "internal") parts.push(`<span class="flag-marker flag-internal">ElevIQ test</span>`);
+  }
+  for (const n of ev.notes) if (n === "sig-unchecked") parts.push(`<span class="note-marker" tabindex="0" data-tip="${esc(legend.texts["TXT-SIG-UNCHECKED"])}">${esc(legend.notes[n])}</span>`);
+  return `<span class="ev-cell">${parts.join(" ")}</span>`;
+}
+
+function renderLegend() {
+  const t = legend.texts;
+  $("legend-title").textContent = legend.panelTitle;
+  $("kinds-title").textContent = legend.kindsTitle;
+  for (const [id, title] of [["legend-info", legend.panelTitle], ["kinds-info", legend.kindsTitle]]) {
+    $(id).title = title;
+    $(id).setAttribute("aria-label", title);
+  }
+  $("legend-body").innerHTML = `<dl class="legend-defs">
+      <dt><span class="ev-badge ev-verified">${esc(legend.levels.verified)}</span></dt><dd>${esc(t["TXT-VERIFIED"])}</dd>
+      <dt><span class="ev-badge ev-attested">${esc(legend.levels.attested)}</span></dt><dd>${esc(t["TXT-ATTESTED"])}</dd>
+      <dt><span class="ev-badge ev-declared">${esc(legend.levels.declared)}</span></dt><dd>${esc(t["TXT-DECLARED"])}</dd>
+      <dt><span class="flag-marker flag-contradicted"><span aria-hidden="true">!</span> ${esc(legend.flags.contradicted)}</span></dt><dd>${esc(t["TXT-CONTRADICTED"])}</dd>
+      <dt><span class="flag-marker flag-signature-invalid"><span aria-hidden="true">✕</span> ${esc(legend.flags["signature-invalid"])}</span></dt><dd>${esc(t["TXT-SIG-INVALID"])}</dd>
+      <dt><span class="note-marker">${esc(legend.notes["sig-unchecked"])}</span></dt><dd>${esc(t["TXT-SIG-UNCHECKED"])}</dd>
+    </dl><p class="legend-limits">${esc(t["TXT-LIMITS"])}</p>`;
+  $("kinds-body").innerHTML = `<dl class="legend-defs">${KINDS.map((k) => `
+      <dt><span class="kind-name"><span class="swatch" style="background:var(${KIND_VARS[k]})"></span>${esc(legend.kinds[k])}</span></dt>
+      <dd>${esc(legend.kindTexts[k])}</dd>`).join("")}</dl>`;
+}
+
+/** Overlay opened by its (i) button; closed by ×, Escape (native) or a click outside. */
+function setupDialog(buttonId, dialogId) {
+  const dlg = $(dialogId);
+  $(buttonId).addEventListener("click", (e) => {
+    e.preventDefault();
+    if (typeof dlg.showModal === "function") dlg.showModal();
+    else dlg.setAttribute("open", "");
+  });
+  dlg.addEventListener("click", (e) => {
+    if (e.target === dlg || e.target.closest("[data-close]")) dlg.close ? dlg.close() : dlg.removeAttribute("open");
+  });
+}
+
 /* ------------------------------------------------------------- tooltip */
 
 const tip = $("tooltip");
+let pinned = null; // a badge tapped or focused (touch, keyboard)
+function placeTip(text, x, y) {
+  tip.textContent = text;
+  tip.hidden = false;
+  tip.style.left = `${Math.max(8, Math.min(x + 12, window.innerWidth - tip.offsetWidth - 8))}px`;
+  tip.style.top = `${y + 14}px`;
+}
 document.addEventListener("mousemove", (e) => {
+  if (pinned) return;
   const t = e.target.closest?.("[data-tip]");
   if (!t) { tip.hidden = true; return; }
-  tip.textContent = t.getAttribute("data-tip");
-  tip.hidden = false;
-  const x = Math.min(e.clientX + 12, window.innerWidth - tip.offsetWidth - 8);
-  tip.style.left = `${x}px`;
-  tip.style.top = `${e.clientY + 14}px`;
+  placeTip(t.getAttribute("data-tip"), e.clientX, e.clientY);
 });
+document.addEventListener("click", (e) => {
+  const t = e.target.closest?.(".ev-badge[data-tip], .flag-marker[data-tip], .note-marker[data-tip]");
+  if (t) {
+    e.stopPropagation();
+    if (pinned === t) { pinned = null; tip.hidden = true; return; }
+    pinned = t;
+    const r = t.getBoundingClientRect();
+    placeTip(t.getAttribute("data-tip"), r.left, r.bottom);
+  } else if (pinned) { pinned = null; tip.hidden = true; }
+}, true);
+document.addEventListener("focusin", (e) => {
+  const t = e.target.closest?.("[data-tip]");
+  if (!t) return;
+  pinned = t;
+  const r = t.getBoundingClientRect();
+  placeTip(t.getAttribute("data-tip"), r.left, r.bottom);
+});
+document.addEventListener("focusout", () => { pinned = null; tip.hidden = true; });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") { pinned = null; tip.hidden = true; } });
 
 /* ------------------------------------------------------------ builders */
 
@@ -62,8 +158,11 @@ function renderTiles(s) {
   const achieved = t.by_status.achieved ?? 0;
   $("t-achieved").textContent = achieved;
   $("t-achieved-note").textContent = t.started ? `${pct(achieved, t.started)} of journeys started` : "";
-  $("t-verified").textContent = pct(t.verified, t.started);
-  $("t-verified-note").textContent = `${t.verified} signed, ${t.unverified} unsigned`;
+  // JRN-5: journeys per evidence level.
+  const ev = t.evidence;
+  $("t-evidence").innerHTML = ["verified", "attested", "declared", "none"].map((l) => `
+    <span class="ev-row">${l === "none" ? `<span class="ev-none-label">${esc(kindLabel("unknown"))}</span>` : `<span class="ev-badge ev-${l}">${esc(legend.levels[l])}</span>`}
+      <b>${ev[l] ?? 0}</b></span>`).join("");
   $("t-complete").textContent = t.avg_completeness === null ? "—" : `${Math.round(t.avg_completeness * 100)}%`;
 }
 
@@ -174,12 +273,31 @@ function renderCompetition(s) {
 }
 
 function renderAgents(s) {
+  const L = legend.levels;
+  const levelCells = (lv) => ["verified", "attested", "declared"].map((l) => (lv[l] ? lv[l] : `<span class="muted">0</span>`));
+  // JRN-6: name, kind, level, method, journeys, average completeness, flags.
   $("agents").innerHTML =
-    table([{ label: "Agent" }, { label: "Journeys", num: true }, { label: "Avg completeness", num: true }],
-      s.agents.by_agent.map((a) => [esc(a.key), a.n, `${Math.round(a.avg_completeness * 100)}%`])) +
-    `<h3>Claimed product → verified identity</h3>` +
-    table([{ label: "Claim → verified" }, { label: "Journeys", num: true }],
-      s.agents.claims_vs_verified.map((c) => [esc(c.key), c.n])) +
+    table([{ label: "Agent" }, { label: "Kind" }, { label: L.verified, num: true }, { label: L.attested, num: true }, { label: L.declared, num: true },
+      { label: "Method" }, { label: "Journeys", num: true }, { label: "Avg completeness", num: true }, { label: "Flags" }],
+      s.agents.by_agent.map((a) => [
+        a.name ? esc(a.name) : `<span class="muted">${esc(a.kinds.map(kindLabel).join(" / "))}, unnamed</span>`,
+        esc(a.kinds.map(kindLabel).join(" / ")),
+        ...levelCells(a.levels),
+        a.methods.length ? `<code>${esc(a.methods.join(", "))}</code>` : "—",
+        a.journeys,
+        `${Math.round(a.avg_completeness * 100)}%`,
+        [a.flags.contradicted ? `<span class="flag-marker flag-contradicted" tabindex="0" data-tip="${esc(legend.texts["TXT-CONTRADICTED"])}">! ${esc(legend.flags.contradicted)} ${a.flags.contradicted}</span>` : "",
+         a.flags["signature-invalid"] ? `<span class="flag-marker flag-signature-invalid" tabindex="0" data-tip="${esc(legend.texts["TXT-SIG-INVALID"])}">✕ ${esc(legend.flags["signature-invalid"])} ${a.flags["signature-invalid"]}</span>` : ""].join(" ") || "—",
+      ])) +
+    // JRN-7: the declared product against the identity a stronger signal confirmed.
+    `<h3>Declared → confirmed identity</h3>` +
+    table([{ label: "Declared" }, { label: "Confirmed" }, { label: "Journeys", num: true }],
+      s.agents.claims_vs_confirmed.map((c) => [
+        esc(c.declared),
+        (c.confirmed ? `${esc(c.confirmed)} <span class="ev-badge ev-${c.level}">${esc(L[c.level])}</span>` : `<span class="muted">not confirmed</span>`) +
+          (c.contradicted ? ` <span class="flag-marker flag-contradicted" tabindex="0" data-tip="${esc(legend.texts["TXT-CONTRADICTED"])}">! ${esc(legend.flags.contradicted)}</span>` : ""),
+        c.n,
+      ])) +
     `<h3>By transport</h3>` +
     table([{ label: "Transport" }, { label: "Journeys", num: true }],
       s.agents.transports.map((t) => [esc(t.key), t.n])) +
@@ -194,7 +312,7 @@ function renderAgents(s) {
 
 async function loadList() {
   const def = $("f-definition").value;
-  const q = new URLSearchParams({ definition: def, days: $("f-days").value });
+  const q = new URLSearchParams({ definition: def, days: $("f-days").value, ...Object.fromEntries(evidenceQuery()) });
   if ($("f-status").value) q.set("status", $("f-status").value);
   const data = await (await fetch(`/api/analytics/journeys?${q}`)).json();
   const body = $("list").querySelector("tbody");
@@ -202,20 +320,22 @@ async function loadList() {
     ? data.journeys.map((j) => `<tr class="clickable" tabindex="0" data-ref="${esc(j.ref)}">
         <td>${new Date(j.created_at).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</td>
         <td>${pill(j.status)}${j.end_reason ? `<br><small>${esc(j.end_reason)}</small>` : ""}</td>
-        <td>${j.verified ? esc(j.agent) : "<span class=\"no\">unverified</span>"}</td>
+        <td>${j.evidence.name ? esc(j.evidence.name) : `<span class="muted">${esc(kindLabel(j.evidence.kind))}</span>`}</td>
+        <td>${evidenceCell(j.evidence)}</td>
         <td>${esc(j.intent)}</td>
         <td>${esc(j.goal)}</td>
         <td class="num">${j.completed_steps.length}/${data.steps.length}</td>
         <td class="num">${Math.round(j.completeness * 100)}%</td>
       </tr>`).join("")
-    : `<tr><td colspan="7" class="empty">No journeys match.</td></tr>`;
+    : `<tr><td colspan="8" class="empty">No journeys match.</td></tr>`;
 }
 
 async function loadLeads() {
   const isPricing = $("f-definition").value === "price-estimate";
   $("leads-card").hidden = !isPricing;
   if (!isPricing) return;
-  const data = await (await fetch(`/api/analytics/leads?days=${$("f-days").value}`)).json();
+  const lq = new URLSearchParams({ days: $("f-days").value, ...Object.fromEntries(evidenceQuery()) });
+  const data = await (await fetch(`/api/analytics/leads?${lq}`)).json();
   $("leads-note").textContent = `Emails agents left when ending a price estimate with step close: a sign of serious interest, not a contact request. After ${data.retention_days} days the name and message are deleted and the email is reduced to its domain. Click a row to open its journey.`;
   $("leads").querySelector("tbody").innerHTML = data.leads.length
     ? data.leads.map((l) => `<tr class="clickable" tabindex="0" data-ref="${esc(l.journey_ref)}">
@@ -239,7 +359,8 @@ async function showDetail(ref) {
     ["Outcome", pill(d.status) + (d.end_reason ? ` <code>${esc(d.end_reason)}</code>` : "")],
     ["Detail", esc(d.end_detail ?? "—")],
     ["Chosen instead", esc(d.alternative_chosen ?? "—")],
-    ["Agent", d.agent ? `${esc(d.agent.name)} <small>(${esc(d.agent.trust_tier)})</small>` : "unverified"],
+    ["Agent", `${d.evidence.name ? esc(d.evidence.name) : `<span class="muted">${esc(kindLabel(d.evidence.kind))}</span>`} · ${esc(kindLabel(d.evidence.kind))}`],
+    ["Evidence", evidenceCell(d.evidence) + (d.agent ? ` <small>key ${esc(d.agent.keyid)}</small>` : "")],
     ["Human present", d.human_present ? "yes" : "no"],
     ["Intent completeness", `${Math.round(d.completeness * 100)}%`],
     ...(d.lead ? [["Email left", `${esc(d.lead.email)} · estimate ${esc(d.lead.currency)} ${Number(d.lead.total).toLocaleString()}`]] : []),
@@ -294,10 +415,14 @@ async function load() {
   btn.disabled = true;
   btn.textContent = "Loading…";
   try {
-    const q = new URLSearchParams({ definition: $("f-definition").value, days: $("f-days").value });
+    const q = new URLSearchParams({ definition: $("f-definition").value, days: $("f-days").value, ...Object.fromEntries(evidenceQuery()) });
     const res = await fetch(`/api/analytics/summary?${q}`);
     if (!res.ok) throw new Error(`analytics returned ${res.status}`);
     const s = await res.json();
+    legend = s.legend;
+    renderLegend();
+    $("banner-internal").hidden = !s.show_internal; // INT-4
+    syncUrl();
     $("notice").hidden = !s.capped;
     $("notice").textContent = s.capped ? `Showing the most recent ${s.journeys_counted} journeys only.` : "";
     renderTiles(s);
@@ -319,6 +444,17 @@ async function load() {
   }
 }
 
+/** Keep the evidence filter in the URL, so a view can be shared and survives reload. */
+function syncUrl() {
+  const u = new URLSearchParams(location.search);
+  if ($("f-min").value === "all") u.delete("min"); else u.set("min", $("f-min").value);
+  history.replaceState(null, "", `${location.pathname}${u.toString() ? `?${u}` : ""}`);
+}
+
+$("f-min").value = ["all", "attested", "verified"].includes(params.get("min")) ? params.get("min") : "all";
+$("f-min").addEventListener("change", load);
+setupDialog("legend-info", "legend-dialog");
+setupDialog("kinds-info", "kinds-dialog");
 $("refresh").addEventListener("click", load);
 $("f-definition").addEventListener("change", load);
 $("f-days").addEventListener("change", load);

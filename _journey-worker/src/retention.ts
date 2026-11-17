@@ -4,7 +4,7 @@
  * its name and message are deleted and its email is reduced to "@domain".
  * The estimate itself (options, total, company) stays for analysis.
  */
-import type { Env } from "./env";
+import type { Env } from "./env.ts";
 
 export async function purgeLeads(env: Env, now: Date): Promise<number> {
   const res = await env.DB.prepare(

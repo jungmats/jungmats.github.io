@@ -5,8 +5,8 @@
  * Every write goes through ctx.waitUntil: logging can never delay or fail the
  * response an agent is waiting for.
  */
-import type { Env } from "./env";
-import { config } from "./config";
+import type { Env } from "./env.ts";
+import { config } from "./config.ts";
 
 export interface JourneyEvent {
   journeyId: string | null;

@@ -10,15 +10,35 @@
  * `identity: optional` mode the id is the only thing binding a journey, so
  * publishing it would let anyone hijack it. Behind Cloudflare Access, checked
  * in src/access.ts.
+ *
+ * Evidence (agent-analytics requirements JRN-3–JRN-9): every journey is
+ * classified with the shared deriveVisitor (src/journey-evidence.ts).
+ * `min=all|attested|verified` and `kinds=` apply to every card; ElevIQ's own
+ * test journeys (internal = 1) are left out unless SHOW_INTERNAL="true".
  */
-import { config } from "../config";
-import { DEFINITIONS } from "../journeys";
-import { json, problem } from "../http";
-import { topoOrder } from "../engine/definitions";
-import type { FieldSchema, JourneyDefinition } from "../engine/types";
-import type { Env } from "../env";
+import { config } from "../config.ts";
+import { DEFINITIONS } from "../journeys.ts";
+import { json, problem } from "../http.ts";
+import { topoOrder } from "../engine/definitions.ts";
+import type { FieldSchema, JourneyDefinition } from "../engine/types.ts";
+import type { Env } from "../env.ts";
+import { LEGENDS } from "../shared/index.ts";
+import {
+  addToAgent,
+  claimVsConfirmed,
+  classifier,
+  EVIDENCE_COLUMNS,
+  evidenceOf,
+  levelKey,
+  parseFilters,
+  passes,
+  type AgentAgg,
+  type EvidenceRow,
+  type Filters,
+} from "../journey-evidence.ts";
 
-interface JRow {
+interface JRow extends EvidenceRow {
+  id?: string;
   ref: string;
   status: string;
   end_reason: string | null;
@@ -85,32 +105,46 @@ const bucketOrder = (label: string) => {
   return m ? Number(m[1]) * (m[2] ? 1000 : 1) : 0;
 };
 
+/** Evidence filters and the internal-journey rule for one request. */
+function evidenceScope(env: Env, url: URL): { f: Filters; showInternal: boolean; internalSql: string } | Response {
+  const parsed = parseFilters(url.searchParams);
+  if (!parsed.ok) return problem({ status: 400, reason: "bad-request", title: "Invalid filter", detail: parsed.error });
+  const showInternal = env.SHOW_INTERNAL === "true";
+  return { f: parsed.filters, showInternal, internalSql: showInternal ? "" : " AND internal = 0" };
+}
+
 export async function handleSummary(env: Env, url: URL): Promise<Response> {
   const def = pickDefinition(url);
   if (def instanceof Response) return def;
+  const scope = evidenceScope(env, url);
+  if (scope instanceof Response) return scope;
+  const { f, showInternal, internalSql } = scope;
+  const classify = classifier();
   const from = since(url);
   const now = Date.now();
   const order = topoOrder(def);
 
   const [rowsRes, rejRes, clientRes] = await Promise.all([
     env.DB.prepare(
-      `SELECT ref, status, end_reason, alternative_chosen, keyid, agent_name, trust_tier, intent, intent_kind,
-              human_present, completeness, completed_steps, step_data, transport, created_at, expires_at
-       FROM journeys WHERE definition_id = ? AND created_at >= ? ORDER BY created_at DESC LIMIT ?`,
+      `SELECT id, ref, status, end_reason, alternative_chosen, keyid, agent_name, trust_tier, intent, intent_kind,
+              human_present, completeness, completed_steps, step_data, transport, created_at, expires_at, ${EVIDENCE_COLUMNS}
+       FROM journeys WHERE definition_id = ? AND created_at >= ?${internalSql} ORDER BY created_at DESC LIMIT ?`,
     ).bind(def.id, from, config.analytics.maxJourneys).all<JRow>(),
+    // Rejections take the evidence of their journey; a refused start has none (JRN-4).
     env.DB.prepare(
-      `SELECT step, reason, COUNT(*) AS n FROM journey_events
-       WHERE definition_id = ? AND ts >= ? AND outcome = 'rejected'
-       GROUP BY step, reason ORDER BY n DESC`,
-    ).bind(def.id, from).all<{ step: string; reason: string; n: number }>(),
-    // Which MCP client software started journeys, as it reported itself (src/mcp/server.ts).
+      `SELECT e.step, e.reason, j.ref AS jref, j.intent, ${EVIDENCE_COLUMNS.split(", ").map((c) => `j.${c}`).join(", ")}, COUNT(*) AS n
+       FROM journey_events e LEFT JOIN journeys j ON j.id = e.journey_id
+       WHERE e.definition_id = ? AND e.ts >= ? AND e.outcome = 'rejected'${showInternal ? "" : " AND COALESCE(j.internal, 0) = 0"}
+       GROUP BY e.step, e.reason, j.ref ORDER BY n DESC`,
+    ).bind(def.id, from).all<EvidenceRow & { step: string; reason: string; jref: string | null; n: number }>(),
+    // MCP client of journeys started before mcp_client was stored on the journey (src/mcp/server.ts).
     env.DB.prepare(
-      `SELECT COALESCE(json_extract(details, '$.mcp_client'), '(not reported)') AS client, COUNT(*) AS n FROM journey_events
-       WHERE definition_id = ? AND ts >= ? AND transport = 'mcp' AND step = 'start' AND outcome = 'accepted'
-       GROUP BY client ORDER BY n DESC`,
-    ).bind(def.id, from).all<{ client: string; n: number }>(),
+      `SELECT journey_id, json_extract(details, '$.mcp_client') AS client FROM journey_events
+       WHERE definition_id = ? AND ts >= ? AND transport = 'mcp' AND step = 'start' AND outcome = 'accepted'`,
+    ).bind(def.id, from).all<{ journey_id: string; client: string | null }>(),
   ]);
-  const rows = rowsRes.results ?? [];
+  const legacyClient = new Map((clientRes.results ?? []).map((r) => [r.journey_id, r.client]));
+  const rows = (rowsRes.results ?? []).filter((r) => passes(classify(r), f));
 
   const byStatus: Counts = {};
   const endReasons: Record<string, Counts> = { not_achieved: {}, cancelled: {} };
@@ -119,11 +153,13 @@ export async function handleSummary(env: Env, url: URL): Promise<Response> {
   const daily: Record<string, Counts> = {};
   const intentKinds: Counts = {}, stages: Counts = {}, principalTypes: Counts = {}, orgSizes: Counts = {},
     regions: Counts = {}, discovery: Counts = {}, constraintFields: Counts = {}, criteria: Counts = {},
-    considered: Counts = {}, chosen: Counts = {}, agents: Counts = {}, claims: Counts = {}, transports: Counts = {};
+    considered: Counts = {}, chosen: Counts = {}, transports: Counts = {}, mcpClients: Counts = {};
+  const evidence: Counts = { verified: 0, attested: 0, declared: 0, none: 0 };
+  const agentAgg = new Map<string, AgentAgg>();
+  const claims = new Map<string, { declared: string; confirmed: string | null; level: string | null; contradicted: boolean; n: number }>();
   const fieldStats: Record<string, Record<string, Counts>> = {};
   const texts: Array<{ ref: string; created_at: string; step: string; field: string; text: string }> = [];
-  let verified = 0, humanPresent = 0, completenessSum = 0;
-  const completenessByAgent: Record<string, { sum: number; n: number }> = {};
+  let humanPresent = 0, completenessSum = 0;
 
   const loggedFields: Array<[string, string, FieldSchema]> = [];
   const fieldSets: Array<[string, Record<string, FieldSchema>]> = order.map((s) => [s, def.steps[s].fields.properties]);
@@ -153,15 +189,20 @@ export async function handleSummary(env: Env, url: URL): Promise<Response> {
       bump((stuckAt[where] ??= {}), status === "cancelled" || status === "not_achieved" ? `${status}: ${r.end_reason}` : status);
     }
 
-    const agent = r.keyid ? r.agent_name ?? "verified (unnamed)" : "unverified";
-    if (r.keyid) verified++;
-    bump(agents, agent);
-    const cba = (completenessByAgent[agent] ??= { sum: 0, n: 0 });
-    cba.sum += r.completeness;
-    cba.n++;
+    const c = classify(r);
+    evidence[levelKey(c)]++;
+    addToAgent(agentAgg, c, r.completeness);
+    const cv = claimVsConfirmed(r, c);
+    if (cv) {
+      const key = JSON.stringify([cv.declared, cv.confirmed, cv.contradicted]);
+      const e = claims.get(key) ?? { ...cv, n: 0 };
+      e.n++;
+      claims.set(key, e);
+    }
     if (r.human_present) humanPresent++;
     completenessSum += r.completeness;
     bump(transports, r.transport);
+    if (r.transport === "mcp") bump(mcpClients, r.mcp_client ?? legacyClient.get(r.id ?? "") ?? "(not reported)");
 
     bump(intentKinds, r.intent_kind);
     bump(stages, intent.journey_stage);
@@ -177,8 +218,6 @@ export async function handleSummary(env: Env, url: URL): Promise<Response> {
     for (const c of arr(intent.decision_criteria)) bump(criteria, String(obj(c).criterion ?? "").toLowerCase());
     for (const a of arr(intent.alternatives_considered)) bump(considered, String(a).toLowerCase());
     if (r.alternative_chosen) bump(chosen, r.alternative_chosen.toLowerCase());
-    const claim = obj(intent.agent_claim);
-    if (claim.product) bump(claims, `${claim.product} → ${agent}`);
 
     for (const [step, name, schema] of loggedFields) {
       const v = data[step]?.[name];
@@ -203,22 +242,33 @@ export async function handleSummary(env: Env, url: URL): Promise<Response> {
     return { step, field: name, kind: schema.type === "number" ? "buckets" : schema.format === "date" ? "months" : "counts", values };
   }).filter((f) => f.values.length && !(f.values.length === 1 && f.values[0].key === "(free text)"));
 
+  const rejections: Counts = {};
+  const rejectionStep: Record<string, { step: string; reason: string }> = {};
+  for (const e of rejRes.results ?? []) {
+    if (!passes(e.jref ? classify(e) : null, f)) continue;
+    const k = `${e.step}\u0000${e.reason}`;
+    rejections[k] = (rejections[k] ?? 0) + e.n;
+    rejectionStep[k] = { step: e.step, reason: e.reason };
+  }
+
   return json({
     definition: { id: def.id, title: def.title, steps: order },
+    filters: { min: f.min, kinds: f.kinds, lang: f.lang },
+    show_internal: showInternal,
+    legend: LEGENDS[f.lang],
     window_from: from,
     journeys_counted: rows.length,
     capped: rows.length >= config.analytics.maxJourneys,
     totals: {
       started: rows.length,
       by_status: byStatus,
-      verified,
-      unverified: rows.length - verified,
+      evidence, // JRN-5: journeys per level
       human_present: humanPresent,
       avg_completeness: rows.length ? Math.round((completenessSum / rows.length) * 100) / 100 : null,
     },
     funnel: [{ step: "start", n: rows.length }, ...order.map((s) => ({ step: s, n: reached[s] ?? 0 }))],
     dropoff: order.map((s) => ({ step: s, outcomes: sorted(stuckAt[s] ?? {}) })).filter((d) => d.outcomes.length),
-    rejections: rejRes.results ?? [],
+    rejections: sorted(rejections).map(({ key, n }) => ({ ...rejectionStep[key], n })),
     end_reasons: { not_achieved: sorted(endReasons.not_achieved), cancelled: sorted(endReasons.cancelled) },
     daily: Object.entries(daily).sort(([a], [b]) => a.localeCompare(b)).map(([day, c]) => ({ day, ...c })),
     intent: {
@@ -235,10 +285,14 @@ export async function handleSummary(env: Env, url: URL): Promise<Response> {
     texts,
     competition: { considered: sorted(considered), chosen_instead: sorted(chosen) },
     agents: {
-      by_agent: sorted(agents).map((a) => ({ ...a, avg_completeness: Math.round((completenessByAgent[a.key].sum / completenessByAgent[a.key].n) * 100) / 100 })),
-      claims_vs_verified: sorted(claims),
+      // JRN-6: name (null = unnamed, grouped per kind), kind(s), journeys per level, method(s), flags.
+      by_agent: [...agentAgg.values()]
+        .sort((a, b) => b.journeys - a.journeys || String(a.name).localeCompare(String(b.name)))
+        .map(({ completenessSum: sum, ...a }) => ({ ...a, avg_completeness: Math.round((sum / a.journeys) * 100) / 100 })),
+      // JRN-7: declared product vs. the identity a stronger signal confirmed.
+      claims_vs_confirmed: [...claims.values()].sort((a, b) => b.n - a.n),
       transports: sorted(transports),
-      mcp_clients: (clientRes.results ?? []).map((r) => ({ key: r.client, n: r.n })),
+      mcp_clients: sorted(mcpClients),
     },
   });
 }
@@ -246,24 +300,27 @@ export async function handleSummary(env: Env, url: URL): Promise<Response> {
 export async function handleList(env: Env, url: URL): Promise<Response> {
   const def = pickDefinition(url);
   if (def instanceof Response) return def;
+  const scope = evidenceScope(env, url);
+  if (scope instanceof Response) return scope;
+  const classify = classifier();
   const status = url.searchParams.get("status");
   const res = await env.DB.prepare(
     `SELECT ref, status, end_reason, keyid, agent_name, intent, intent_kind, completeness, completed_steps,
-            transport, created_at, expires_at, ended_at
-     FROM journeys WHERE definition_id = ? AND created_at >= ? ORDER BY created_at DESC LIMIT ?`,
+            transport, created_at, expires_at, ended_at, ${EVIDENCE_COLUMNS}
+     FROM journeys WHERE definition_id = ? AND created_at >= ?${scope.internalSql} ORDER BY created_at DESC LIMIT ?`,
   ).bind(def.id, since(url), config.analytics.listLimit).all<JRow>();
   const now = Date.now();
 
   const journeys = (res.results ?? [])
+    .filter((r) => passes(classify(r), scope.f))
     .map((r) => {
       const intent = JSON.parse(r.intent) as Record<string, unknown>;
       return {
+        evidence: evidenceOf(classify(r)), // JRN-8
         ref: r.ref,
         created_at: r.created_at,
         status: effectiveStatus(r, now),
         end_reason: r.end_reason ?? (effectiveStatus(r, now) === "abandoned" ? "idle-timeout" : null),
-        agent: r.keyid ? r.agent_name : null,
-        verified: !!r.keyid,
         intent: r.intent_kind,
         goal: typeof intent.goal === "string" ? intent.goal.slice(0, 140) : null,
         completeness: r.completeness,
@@ -296,6 +353,8 @@ export async function handleDetail(env: Env, ref: string): Promise<Response> {
     end_detail: row.end_detail,
     alternative_chosen: row.alternative_chosen,
     agent: row.keyid ? { name: row.agent_name, trust_tier: row.trust_tier, keyid: `${row.keyid.slice(0, 12)}…` } : null,
+    evidence: evidenceOf(classifier()(row)), // JRN-8
+    internal: !!row.internal,
     human_present: !!row.human_present,
     completeness: row.completeness,
     created_at: row.created_at,
@@ -316,13 +375,27 @@ const MAX_TEXTS = 50;
 const LEAD_COLUMNS = "journey_ref, created_at, purge_after, purged_at, email, name, company, message, options, total, currency";
 
 export async function handleLeads(env: Env, url: URL): Promise<Response> {
+  const scope = evidenceScope(env, url);
+  if (scope instanceof Response) return scope;
+  const classify = classifier();
   const days = Math.min(Math.max(Number(url.searchParams.get("days")) || 30, 1), 365);
   const from = new Date(Date.now() - days * 86_400_000).toISOString();
+  // Leads take the evidence of their journey (JRN-4); internal journeys' leads are left out (JRN-9).
+  const cols = LEAD_COLUMNS.split(", ").map((c) => `l.${c}`).join(", ");
   const rows = await env.DB.prepare(
-    `SELECT ${LEAD_COLUMNS} FROM leads WHERE created_at >= ? ORDER BY created_at DESC LIMIT ?`,
-  ).bind(from, config.analytics.listLimit).all<Record<string, unknown>>();
+    `SELECT ${cols}, j.intent, ${EVIDENCE_COLUMNS.split(", ").map((c) => `j.${c}`).join(", ")}
+     FROM leads l LEFT JOIN journeys j ON j.ref = l.journey_ref
+     WHERE l.created_at >= ?${scope.showInternal ? "" : " AND COALESCE(j.internal, 0) = 0"} ORDER BY l.created_at DESC LIMIT ?`,
+  ).bind(from, config.analytics.listLimit).all<Record<string, unknown> & EvidenceRow>();
   return json({
     retention_days: config.leads.retentionDays,
-    leads: (rows.results ?? []).map((r) => ({ ...r, options: JSON.parse(String(r.options)) })),
+    leads: (rows.results ?? [])
+      .filter((r) => passes(classify(r), scope.f))
+      .map((r) => {
+        const c = classify(r);
+        const out: Record<string, unknown> = {};
+        for (const k of LEAD_COLUMNS.split(", ")) out[k] = r[k];
+        return { ...out, options: JSON.parse(String(r.options)), evidence: evidenceOf(c) };
+      }),
   });
 }

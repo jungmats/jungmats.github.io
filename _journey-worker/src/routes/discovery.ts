@@ -9,16 +9,16 @@
  *
  * Both list the MCP endpoint (/mcp) beside the HTTP API.
  */
-import { DEFINITIONS } from "../journeys";
-import { json, problem } from "../http";
-import { config } from "../config";
-import { envelopeSchemaFor } from "../engine/envelope";
-import { publicSchema } from "../engine/validate";
-import { topoOrder } from "../engine/definitions";
-import { arazzoFor, openApiFor } from "../engine/export";
-import { cancelTool, startTool, stepTool } from "../mcp/tools";
-import { MCP_VERSIONS } from "../mcp/server";
-import type { JourneyDefinition } from "../engine/types";
+import { DEFINITIONS } from "../journeys.ts";
+import { json, problem } from "../http.ts";
+import { config } from "../config.ts";
+import { envelopeSchemaFor } from "../engine/envelope.ts";
+import { publicSchema } from "../engine/validate.ts";
+import { topoOrder } from "../engine/definitions.ts";
+import { arazzoFor, openApiFor } from "../engine/export.ts";
+import { cancelTool, startTool, stepTool } from "../mcp/tools.ts";
+import { MCP_VERSIONS } from "../mcp/server.ts";
+import type { JourneyDefinition } from "../engine/types.ts";
 
 export const PROTOCOL = "agent-journey/0.1";
 
