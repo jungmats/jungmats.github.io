@@ -87,6 +87,27 @@ header img {
   filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.2));
 }
 
+/* KITE mascot: stands on the header's bottom edge, left of the centred
+   headline, presenting towards it. Positioned from the centre so it stays
+   next to the text on wide screens (half headline ~350px + 40px gap +
+   100px mascot). Hidden unless there is enough room beside the text. */
+header img.mascot {
+  display: none;
+  position: absolute;
+  left: calc(50% - 490px);
+  bottom: 0;
+  width: auto;
+  height: 180px;
+  filter: none;
+  pointer-events: none;
+}
+
+@media (min-width: 1100px) {
+  header img.mascot {
+    display: block;
+  }
+}
+
 header h1,
 header .brand-line {
   margin: 0;
