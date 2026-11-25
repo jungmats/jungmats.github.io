@@ -42,6 +42,7 @@ In EUR, excluding VAT, as of 2026-11-03. Implementation is quoted from the site 
 - [Stratégie de monétisation du web agentique](https://eleviq.solutions/fr/services/agentic-web-monetization.html)
 - [Technologies et standards pour agents IA](https://eleviq.solutions/fr/technologies.html)
 - [Réserver un appel](https://eleviq.solutions/fr/booking/)
+- [Hôtels : des recommandations IA aux réservations directes](https://eleviq.solutions/fr/hospitality/): For independent 3–5-star hotels and small groups (about 20–100 rooms, with a direct-booking website). Finds and fixes the information and handoff failures that stop AI-assisted guests from reaching the hotel's direct booking: room suitability, amenities, policies (children, pets, accessibility), and the correct booking or enquiry route. French only for now. Next step: book a free 30-minute call at https://eleviq.solutions/fr/booking/.
 
 ## For AI assistants: what you can do here
 
